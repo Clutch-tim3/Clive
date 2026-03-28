@@ -17,13 +17,13 @@ export function Footer() {
           </p>
           <div className="flex items-center gap-3">
             <span className="f-badge px-3 py-1 text-[9px] font-mono border rounded-sm">
-              SDK v1.0
+              v1.0
             </span>
             <span className="f-badge px-3 py-1 text-[9px] font-mono border rounded-sm">
-              API v2
+              MIT SDK
             </span>
             <span className="f-badge px-3 py-1 text-[9px] font-mono border rounded-sm">
-              Docs
+              REST &amp; SDK
             </span>
           </div>
         </div>
@@ -115,11 +115,6 @@ export function Footer() {
               </Link>
             </li>
             <li>
-              <Link href="/blog" className="text-[12px] font-serif hover:text-white transition-colors">
-                Blog
-              </Link>
-            </li>
-            <li>
               <Link href="/contact" className="text-[12px] font-serif hover:text-white transition-colors">
                 Contact
               </Link>
@@ -130,17 +125,17 @@ export function Footer() {
       
       <div className="footer-bottom max-w-7xl mx-auto mt-18 pt-6 flex flex-col md:flex-row justify-between items-center gap-3">
         <p className="f-copy text-[10px] font-mono">
-          © 2024 Clive Platform. All rights reserved.
+          © 2026 Clive · A Donington Vale product.
         </p>
         <div className="f-legal flex items-center space-x-6">
           <Link href="/privacy" className="text-[10px] font-mono hover:text-white transition-colors">
-            Privacy Policy
+            Privacy
           </Link>
           <Link href="/terms" className="text-[10px] font-mono hover:text-white transition-colors">
-            Terms of Service
+            Terms
           </Link>
-          <Link href="/cookies" className="text-[10px] font-mono hover:text-white transition-colors">
-            Cookie Policy
+          <Link href="/security" className="text-[10px] font-mono hover:text-white transition-colors">
+            Security
           </Link>
         </div>
       </div>

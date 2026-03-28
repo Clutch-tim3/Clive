@@ -76,11 +76,7 @@ export function PricingSection() {
                   {tier.isFeatured ? 'Developer' : tier.name}
                 </div>
                 <div className="price-n font-display text-[64px] font-light leading-none mb-1 tracking-[-0.03em]">
-                  {tier.isFeatured ? (
-                    <span>${tier.price.replace('$', '')}</span>
-                  ) : (
-                    <span><sup>$</sup>{tier.price.replace('$', '')}</span>
-                  )}
+                  <span><sup>$</sup>{tier.price.replace('$', '')}</span>
                 </div>
                 <div className="price-per text-[10px] font-mono tracking-[0.08em] mb-7">
                   {tier.period}
@@ -96,12 +92,12 @@ export function PricingSection() {
                     </li>
                   ))}
                 </ul>
-                <Link 
-                  href="/#" 
-                  className={`block w-full text-center px-4 py-3.5 text-[10.5px] font-mono tracking-[0.12em] uppercase rounded-[100px] transition-all ${
-                    tier.isFeatured 
-                      ? 'bg-white/90 text-navy border-transparent hover:bg-white' 
-                      : 'bg-transparent text-white border border-white/12 hover:bg-white/10'
+                <Link
+                  href="/#"
+                  className={`price-cta block w-full text-center text-[10.5px] font-mono tracking-[0.12em] uppercase rounded-[100px] transition-all ${
+                    tier.isFeatured
+                      ? 'bg-white/90 text-navy border-transparent hover:bg-white'
+                      : ''
                   }`}
                 >
                   {tier.isFeatured ? 'Start Developer plan' : (

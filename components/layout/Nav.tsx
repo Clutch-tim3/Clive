@@ -3,74 +3,135 @@ import Link from 'next/link';
 import React from 'react';
 
 export function Nav() {
-  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, text: string) => {
-    console.log(`Nav link clicked: ${text}`);
-    console.log(`Href: ${e.currentTarget.href}`);
-  };
-
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 h-16 bg-white/95 backdrop-blur-md border-b border-border">
-      <div className="max-w-7xl mx-auto px-14 h-full flex items-center justify-between">
-        <Link href="/" onClick={(e) => handleClick(e, 'Home')}>
-          <span className="text-2xl font-display tracking-[0.08em] uppercase">
-            CL<span className="text-navy">I</span>VE
-          </span>
+    <nav style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      zIndex: 200,
+      height: '64px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: '0 48px',
+      background: 'rgba(7,7,10,0.88)',
+      backdropFilter: 'blur(24px) saturate(180%)',
+      WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+      borderBottom: '1px solid rgba(255,255,255,0.07)',
+      transition: 'all .3s',
+    }}>
+      <Link href="/" style={{
+        fontFamily: "'Cormorant Garamond', serif",
+        fontSize: '22px',
+        fontWeight: 500,
+        letterSpacing: '0.1em',
+        textTransform: 'uppercase',
+        color: 'white',
+        textDecoration: 'none',
+      }}>
+        <em style={{ fontStyle: 'normal', color: 'rgba(91,148,210,0.9)' }}>C</em>LIVE
+      </Link>
+
+      <div style={{
+        display: 'flex',
+        gap: '32px',
+        position: 'absolute',
+        left: '50%',
+        transform: 'translateX(-50%)',
+      }}>
+        {[
+          { href: '/products', label: 'Products', accent: false },
+          { href: '/', label: 'Platform', accent: false },
+          { href: '/pricing', label: 'Pricing', accent: false },
+          { href: '/partners', label: 'Partner APIs', accent: true },
+          { href: '/docs', label: 'Documentation', accent: false },
+        ].map(({ href, label, accent }) => (
+          <Link
+            key={label}
+            href={href}
+            style={{
+              fontFamily: "'DM Mono', monospace",
+              fontSize: '10.5px',
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              color: accent ? 'rgba(91,148,210,0.7)' : 'rgba(255,255,255,0.45)',
+              textDecoration: 'none',
+              transition: 'color .2s',
+            }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLAnchorElement).style.color = accent ? 'rgba(91,148,210,1)' : 'white';
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLAnchorElement).style.color = accent ? 'rgba(91,148,210,0.7)' : 'rgba(255,255,255,0.45)';
+            }}
+          >
+            {label}
+          </Link>
+        ))}
+      </div>
+
+      <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+        <Link
+          href="/#"
+          style={{
+            fontFamily: "'DM Mono', monospace",
+            fontSize: '10.5px',
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+            padding: '9px 22px',
+            borderRadius: '100px',
+            border: '1.5px solid rgba(255,255,255,0.14)',
+            background: 'rgba(255,255,255,0.06)',
+            color: 'rgba(255,255,255,0.6)',
+            textDecoration: 'none',
+            transition: 'all .2s',
+            backdropFilter: 'blur(12px)',
+          }}
+          onMouseEnter={e => {
+            const el = e.currentTarget as HTMLAnchorElement;
+            el.style.borderColor = 'rgba(255,255,255,0.28)';
+            el.style.color = 'white';
+            el.style.background = 'rgba(255,255,255,0.1)';
+          }}
+          onMouseLeave={e => {
+            const el = e.currentTarget as HTMLAnchorElement;
+            el.style.borderColor = 'rgba(255,255,255,0.14)';
+            el.style.color = 'rgba(255,255,255,0.6)';
+            el.style.background = 'rgba(255,255,255,0.06)';
+          }}
+        >
+          Sign in
         </Link>
-        
-        <div className="flex items-center space-x-6">
-          <Link 
-            href="/products" 
-            className="text-[10.5px] font-mono tracking-[0.14em] uppercase text-ink hover:text-navy transition-colors"
-            onClick={(e) => handleClick(e, 'Products')}
-          >
-            Products
-          </Link>
-          <Link 
-            href="/" 
-            className="text-[10.5px] font-mono tracking-[0.14em] uppercase text-ink hover:text-navy transition-colors"
-            onClick={(e) => handleClick(e, 'Platform')}
-          >
-            Platform
-          </Link>
-          <Link 
-            href="/pricing" 
-            className="text-[10.5px] font-mono tracking-[0.14em] uppercase text-ink hover:text-navy transition-colors"
-            onClick={(e) => handleClick(e, 'Pricing')}
-          >
-            Pricing
-          </Link>
-          <Link 
-            href="/partners" 
-            className="text-[10.5px] font-mono tracking-[0.14em] uppercase text-steel hover:text-navy transition-colors"
-            onClick={(e) => handleClick(e, 'Partner APIs')}
-          >
-            Partner APIs
-          </Link>
-          <Link 
-            href="/docs" 
-            className="text-[10.5px] font-mono tracking-[0.14em] uppercase text-ink hover:text-navy transition-colors"
-            onClick={(e) => handleClick(e, 'Documentation')}
-          >
-            Documentation
-          </Link>
-        </div>
-        
-        <div className="flex items-center space-x-3">
-          <Link 
-            href="/#" 
-            className="px-4 py-2 glass-light text-[10.5px] font-mono tracking-[0.14em] uppercase border border-white/20 rounded-sm hover:bg-paper transition-colors"
-            onClick={(e) => handleClick(e, 'Sign in')}
-          >
-            Sign in
-          </Link>
-          <Link 
-            href="/#" 
-            className="px-4 py-2 glass-dark text-[10.5px] font-mono tracking-[0.14em] uppercase text-white rounded-sm hover:bg-navy transition-colors"
-            onClick={(e) => handleClick(e, 'Get started')}
-          >
-            Get started
-          </Link>
-        </div>
+        <Link
+          href="/#"
+          style={{
+            fontFamily: "'DM Mono', monospace",
+            fontSize: '10.5px',
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+            padding: '9px 22px',
+            borderRadius: '100px',
+            border: '1.5px solid var(--navy)',
+            background: 'var(--navy)',
+            color: 'white',
+            textDecoration: 'none',
+            transition: 'all .2s',
+            boxShadow: '0 4px 16px rgba(27,48,91,0.35)',
+          }}
+          onMouseEnter={e => {
+            const el = e.currentTarget as HTMLAnchorElement;
+            el.style.background = 'var(--navy2)';
+            el.style.boxShadow = '0 6px 24px rgba(27,48,91,0.45)';
+          }}
+          onMouseLeave={e => {
+            const el = e.currentTarget as HTMLAnchorElement;
+            el.style.background = 'var(--navy)';
+            el.style.boxShadow = '0 4px 16px rgba(27,48,91,0.35)';
+          }}
+        >
+          Get started
+        </Link>
       </div>
     </nav>
   );
