@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Water-Like Liquid Glass Effect Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Mono', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .hero-section {
+            text-align: center;
+            max-width: 800px;
+            margin-bottom: 100px;
+            padding: 60px 40px;
+        }
+
+        .hero-title {
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 300;
+            color: white;
+            margin-bottom: 30px;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+            text-align: center;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1rem, 2vw, 1.5rem);
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 60px;
+            line-height: 1.6;
+            font-weight: 300;
+        }
+
+        /* Water-like liquid glass effect - extremely transparent by default */
+        .liquid-glass-water {
+            background: rgba(255, 255, 255, 0.005);
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+            border: 1px solid rgba(255, 255, 255, 0.02);
+            box-shadow: 0 1px 8px rgba(0, 0, 0, 0.03);
+            border-radius: 9999px;
+            padding: 18px 40px;
+            font-size: 0.9rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: white;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .liquid-glass-water::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.02), transparent);
+            transition: left 0.8s ease;
+        }
+
+        .liquid-glass-water:hover::before {
+            left: 100%;
+        }
+
+        .liquid-glass-water:hover {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-color: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transform: translateY(-1px);
+        }
+
+        /* Section with multiple water-like glass elements */
+        .demo-section {
+            width: 100%;
+            max-width: 1200px;
+            padding: 80px 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 60px;
+        }
+
+        .demo-row {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.008);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+            border-radius: 16px;
+            padding: 40px;
+            min-width: 300px;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+        }
+
+        .glass-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+        }
+
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            transform: translateY(-3px);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 300;
+            color: white;
+            margin-bottom: 15px;
+            letter-spacing: -0.01em;
+        }
+
+        .card-text {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9rem;
+            line-height: 1.7;
+            margin-bottom: 20px;
+        }
+
+        .card-button {
+            background: rgba(255, 255, 255, 0.01);
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: 9999px;
+            padding: 12px 24px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            display: inline-block;
+        }
+
+        .card-button:hover {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-color: rgba(255, 255, 255, 0.08);
+            color: white;
+            transform: translateX(3px);
+        }
+
+        /* Background decorations */
+        .bg-decoration {
+            position: fixed;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.05;
+            z-index: 0;
+        }
+
+        .bg-decoration-1 {
+            top: -100px;
+            left: -100px;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: float 10s ease-in-out infinite;
+        }
+
+        .bg-decoration-2 {
+            bottom: -100px;
+            right: -100px;
+            background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+            animation: float 12s ease-in-out infinite reverse;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) translateX(0);
+            }
+            50% {
+                transform: translateY(-20px) translateX(20px);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1rem;
+            }
+            
+            .glass-card {
+                min-width: 100%;
+                padding: 30px;
+            }
+            
+            .demo-row {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Background decorations -->
+    <div class="bg-decoration bg-decoration-1"></div>
+    <div class="bg-decoration bg-decoration-2"></div>
+
+    <!-- Hero section -->
+    <section class="hero-section">
+        <h1 class="hero-title">Water-Like<br>Glass Effect</h1>
+        <p class="hero-subtitle">
+            Extremely subtle, transparent liquid glass effect<br>
+            that resembles clear water - almost invisible until hovered
+        </p>
+        <button class="liquid-glass-water">Explore More</button>
+    </section>
+
+    <!-- Demo section -->
+    <section class="demo-section">
+        <div class="demo-row">
+            <div class="glass-card">
+                <h3 class="card-title">Minimal Design</h3>
+                <p class="card-text">
+                    The water-like glass effect is so subtle it barely registers, 
+                    allowing the content to shine through while providing a modern, 
+                    elegant aesthetic.
+                </p>
+                <button class="card-button">Learn More</button>
+            </div>
+
+            <div class="glass-card">
+                <h3 class="card-title">Interactive Hover</h3>
+                <p class="card-text">
+                    On hover, the glass becomes slightly frosty with a soft glow, 
+                    providing clear feedback without overwhelming the content.
+                </p>
+                <button class="card-button">View Examples</button>
+            </div>
+
+            <div class="glass-card">
+                <h3 class="card-title">Responsive</h3>
+                <p class="card-text">
+                    The effect works beautifully across all screen sizes, from 
+                    large desktop displays to mobile devices.
+                </p>
+                <button class="card-button">See Responsive</button>
+            </div>
+        </div>
+
+        <div class="demo-row">
+            <div class="glass-card">
+                <h3 class="card-title">Performance</h3>
+                <p class="card-text">
+                    Optimized for performance with minimal CSS properties, 
+                    ensuring smooth animations and fast rendering.
+                </p>
+                <button class="card-button">Check Performance</button>
+            </div>
+
+            <div class="glass-card">
+                <h3 class="card-title">Customizable</h3>
+                <p class="card-text">
+                    Easy to customize with CSS variables for different levels 
+                    of transparency, blur, and border styles.
+                </p>
+                <button class="card-button">Customize</button>
+            </div>
+
+            <div class="glass-card">
+                <h3 class="card-title">Modern Aesthetic</h3>
+                <p class="card-text">
+                    Perfect for modern websites and applications that want a 
+                    clean, minimalist look with a hint of sophistication.
+                </p>
+                <button class="card-button">Explore Aesthetic</button>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Add subtle cursor effects
+        document.addEventListener('mousemove', function(e) {
+            const cursor = document.createElement('div');
+            cursor.style.position = 'fixed';
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+            cursor.style.width = '2px';
+            cursor.style.height = '2px';
+            cursor.style.borderRadius = '50%';
+            cursor.style.background = 'rgba(255, 255, 255, 0.05)';
+            cursor.style.pointerEvents = 'none';
+            cursor.style.zIndex = '10000';
+            cursor.style.animation = 'fadeOut 2s forwards';
+            
+            document.body.appendChild(cursor);
+            
+            setTimeout(() => {
+                cursor.remove();
+            }, 2000);
+        });
+
+        // Add fade out animation
+        const fadeStyle = document.createElement('style');
+        fadeStyle.textContent = `
+            @keyframes fadeOut {
+                to {
+                    opacity: 0;
+                    transform: scale(20);
+                }
+            }
+        `;
+        document.head.appendChild(fadeStyle);
+    </script>
+</body>
+</html>

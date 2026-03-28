@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clive — Partner APIs · Powered by APIlayer</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+:root{
+  --white:#FFFFFF;--paper:#FAFAF8;--off:#F2F1EE;
+  --black:#07070A;--black2:#0C0C10;--black3:#131318;
+  --navy:#1B305B;--navy2:#142447;--navy3:#0E1A33;
+  --steel:rgba(91,148,210,1);--steel-dim:rgba(91,148,210,0.18);
+  --text:#131318;--text2:#5C5C6A;--text3:#9898A8;
+  --border:rgba(19,19,24,0.08);
+  --r-sm:12px;--r-md:20px;--r-lg:28px;--r-xl:40px;--r-pill:100px;
+  --shadow-sm:0 2px 8px rgba(0,0,0,0.05);
+  --shadow-lg:0 24px 64px rgba(0,0,0,0.09),0 8px 24px rgba(0,0,0,0.05);
+  --shadow-xl:0 40px 100px rgba(0,0,0,0.12),0 16px 40px rgba(0,0,0,0.07);
+}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-thumb{background:rgba(27,48,91,0.2);border-radius:4px;}
+
+body{font-family:'Libre Baskerville',Georgia,serif;background:var(--white);color:var(--text);overflow-x:hidden;cursor:none;}
+*,a,button{cursor:none!important;}
+
+/* CURSOR */
+#cursor{position:fixed;top:0;left:0;z-index:9999;pointer-events:none;transform:translate(-50%,-50%);}
+.cur-ring{width:36px;height:36px;border-radius:50%;border:1.5px solid rgba(27,48,91,0.3);position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);transition:all .3s cubic-bezier(.34,1.56,.64,1);}
+.cur-dot{width:6px;height:6px;border-radius:50%;background:var(--navy);position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);transition:all .15s;}
+body.hovering .cur-ring{width:56px;height:56px;border-color:rgba(27,48,91,0.5);background:rgba(27,48,91,0.04);}
+body.hovering .cur-dot{width:4px;height:4px;}
+
+.display{font-family:'Cormorant Garamond',serif;font-weight:300;letter-spacing:-0.025em;line-height:1.0;}
+
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  height:64px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 48px;
+  background:rgba(7,7,10,0.88);
+  backdrop-filter:blur(20px) saturate(180%);
+  border-bottom:1px solid rgba(255,255,255,0.07);
+}
+.nav-logo{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:white;text-decoration:none;}
+.nav-logo em{font-style:normal;color:rgba(91,148,210,0.9);}
+.nav-links{display:flex;gap:36px;position:absolute;left:50%;transform:translateX(-50%);}
+.nav-link{font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.45);text-decoration:none;transition:color .2s;}
+.nav-link:hover,.nav-link.active{color:white;}
+.nav-right{display:flex;gap:10px;align-items:center;}
+.nav-btn{font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;padding:9px 22px;border-radius:var(--r-pill);border:1.5px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.6);text-decoration:none;transition:all .2s;backdrop-filter:blur(12px);}
+.nav-btn:hover{border-color:rgba(255,255,255,0.3);color:white;background:rgba(255,255,255,0.1);}
+.nav-btn.filled{background:var(--navy);color:white;border-color:var(--navy);box-shadow:0 4px 16px rgba(27,48,91,0.3);}
+.nav-btn.filled:hover{background:var(--navy2);}
+
+/* ── HERO ── */
+.partner-hero{
+  min-height:56vh;padding:130px 48px 80px;
+  position:relative;overflow:hidden;
+  background:var(--black);
+  display:flex;align-items:center;
+}
+.partner-hero::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 55% 70% at 80% 40%,rgba(27,48,91,0.28) 0%,transparent 70%),
+    radial-gradient(ellipse 40% 50% at 15% 80%,rgba(27,48,91,0.14) 0%,transparent 65%),
+    linear-gradient(rgba(27,48,91,0.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(27,48,91,0.04) 1px,transparent 1px);
+  background-size:auto,auto,56px 56px,56px 56px;
+}
+.hero-inner{max-width:1300px;margin:0 auto;width:100%;position:relative;z-index:1;display:grid;grid-template-columns:1fr 380px;gap:80px;align-items:center;}
+.hero-kicker{
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.24em;text-transform:uppercase;
+  color:rgba(91,148,210,0.8);margin-bottom:20px;
+  display:inline-flex;align-items:center;gap:10px;
+  padding:6px 16px 6px 6px;border-radius:var(--r-pill);
+  background:rgba(27,48,91,0.3);border:1px solid rgba(91,148,210,0.25);
+}
+.kicker-dot{width:18px;height:18px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;}
+.kicker-dot::after{content:'';width:6px;height:6px;border-radius:50%;background:rgba(91,148,210,0.9);animation:live-pulse 2s ease-in-out infinite;}
+@keyframes live-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
+.hero-h1{font-size:clamp(48px,6vw,88px);color:white;margin-bottom:20px;letter-spacing:-0.03em;}
+.hero-h1 em{font-style:italic;color:transparent;background:linear-gradient(135deg,rgba(91,148,210,0.95),rgba(27,48,91,0.85));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero-sub{font-size:16px;font-style:italic;color:rgba(255,255,255,0.42);line-height:1.8;max-width:520px;margin-bottom:36px;}
+.hero-trust{display:flex;gap:28px;flex-wrap:wrap;}
+.trust-stat{display:flex;flex-direction:column;gap:4px;}
+.trust-n{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;color:white;line-height:1;}
+.trust-n span{color:rgba(91,148,210,0.8);}
+.trust-l{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.28);}
+.trust-divider{width:1px;background:rgba(255,255,255,0.08);align-self:stretch;}
+
+/* Apilayer badge card */
+.al-badge-card{
+  border-radius:var(--r-xl);padding:32px;
+  background:rgba(255,255,255,0.06);
+  backdrop-filter:blur(28px) saturate(180%);
+  border:1px solid rgba(255,255,255,0.12);
+  border-top:1px solid rgba(255,255,255,0.24);
+  box-shadow:0 1px 0 rgba(255,255,255,0.16) inset,0 32px 80px rgba(0,0,0,0.4);
+  position:relative;overflow:hidden;
+  animation:float-card 6s ease-in-out infinite;
+}
+@keyframes float-card{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.al-badge-card::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(118deg,rgba(255,255,255,0) 0%,rgba(255,255,255,0.07) 45%,rgba(255,255,255,0.12) 50%,rgba(255,255,255,0.07) 55%,rgba(255,255,255,0) 100%);
+  background-size:250% 100%;animation:lg-sweep 6s ease-in-out infinite;
+}
+@keyframes lg-sweep{0%,100%{background-position:200% 0}50%{background-position:-200% 0}}
+.al-badge-card > *{position:relative;z-index:1;}
+.al-partner-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:rgba(91,148,210,0.5);margin-bottom:20px;display:flex;align-items:center;gap:8px;}
+.al-partner-label::before{content:'';width:16px;height:1px;background:rgba(91,148,210,0.35);}
+.al-logo-area{display:flex;align-items:center;gap:16px;margin-bottom:24px;}
+.al-logo-icon{width:52px;height:52px;border-radius:var(--r-md);background:rgba(27,48,91,0.4);border:1px solid rgba(91,148,210,0.25);border-top-color:rgba(91,148,210,0.4);display:flex;align-items:center;justify-content:center;box-shadow:0 0 20px rgba(27,48,91,0.3);}
+.al-logo-name{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;color:white;letter-spacing:0.02em;}
+.al-logo-sub{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(91,148,210,0.5);margin-top:2px;}
+.al-stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;border-radius:var(--r-sm);overflow:hidden;border:1px solid rgba(255,255,255,0.08);margin-bottom:20px;}
+.al-stat{padding:14px 10px;background:rgba(255,255,255,0.04);text-align:center;}
+.al-stat-n{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;color:white;line-height:1;}
+.al-stat-n em{font-style:normal;font-size:14px;color:rgba(91,148,210,0.8);}
+.al-stat-l{font-family:'DM Mono',monospace;font-size:7.5px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(91,148,210,0.4);margin-top:3px;}
+.al-desc{font-size:12.5px;color:rgba(255,255,255,0.38);line-height:1.7;margin-bottom:20px;font-style:italic;}
+.al-visit-btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+  padding:12px;border-radius:var(--r-pill);
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;
+  background:rgba(27,48,91,0.7);color:white;
+  border:1px solid rgba(91,148,210,0.3);border-top-color:rgba(91,148,210,0.5);
+  box-shadow:0 1px 0 rgba(91,148,210,0.2) inset,0 8px 24px rgba(27,48,91,0.35);
+  text-decoration:none;transition:all .22s;
+}
+.al-visit-btn:hover{background:rgba(27,48,91,0.9);box-shadow:0 1px 0 rgba(91,148,210,0.3) inset,0 12px 32px rgba(27,48,91,0.5);transform:translateY(-1px);}
+.al-visit-btn svg{flex-shrink:0;}
+
+/* ── DISCLOSURE BANNER ── */
+.disclosure-banner{
+  background:rgba(27,48,91,0.08);
+  border-bottom:1px solid rgba(27,48,91,0.1);
+  padding:14px 48px;
+  display:flex;align-items:center;gap:12px;
+  justify-content:center;
+}
+.disc-icon{width:18px;height:18px;border-radius:50%;background:rgba(27,48,91,0.15);border:1px solid rgba(27,48,91,0.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.disc-icon svg{display:block;}
+.disc-text{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.08em;color:var(--text3);}
+.disc-text a{color:var(--navy);text-decoration:none;}
+.disc-text a:hover{text-decoration:underline;}
+
+/* ── PRODUCTS SECTION ── */
+.products-sect{padding:96px 48px;background:var(--white);}
+.products-inner{max-width:1300px;margin:0 auto;}
+.sect-kicker{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.24em;text-transform:uppercase;color:var(--navy);margin-bottom:16px;display:inline-flex;align-items:center;gap:12px;}
+.sect-kicker::before{content:'';width:28px;height:1px;background:var(--navy);}
+.sect-h2{font-size:clamp(38px,4.5vw,60px);color:var(--black);margin-bottom:14px;letter-spacing:-0.025em;}
+.sect-sub{font-size:16px;font-style:italic;color:var(--text2);line-height:1.8;max-width:600px;margin-bottom:64px;}
+
+/* Filter tabs */
+.filter-bar{display:flex;gap:8px;margin-bottom:48px;flex-wrap:wrap;}
+.filter-tab{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;padding:9px 20px;border-radius:var(--r-pill);border:1.5px solid var(--border);background:transparent;color:var(--text3);transition:all .2s;}
+.filter-tab.active{background:var(--navy);color:white;border-color:var(--navy);box-shadow:0 4px 16px rgba(27,48,91,0.25);}
+.filter-tab:hover:not(.active){border-color:var(--navy);color:var(--navy);}
+
+/* Product cards grid */
+.api-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:20px;}
+
+/* Individual partner card */
+.api-card{
+  border-radius:var(--r-xl);border:1.5px solid var(--border);
+  background:var(--white);
+  position:relative;overflow:hidden;
+  transition:all .3s cubic-bezier(.34,.6,.64,1);
+  box-shadow:var(--shadow-sm);
+  display:flex;flex-direction:column;
+}
+.api-card:hover{transform:translateY(-5px);box-shadow:var(--shadow-lg);border-color:rgba(27,48,91,0.18);}
+.api-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--navy),transparent);transform:scaleX(0);transform-origin:center;transition:transform .4s cubic-bezier(.34,1.56,.64,1);border-radius:0 0 var(--r-xl) var(--r-xl);}
+.api-card:hover::after{transform:scaleX(1);}
+
+/* Card visual header — dark background with animated icon */
+.card-vis{
+  height:180px;position:relative;overflow:hidden;
+  background:var(--black);
+  border-radius:var(--r-xl) var(--r-xl) 0 0;
+  display:flex;align-items:center;justify-content:center;
+}
+.card-vis::before{
+  content:'';position:absolute;inset:0;
+  background-image:linear-gradient(rgba(27,48,91,0.06) 1px,transparent 1px),linear-gradient(90deg,rgba(27,48,91,0.06) 1px,transparent 1px);
+  background-size:40px 40px;pointer-events:none;
+}
+.card-vis svg.icon-main{position:relative;z-index:1;overflow:visible;}
+/* Ambient glow behind icon */
+.card-vis::after{
+  content:'';position:absolute;
+  width:120px;height:120px;border-radius:50%;
+  background:radial-gradient(circle,rgba(27,48,91,0.35) 0%,transparent 70%);
+  filter:blur(30px);pointer-events:none;z-index:0;
+}
+
+/* Partner badge top-right of card header */
+.partner-badge{
+  position:absolute;top:14px;right:14px;z-index:3;
+  display:flex;align-items:center;gap:5px;
+  padding:4px 10px 4px 4px;border-radius:var(--r-pill);
+  background:rgba(0,0,0,0.55);backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,0.1);border-top-color:rgba(255,255,255,0.18);
+  font-family:'DM Mono',monospace;font-size:8.5px;letter-spacing:0.1em;text-transform:uppercase;
+  color:rgba(255,255,255,0.45);
+  box-shadow:0 1px 0 rgba(255,255,255,0.07) inset;
+}
+.partner-badge-dot{width:14px;height:14px;border-radius:50%;background:rgba(27,48,91,0.7);display:flex;align-items:center;justify-content:center;}
+.partner-badge-dot::after{content:'';width:5px;height:5px;border-radius:50%;background:rgba(91,148,210,0.8);animation:live-pulse 2s ease-in-out infinite;}
+
+/* Category chip on icon */
+.cat-chip{
+  position:absolute;bottom:14px;left:14px;z-index:3;
+  font-family:'DM Mono',monospace;font-size:8.5px;letter-spacing:0.12em;text-transform:uppercase;
+  padding:4px 12px;border-radius:var(--r-pill);
+  background:rgba(27,48,91,0.35);
+  border:1px solid rgba(27,48,91,0.45);border-top-color:rgba(91,148,210,0.3);
+  color:rgba(91,148,210,0.75);
+  backdrop-filter:blur(8px);
+}
+
+/* Card body */
+.card-body{padding:28px;flex:1;display:flex;flex-direction:column;gap:0;}
+.card-name{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;color:var(--black);margin-bottom:8px;letter-spacing:-0.01em;}
+.card-tagline{font-size:13.5px;color:var(--text2);line-height:1.7;margin-bottom:18px;font-style:italic;}
+/* Feature pills */
+.card-features{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:22px;}
+.feat-pill{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;padding:5px 12px;border-radius:var(--r-pill);background:rgba(27,48,91,0.05);border:1px solid rgba(27,48,91,0.1);color:var(--navy);transition:all .2s;}
+.api-card:hover .feat-pill{background:rgba(27,48,91,0.08);border-color:rgba(27,48,91,0.2);}
+/* Use cases */
+.card-use{margin-bottom:24px;}
+.use-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;}
+.use-list{display:flex;flex-direction:column;gap:7px;}
+.use-item{font-size:12.5px;color:var(--text2);display:flex;gap:10px;align-items:flex-start;line-height:1.5;}
+.use-item::before{content:'–';font-family:'DM Mono',monospace;font-size:10px;color:var(--navy);flex-shrink:0;padding-top:1px;}
+
+/* Card footer */
+.card-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 28px;
+  border-top:1px solid var(--border);
+  margin-top:auto;
+  flex-wrap:wrap;gap:12px;
+}
+.card-price{display:flex;flex-direction:column;gap:2px;}
+.price-free{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(27,48,91,0.55);background:rgba(27,48,91,0.07);padding:3px 10px;border-radius:var(--r-pill);border:1px solid rgba(27,48,91,0.12);display:inline-block;margin-bottom:4px;}
+.price-paid{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:var(--black);}
+.price-paid em{font-style:normal;font-size:13px;color:var(--text3);font-family:'DM Mono',monospace;font-weight:400;}
+
+/* CTA button — liquid glass navy capsule */
+.card-cta{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:12px 24px;border-radius:var(--r-pill);
+  font-family:'DM Mono',monospace;font-size:10.5px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;
+  text-decoration:none;transition:all .22s;
+  background:var(--navy);color:white;
+  border:1px solid var(--navy);
+  box-shadow:0 4px 16px rgba(27,48,91,0.3),0 1px 0 rgba(255,255,255,0.1) inset;
+  position:relative;overflow:hidden;
+  white-space:nowrap;
+}
+.card-cta::before{content:'';position:absolute;inset:0;border-radius:inherit;background:linear-gradient(135deg,rgba(255,255,255,0.1) 0%,transparent 60%);}
+.card-cta:hover{background:var(--navy2);box-shadow:0 8px 28px rgba(27,48,91,0.45),0 1px 0 rgba(255,255,255,0.1) inset;transform:translateY(-1px);}
+.card-cta svg{flex-shrink:0;position:relative;z-index:1;}
+.card-cta span{position:relative;z-index:1;}
+
+/* ── MARQUEE STRIP ── */
+.marquee-sect{
+  padding:40px 0;
+  background:rgba(27,48,91,0.04);
+  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  overflow:hidden;position:relative;
+}
+.marquee-track{display:flex;gap:48px;animation:marquee 28s linear infinite;width:max-content;}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.marquee-item{display:flex;align-items:center;gap:10px;white-space:nowrap;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--text3);}
+.marquee-dot{width:4px;height:4px;border-radius:50%;background:var(--navy);flex-shrink:0;}
+
+/* ── WHY PARTNER ── */
+.why-sect{padding:96px 48px;background:var(--black2);position:relative;overflow:hidden;}
+.why-sect::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 60% 80% at 50% 50%,rgba(27,48,91,0.16) 0%,transparent 70%);}
+.why-inner{max-width:1300px;margin:0 auto;position:relative;z-index:1;}
+.why-sect .sect-kicker{color:rgba(91,148,210,0.6);}
+.why-sect .sect-kicker::before{background:rgba(91,148,210,0.4);}
+.why-sect .sect-h2{color:white;}
+.why-sect .sect-sub{color:rgba(255,255,255,0.38);margin-bottom:52px;}
+.why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.why-card{
+  padding:28px;border-radius:var(--r-lg);
+  background:rgba(255,255,255,0.055);
+  backdrop-filter:blur(24px);
+  border:1px solid rgba(255,255,255,0.1);
+  border-top:1px solid rgba(255,255,255,0.2);
+  box-shadow:0 1px 0 rgba(255,255,255,0.14) inset;
+  transition:transform .3s;
+}
+.why-card:hover{transform:translateY(-3px);}
+.why-icon{
+  width:46px;height:46px;border-radius:var(--r-md);
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(27,48,91,0.3);
+  border:1px solid rgba(91,148,210,0.18);border-top-color:rgba(91,148,210,0.32);
+  margin-bottom:18px;
+  box-shadow:0 0 16px rgba(27,48,91,0.3);
+}
+.why-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;color:white;margin-bottom:8px;}
+.why-desc{font-size:13px;color:rgba(255,255,255,0.4);line-height:1.7;}
+
+/* ── BOTTOM CTA ── */
+.bottom-cta{
+  padding:96px 48px;background:var(--navy);
+  position:relative;overflow:hidden;text-align:center;
+}
+.bottom-cta::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 100% at 50% 50%,rgba(91,148,210,0.14) 0%,transparent 70%);pointer-events:none;}
+.bottom-cta-inner{max-width:680px;margin:0 auto;position:relative;z-index:1;}
+.bottom-cta h2{font-size:clamp(38px,5vw,64px);color:white;margin-bottom:16px;letter-spacing:-0.025em;}
+.bottom-cta p{font-size:16px;font-style:italic;color:rgba(255,255,255,0.5);line-height:1.8;margin-bottom:36px;}
+.cta-buttons{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+.btn-white{
+  padding:14px 36px;border-radius:var(--r-pill);
+  font-family:'DM Mono',monospace;font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;
+  background:rgba(255,255,255,0.92);color:var(--navy);
+  border:1px solid rgba(255,255,255,0.7);border-top-color:white;
+  box-shadow:0 1px 0 white inset,0 4px 16px rgba(0,0,0,0.15);
+  text-decoration:none;transition:all .22s;
+}
+.btn-white:hover{background:white;transform:translateY(-1px);box-shadow:0 1px 0 white inset,0 8px 24px rgba(0,0,0,0.2);}
+.btn-ghost-white{
+  padding:14px 36px;border-radius:var(--r-pill);
+  font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;
+  background:rgba(255,255,255,0.08);backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,0.2);border-top-color:rgba(255,255,255,0.32);
+  color:rgba(255,255,255,0.75);box-shadow:0 1px 0 rgba(255,255,255,0.14) inset;
+  text-decoration:none;transition:all .22s;
+}
+.btn-ghost-white:hover{background:rgba(255,255,255,0.14);color:white;}
+
+/* ── FOOTER ── */
+footer{background:var(--black);padding:56px 48px 32px;border-top:1px solid rgba(255,255,255,0.05);}
+.footer-inner{max-width:1300px;margin:0 auto;}
+.footer-top{display:flex;align-items:flex-start;justify-content:space-between;gap:48px;margin-bottom:48px;padding-bottom:48px;border-bottom:1px solid rgba(255,255,255,0.06);flex-wrap:wrap;}
+.f-brand{font-family:'Cormorant Garamond',serif;font-size:26px;letter-spacing:0.06em;text-transform:uppercase;color:white;margin-bottom:10px;font-weight:400;}
+.f-sub{font-size:13px;font-style:italic;color:rgba(255,255,255,0.28);line-height:1.8;max-width:280px;margin-bottom:16px;}
+.f-disc{font-family:'DM Mono',monospace;font-size:9.5px;color:rgba(255,255,255,0.18);line-height:1.7;max-width:280px;letter-spacing:0.04em;}
+.f-links-col{display:flex;flex-direction:column;gap:12px;}
+.f-col-head{font-family:'DM Mono',monospace;font-size:9.5px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(255,255,255,0.22);margin-bottom:6px;}
+.f-links-col a{font-size:13px;color:rgba(255,255,255,0.4);text-decoration:none;transition:color .15s;}
+.f-links-col a:hover{color:white;}
+.footer-bottom{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+.f-copy{font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,0.18);letter-spacing:0.06em;}
+.f-legal{display:flex;gap:20px;}
+.f-legal a{font-family:'DM Mono',monospace;font-size:10px;color:rgba(255,255,255,0.18);text-decoration:none;transition:color .15s;}
+.f-legal a:hover{color:rgba(255,255,255,0.45);}
+
+/* ── REVEAL ANIMATIONS ── */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease;}
+.reveal.in{opacity:1;transform:translateY(0);}
+.reveal-r{opacity:0;transform:translateX(40px);transition:opacity .75s cubic-bezier(.22,.68,0,1.1),transform .75s cubic-bezier(.22,.68,0,1.1);}
+.reveal-r.in{opacity:1;transform:translateX(0);}
+.delay-1{transition-delay:.1s}.delay-2{transition-delay:.2s}.delay-3{transition-delay:.3s}.delay-4{transition-delay:.4s}
+
+/* ── SVG ICON ANIMATIONS ── */
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes spin-rev{from{transform:rotate(360deg)}to{transform:rotate(0deg)}}
+@keyframes float-y{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes flicker{0%,18%,22%,25%,53%,57%,100%{opacity:1}20%,24%,55%{opacity:.4}}
+@keyframes dash{from{stroke-dashoffset:0}to{stroke-dashoffset:-400}}
+@keyframes dash-rev{from{stroke-dashoffset:0}to{stroke-dashoffset:400}}
+@keyframes twinkle{0%,100%{opacity:.2;transform:scale(.6)}50%{opacity:1;transform:scale(1.3)}}
+@keyframes ripple{0%{r:5;opacity:.7}100%{r:40;opacity:0}}
+@keyframes bar-rise{0%,100%{transform:scaleY(.4)}50%{transform:scaleY(1)}}
+@keyframes scan{0%{transform:translateY(-200%)}100%{transform:translateY(500%)}}
+@keyframes drop{0%{transform:translateY(-80px);opacity:0}15%{opacity:1}85%{opacity:.7}100%{transform:translateY(80px);opacity:0}}
+@keyframes glitch{0%,88%,100%{transform:translate(0,0)}89%{transform:translate(-4px,1px)}91%{transform:translate(5px,-1px)}93%{transform:translate(-2px,2px)}95%{transform:translate(3px,0)}}
+@keyframes orbit{0%{transform:rotate(0deg) translateX(32px)}100%{transform:rotate(360deg) translateX(32px)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes plane-fly{0%,100%{transform:translate(0,0)}50%{transform:translate(8px,-6px)}}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1024px){
+  nav{padding:0 24px;}
+  .nav-links{display:none;}
+  .partner-hero{padding:110px 24px 72px;}
+  .hero-inner{grid-template-columns:1fr;gap:48px;}
+  .al-badge-card{display:none;}
+  .products-sect,.why-sect,.bottom-cta{padding:72px 24px;}
+  .api-grid{grid-template-columns:1fr;}
+  .why-grid{grid-template-columns:1fr;}
+  footer{padding:48px 24px 28px;}
+  .disclosure-banner{padding:14px 24px;}
+}
+</style>
+</head>
+<body>
+<div id="cursor"><div class="cur-ring"></div><div class="cur-dot"></div></div>
+
+<!-- ── NAV ── -->
+<nav>
+  <a class="nav-logo" href="index.html">C<em>L</em>IVE</a>
+  <div class="nav-links">
+    <a class="nav-link" href="index.html">Products</a>
+    <a class="nav-link" href="index.html#platform">Platform</a>
+    <a class="nav-link active" href="#">Partner APIs</a>
+    <a class="nav-link" href="index.html#pricing">Pricing</a>
+  </div>
+  <div class="nav-right">
+    <a href="#" class="nav-btn">Sign in</a>
+    <a href="https://apilayer.com?fpr=thabang75" target="_blank" rel="noopener" class="nav-btn filled">Browse APIlayer</a>
+  </div>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="partner-hero">
+  <div class="hero-inner">
+    <div>
+      <div class="hero-kicker reveal"><div class="kicker-dot"></div>Partner APIs · Powered by APIlayer</div>
+      <h1 class="hero-h1 display reveal delay-1">Curated APIs<br>from the world's<br><em>best builders.</em></h1>
+      <p class="hero-sub reveal delay-2">Nine battle-tested APIs from APIlayer — covering geolocation, aviation data, cryptocurrency, news, language detection, VAT compliance, PDF generation, SERP data, and geocoding. Vetted, documented, and available through Clive.</p>
+      <div class="hero-trust reveal delay-3">
+        <div class="trust-stat">
+          <div class="trust-n">445<span>k+</span></div>
+          <div class="trust-l">Developers</div>
+        </div>
+        <div class="trust-divider"></div>
+        <div class="trust-stat">
+          <div class="trust-n">30<span>m+</span></div>
+          <div class="trust-l">API calls / month</div>
+        </div>
+        <div class="trust-divider"></div>
+        <div class="trust-stat">
+          <div class="trust-n">100<span>+</span></div>
+          <div class="trust-l">APIs in hub</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- APIlayer badge card -->
+    <div class="al-badge-card reveal-r delay-2">
+      <div class="al-partner-label">Verified Partner</div>
+      <div class="al-logo-area">
+        <div class="al-logo-icon">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="4" width="8" height="8" rx="2" fill="rgba(91,148,210,0.8)"/>
+            <rect x="16" y="4" width="8" height="8" rx="2" fill="rgba(27,48,91,0.8)"/>
+            <rect x="4" y="16" width="8" height="8" rx="2" fill="rgba(27,48,91,0.6)"/>
+            <rect x="16" y="16" width="8" height="8" rx="2" fill="rgba(91,148,210,0.6)"/>
+          </svg>
+        </div>
+        <div>
+          <div class="al-logo-name">APIlayer</div>
+          <div class="al-logo-sub">Hassle-free API marketplace</div>
+        </div>
+      </div>
+      <div class="al-stats-row">
+        <div class="al-stat"><div class="al-stat-n">9</div><div class="al-stat-l">APIs listed</div></div>
+        <div class="al-stat"><div class="al-stat-n">Free<em></em></div><div class="al-stat-l">Tier available</div></div>
+        <div class="al-stat"><div class="al-stat-n">REST<em></em></div><div class="al-stat-l">JSON + OpenAPI</div></div>
+      </div>
+      <p class="al-desc">Every API listed below links directly to APIlayer's platform. Clive earns a commission on qualifying purchases — at no extra cost to you.</p>
+      <a href="https://apilayer.com?fpr=thabang75" target="_blank" rel="noopener" class="al-visit-btn">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="rgba(91,148,210,0.8)" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Explore all APIlayer APIs
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ── AFFILIATE DISCLOSURE BANNER ── -->
+<div class="disclosure-banner">
+  <div class="disc-icon">
+    <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4.5" stroke="rgba(27,48,91,0.5)"/><path d="M5 4.5v3M5 3h.01" stroke="rgba(27,48,91,0.7)" stroke-width="1.2" stroke-linecap="round"/></svg>
+  </div>
+  <p class="disc-text">Clive is an affiliate partner of APIlayer. When you click "Get started" and make a purchase, Clive may earn a commission — at no additional cost to you. <a href="#disclosure">Learn more.</a></p>
+</div>
+
+<!-- ── MARQUEE ── -->
+<div class="marquee-sect">
+  <div class="marquee-track">
+    <span class="marquee-item"><span class="marquee-dot"></span>IP Geolocation</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>VAT Validation</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Forward Geocoding</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>HTML to PDF</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Live News API</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Crypto Rates</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Google SERP</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Flight Tracking</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Language Detection</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>IP Geolocation</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>VAT Validation</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Forward Geocoding</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>HTML to PDF</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Live News API</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Crypto Rates</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Google SERP</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Flight Tracking</span>
+    <span class="marquee-item"><span class="marquee-dot"></span>Language Detection</span>
+  </div>
+</div>
+
+<!-- ── PRODUCTS ── -->
+<section class="products-sect" id="products">
+<div class="products-inner">
+  <div class="reveal">
+    <div class="sect-kicker">Partner APIs</div>
+    <h2 class="sect-h2 display">Nine APIs.<br>Zero friction.</h2>
+    <p class="sect-sub">Battle-tested, well-documented, and trusted by hundreds of thousands of developers. Click any card to get started directly on APIlayer's platform.</p>
+  </div>
+
+  <div class="filter-bar reveal">
+    <button class="filter-tab active" onclick="filterCards('all',this)">All</button>
+    <button class="filter-tab" onclick="filterCards('geo',this)">Geo & Location</button>
+    <button class="filter-tab" onclick="filterCards('finance',this)">Finance</button>
+    <button class="filter-tab" onclick="filterCards('data',this)">Data</button>
+    <button class="filter-tab" onclick="filterCards('tools',this)">Dev Tools</button>
+  </div>
+
+  <div class="api-grid" id="apiGrid">
+
+    <!-- 1. IPstack -->
+    <div class="api-card reveal" data-cat="geo">
+      <div class="card-vis">
+        <div class="partner-badge"><div class="partner-badge-dot"></div>APIlayer</div>
+        <div class="cat-chip">Geo & Location</div>
+        <svg class="icon-main" width="100" height="100" viewBox="0 0 100 100">
+          <defs><filter id="gf1"><feGaussianBlur stdDeviation="2" result="b1"/><feGaussianBlur stdDeviation="6" result="b2"/><feMerge><feMergeNode in="b2"/><feMergeNode in="b1"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+          <circle cx="50" cy="50" r="32" fill="#07070A" stroke="#1B305B" stroke-width="1.6" filter="url(#gf1)"/>
+          <ellipse cx="50" cy="50" rx="32" ry="9" fill="none" stroke="#1B305B" stroke-width=".6" opacity=".3"/>
+          <ellipse cx="50" cy="41" rx="26" ry="6" fill="none" stroke="#1B305B" stroke-width=".5" opacity=".2"/>
+          <circle cx="50" cy="50" r="32" fill="none" stroke="#1B305B" stroke-width="5" opacity=".07" filter="url(#gf1)"/>
+          <!-- pin -->
+          <g style="animation:float-y 3s ease-in-out infinite">
+            <circle cx="50" cy="38" r="8" fill="rgba(27,48,91,.4)" stroke="#5B94D2" stroke-width="1.5" filter="url(#gf1)"/>
+            <path d="M50 46 L50 58" stroke="#5B94D2" stroke-width="1.8" stroke-linecap="round" filter="url(#gf1)"/>
+            <circle cx="50" cy="59" r="2" fill="#5B94D2" filter="url(#gf1)"/>
+          </g>
+          <!-- orbit -->
+          <circle cx="50" cy="50" r="38" fill="none" stroke="#1B305B" stroke-width=".7" stroke-dasharray="3 4" style="animation:dash 6s linear infinite"/>
+          <!-- sparkles -->
+          <circle cx="24" cy="36" r="1.5" fill="#5B94D2" style="animation:twinkle 2s ease-in-out 0s infinite"/>
+          <circle cx="74" cy="66" r="1.2" fill="#5B94D2" style="animation:twinkle 2.4s ease-in-out .5s infinite"/>
+          <circle cx="70" cy="32" r="1"   fill="#1B305B" style="animation:twinkle 1.8s ease-in-out 1s infinite"/>
+        </svg>
+      </div>
+      <div class="card-body">
+        <div class="card-name display">IPstack</div>
+        <div class="card-tagline">Real-time IP geolocation covering 200,000+ cities in 200+ countries. Identify where your visitors are and personalise their experience instantly.</div>
+        <div class="card-features">
+          <span class="feat-pill">IP → Country</span>
+          <span class="feat-pill">City & Coords</span>
+          <span class="feat-pill">ISP & ASN</span>
+          <span class="feat-pill">VPN Detection</span>
+          <span class="feat-pill">IPv4 & IPv6</span>
+        </div>
+        <div class="card-use">
+          <div class="use-label">Built for</div>
+          <div class="use-list">
+            <div class="use-item">Personalise content, language, and currency by visitor location</div>
+            <div class="use-item">Block or flag access from restricted regions for compliance</div>
+            <div class="use-item">Fraud prevention by detecting VPN, Tor, and proxy connections</div>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer">
+        <div class="card-price">
+          <span class="price-free">Free tier</span>
+          <span class="price-paid">From $9.99 <em>/ month</em></span>
+        </div>
+        <a href="https://apilayer.com?fpr=thabang75" target="_blank" rel="noopener" class="card-cta">
+          <span>Get started</span>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- 2. VATlayer -->
+    <div class="api-card reveal delay-1" data-cat="finance">
+      <div class="card-vis">
+        <div class="partner-badge"><div class="partner-badge-dot"></div>APIlayer</div>
+        <div class="cat-chip">Finance</div>
+        <svg class="icon-main" width="100" height="100" viewBox="0 0 100 100">
+          <defs><filter id="gf2"><feGaussianBlur stdDeviation="2" result="b1"/><feGaussianBlur stdDeviation="6" result="b2"/><feMerge><feMergeNode in="b2"/><feMergeNode in="b1"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+          <!-- EU stars circle -->
+          <circle cx="50" cy="50" r="35" fill="rgba(27,48,91,.1)" stroke="#1B305B" stroke-width="1.4" filter="url(#gf2)" style="animation:flicker 6s infinite"/>
+          <circle cx="50" cy="50" r="28" fill="rgba(27,48,91,.06)" stroke="#1B305B" stroke-width=".7" opacity=".4"/>
+          <!-- 12 EU stars -->
+          <g style="animation:spin 20s linear infinite;transform-origin:50px 50px">
+            <circle cx="50" cy="18" r="2.5" fill="#5B94D2" filter="url(#gf2)"/>
+            <circle cx="67" cy="23" r="2.5" fill="#1B305B" filter="url(#gf2)"/>
+            <circle cx="78" cy="38" r="2.5" fill="#5B94D2" filter="url(#gf2)"/>
+            <circle cx="78" cy="56" r="2.5" fill="#1B305B" filter="url(#gf2)"/>
+            <circle cx="67" cy="71" r="2.5" fill="#5B94D2" filter="url(#gf2)"/>
+            <circle cx="50" cy="78" r="2.5" fill="#1B305B" filter="url(#gf2)"/>
+            <circle cx="33" cy="71" r="2.5" fill="#5B94D2" filter="url(#gf2)"/>
+            <circle cx="22" cy="56" r="2.5" fill="#1B305B" filter="url(#gf2)"/>
+            <circle cx="22" cy="38" r="2.5" fill="#5B94D2" filter="url(#gf2)"/>
+            <circle cx="33" cy="23" r="2.5" fill="#1B305B" filter="url(#gf2)"/>
+          </g>
+          <!-- VAT text -->
+          <text x="38" y="55" font-family="Cormorant Garamond,serif" font-size="16" fill="#1B305B" font-weight="300" filter="url(#gf2)" style="animation:flicker 5s infinite">VAT</text>
+          <!-- checkmark -->
+          <circle cx="66" cy="66" r="10" fill="rgba(27,48,91,.35)" stroke="#5B94D2" stroke-width="1.3" filter="url(#gf2)"/>
+          <polyline points="62,66 65,69 71,62" fill="none" stroke="#5B94D2" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="card-body">
+        <div class="card-name display">VATlayer</div>
+        <div class="card-tagline">EU VAT number validation and EU VAT rates lookup for all 28 EU member states. Stay compliant with European tax regulations automatically.</div>
+        <div class="card-features">
+          <span class="feat-pill">VAT Validation</span>
+          <span class="feat-pill">EU Rates Lookup</span>
+          <span class="feat-pill">28 Countries</span>
+          <span class="feat-pill">Business Info</span>
+          <span class="feat-pill">VIES Data</span>
+        </div>
+        <div class="card-use">
+          <div class="use-label">Built for</div>
+          <div class="use-list">
+            <div class="use-item">B2B SaaS charging EU customers — validate VAT numbers at checkout</div>
+            <div class="use-item">E-commerce platforms applying the correct VAT rate per country</div>
+            <div class="use-item">Accounting software automating EU tax compliance</div>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer">
+        <div class="card-price">
+          <span class="price-free">Free tier</span>
+          <span class="price-paid">From $9.99 <em>/ month</em></span>
+        </div>
+        <a href="https://apilayer.com?fpr=thabang75" target="_blank" rel="noopener" class="card-cta">
+          <span>Get started</span>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- 3. PositionStack -->
+    <div class="api-card reveal delay-2" data-cat="geo">
+      <div class="card-vis">
+        <div class="partner-badge"><div class="partner-badge-dot"></div>APIlayer</div>
+        <div class="cat-chip">Geo & Location</div>
+        <svg class="icon-main" width="100" height="100" viewBox="0 0 100 100">
+          <defs><filter id="gf3"><feGaussianBlur stdDeviation="2" result="b1"/><feGaussianBlur stdDeviation="6" result="b2"/><feMerge><feMergeNode in="b2"/><feMergeNode in="b1"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+          <!-- Map grid -->
+          <rect x="14" y="22" width="72" height="56" rx="6" fill="rgba(27,48,91,.08)" stroke="#1B305B" stroke-width="1.3" filter="url(#gf3)"/>
+          <line x1="14" y1="40" x2="86" y2="40" stroke="#1B305B" stroke-width=".6" opacity=".25"/>
+          <line x1="14" y1="58" x2="86" y2="58" stroke="#1B305B" stroke-width=".6" opacity=".2"/>
+          <line x1="35" y1="22" x2="35" y2="78" stroke="#1B305B" stroke-width=".6" opacity=".22"/>
+          <line x1="58" y1="22" x2="58" y2="78" stroke="#1B305B" stroke-width=".6" opacity=".18"/>
+          <!-- Route path -->
+          <path d="M24 68 Q36 55 50 46 Q64 37 76 32" fill="none" stroke="#1B305B" stroke-width="1.5" stroke-dasharray="4 3" filter="url(#gf3)" style="animation:dash 3s linear infinite"/>
+          <!-- Start dot -->
+          <circle cx="24" cy="68" r="5" fill="#07070A" stroke="#1B305B" stroke-width="1.4" filter="url(#gf3)"/>
+          <circle cx="24" cy="68" r="2.5" fill="#1B305B"/>
+          <!-- End pin -->
+          <g style="animation:float-y 3.5s ease-in-out infinite">
+            <circle cx="76" cy="32" r="7" fill="rgba(27,48,91,.4)" stroke="#5B94D2" stroke-width="1.5" filter="url(#gf3)"/>
+            <circle cx="76" cy="32" r="3" fill="#5B94D2" filter="url(#gf3)"/>
+          </g>
+          <!-- Pulse at pin -->
+          <circle cx="76" cy="32" r="5" fill="none" stroke="#5B94D2" stroke-width="1" style="animation:ripple 2s ease-out infinite"/>
+          <!-- Waypoint -->
+          <circle cx="50" cy="46" r="3.5" fill="#07070A" stroke="#1B305B" stroke-width="1.2" filter="url(#gf3)" style="animation:twinkle 2s ease-in-out .5s infinite"/>
+        </svg>
+      </div>
+      <div class="card-body">
+        <div class="card-name display">PositionStack</div>
+        <div class="card-tagline">Forward and reverse geocoding API. Convert addresses to coordinates and coordinates to addresses — in batch, with high global accuracy.</div>
+        <div class="card-features">
+          <span class="feat-pill">Forward Geocoding</span>
+          <span class="feat-pill">Reverse Geocoding</span>
+          <span class="feat-pill">Batch Requests</span>
+          <span class="feat-pill">Global Coverage</span>
+          <span class="feat-pill">Address Parsing</span>
+        </div>
+        <div class="card-use">
+          <div class="use-label">Built for</div>
+          <div class="use-list">
+            <div class="use-item">Logistics and delivery apps converting customer addresses to coordinates</div>
+            <div class="use-item">Property platforms enriching listings with precise lat/long data</div>
+            <div class="use-item">Field service apps reversing GPS coordinates to readable addresses</div>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer">
+        <div class="card-price">
+          <span class="price-free">Free tier</span>
+          <span class="price-paid">From $9.99 <em>/ month</em></span>
+        </div>
+        <a href="https://apilayer.com?fpr=thabang75" target="_blank" rel="noopener" class="card-cta">
+          <span>Get started</span>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- 4. PDFlayer -->
+    <div class="api-card reveal" data-cat="tools">
+      <div class="card-vis">
+        <div class="partner-badge"><div class="partner-badge-dot"></div>APIlayer</div>
+        <div class="cat-chip">Dev Tools</div>
+        <svg class="icon-main" width="100" height="100" viewBox="0 0 100 100">
+          <defs><filter id="gf4"><feGaussianBlur stdDeviation="2" result="b1"/><feGaussianBlur stdDeviation="6" result="b2"/><feMerge><feMergeNode in="b2"/><feMergeNode in="b1"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+          <!-- HTML tag on left -->
+          <g style="animation:float-y 3s ease-in-out infinite">
+            <rect x="10" y="28" width="38" height="44" rx="4" fill="rgba(27,48,91,.1)" stroke="#1B305B" stroke-width="1.2" filter="url(#gf4)"/>
+            <text x="16" y="47" font-family="DM Mono,monospace" font-size="9" fill="#1B305B" opacity=".7"><h1></text>
+            <text x="16" y="58" font-family="DM Mono,monospace" font-size="7" fill="#1B305B" opacity=".45"><p>...</text>
+            <text x="16" y="67" font-family="DM Mono,monospace" font-size="7" fill="#1B305B" opacity=".3"></div></text>
+          </g>
+          <!-- Arrow -->
+          <path d="M50 50 L62 50" stroke="#5B94D2" stroke-width="2" stroke-linecap="round" filter="url(#gf4)" style="animation:dash 1.8s linear infinite"/>
+          <polygon points="62,46 70,50 62,54" fill="#5B94D2" filter="url(#gf4)"/>
+          <!-- PDF doc on right -->
+          <g style="animation:float-y 3.5s ease-in-out .4s infinite">
+            <rect x="54" y="24" width="36" height="48" rx="4" fill="rgba(27,48,91,.12)" stroke="#5B94D2" stroke-width="1.5" filter="url(#gf4)"/>
+            <polyline points="78,24 90,24 90,36" fill="none" stroke="#5B94D2" stroke-width="1.2"/>
+            <polygon points="78,24 90,36 78,36" fill="rgba(91,148,210,.2)"/>
+            <text x="59" y="53" font-family="DM Mono,monospace" font-size="9" fill="#5B94D2" filter="url(#gf4)" style="animation:flicker 5s infinite">PDF</text>
+            <line x1="60" y1="61" x2="84" y2="61" stroke="#5B94D2" stroke-width=".8" opacity=".5"/>
+            <line x1="60" y1="67" x2="78" y2="67" stroke="#5B94D2" stroke-width=".7" opacity=".35"/>
+          </g>
+          <!-- Scan line -->
+          <rect x="10" y="0" width="80" height="3" rx="1" fill="rgba(91,148,210,.2)" style="animation:scan 4s ease-in-out infinite"/>
+        </svg>
+      </div>
+      <div class="card-body">
+        <div class="card-name display">PDFlayer</div>
+        <div class="card-tagline">HTML to PDF conversion API. Turn any webpage or HTML template into a pixel-perfect PDF document — headers, footers, watermarks, and custom page sizes included.</div>
+        <div class="card-features">
+          <span class="feat-pill">HTML → PDF</span>
+          <span class="feat-pill">URL → PDF</span>
+          <span class="feat-pill">Custom Headers</span>
+          <span class="feat-pill">Watermarks</span>
+          <span class="feat-pill">Page Sizes</span>
+        </div>
+        <div class="card-use">
+          <div class="use-label">Built for</div>
+          <div class="use-list">
+            <div class="use-item">Invoice and receipt generation from HTML billing templates</div>
+            <div class="use-item">Report builders converting HTML dashboards to downloadable PDFs</div>
+            <div class="use-item">Document generation pipelines for contracts, certificates, and forms</div>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer">
+        <div class="card-price">
+          <span class="price-free">Free tier</span>
+          <span class="price-paid">From $9.99 <em>/ month</em></span>
+        </div>
+        <a href="https://apilayer.com?fpr=thabang75" target="_blank" rel="noopener" class="card-cta">
+          <span>Get started</span>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- 5. MediaStack -->
+    <div class="api-card reveal delay-1" data-cat="data">
+      <div class="card-vis">
+        <div class="partner-badge"><div class="partner-badge-dot"></div>APIlayer</div>
+        <div class="cat-chip">Data</div>
+        <svg class="icon-main" width="100" height="100" viewBox="0 0 100 100">
+          <defs><filter id="gf5"><feGaussianBlur stdDeviation="2" result="b1"/><feGaussianBlur stdDeviation="6" result="b2"/><feMerge><feMergeNode in="b2"/><feMergeNode in="b1"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+          <!-- Article cards stacked -->
+          <rect x="24" y="30" width="52" height="40" rx="5" fill="rgba(27,48,91,.06)" stroke="#1B305B" stroke-width="1" opacity=".5" transform="rotate(-4 50 50)"/>
+          <rect x="20" y="28" width="52" height="40" rx="5" fill="rgba(27,48,91,.09)" stroke="#1B305B" stroke-width="1.1" opacity=".6" transform="rotate(-2 50 50)"/>
+          <rect x="16" y="26" width="52" height="44" rx="5" fill="rgba(27,48,91,.12)" stroke="#1B305B" stroke-width="1.4" filter="url(#gf5)"/>
+          <!-- Article content -->
+          <rect x="24" y="33" width="28" height="16" rx="2" fill="rgba(27,48,91,.25)"/>
+          <line x1="24" y1="56" x2="60" y2="56" stroke="#5B94D2" stroke-width="1.4" opacity=".7" filter="url(#gf5)"/>
+          <line x1="24" y1="62" x2="60" y2="62" stroke="#1B305B" stroke-width="1" opacity=".4"/>
+          <line x1="24" y1="67" x2="48" y2="67" stroke="#1B305B" stroke-width="1" opacity=".3"/>
+          <!-- Live badge -->
+          <rect x="52" y="30" width="18" height="8" rx="4" fill="rgba(27,48,91,.5)" stroke="#5B94D2" stroke-width=".9" filter="url(#gf5)"/>
+          <circle cx="56" cy="34" r="2" fill="#5B94D2" style="animation:live-pulse 1.5s ease-in-out infinite"/>
+          <text x="60" y="37" font-family="DM Mono,monospace" font-size="5.5" fill="#5B94D2">LIVE</text>
+          <!-- Signal ripples -->
+          <circle cx="50" cy="50" r="38" fill="none" stroke="#1B305B" stroke-width=".5" stroke-dasharray="2 6" opacity=".25" style="animation:dash 7s linear infinite"/>
+        </svg>
+      </div>
+      <div class="card-body">
+        <div class="card-name display">MediaStack</div>
+        <div class="card-tagline">Real-time and historical news API. Search, filter, and stream live news from 7,500+ global sources across every category, language, and country.</div>
+        <div class="card-features">
+          <span class="feat-pill">Live News Feed</span>
+          <span class="feat-pill">7,500+ Sources</span>
+          <span class="feat-pill">50 Languages</span>
+          <span class="feat-pill">Historical Data</span>
+          <span class="feat-pill">Category Filter</span>
+        </div>
+        <div class="card-use">
+          <div class="use-label">Built for</div>
+          <div class="use-list">
+            <div class="use-item">News aggregator and media monitoring applications</div>
+            <div class="use-item">Social platforms and feeds that need fresh content at launch</div>
+            <div class="use-item">Sentiment analysis pipelines consuming live news as input</div>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer">
+        <div class="card-price">
+          <span class="price-free">Free tier</span>
+          <span class="price-paid">From $9.99 <em>/ month</em></span>
+        </div>
+        <a href="https://apilayer.com?fpr=thabang75" target="_blank" rel="noopener" class="card-cta">
+          <span>Get started</span>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- 6. Coinlayer -->
+    <div class="api-card reveal delay-2" data-cat="finance">
+      <div class="card-vis">
+        <div class="partner-badge"><div class="partner-badge-dot"></div>APIlayer</div>
+        <div class="cat-chip">Finance</div>
+        <svg class="icon-main" width="100" height="100" viewBox="0 0 100 100">
+          <defs><filter id="gf6"><feGaussianBlur stdDeviation="2.2" result="b1"/><feGaussianBlur stdDeviation="7" result="b2"/><feMerge><feMergeNode in="b2"/><feMergeNode in="b1"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+          <!-- Bitcoin symbol -->
+          <circle cx="50" cy="50" r="28" fill="rgba(27,48,91,.12)" stroke="#1B305B" stroke-width="1.6" filter="url(#gf6)" style="animation:flicker 5s infinite"/>
+          <circle cx="50" cy="50" r="22" fill="rgba(27,48,91,.08)" stroke="#1B305B" stroke-width=".7" opacity=".4"/>
+          <!-- ₿ -->
+          <text x="39" y="57" font-family="Cormorant Garamond,serif" font-size="22" fill="#1B305B" font-weight="400" filter="url(#gf6)" style="animation:flicker 4s infinite">₿</text>
+          <!-- Orbiting alt coins -->
+          <g style="animation:spin 6s linear infinite;transform-origin:50px 50px">
+            <circle cx="82" cy="50" r="5" fill="#07070A" stroke="#5B94D2" stroke-width="1.4" filter="url(#gf6)"/>
+            <text x="79" y="53" font-family="DM Mono,monospace" font-size="5" fill="#5B94D2">Ξ</text>
+          </g>
+          <g style="animation:spin-rev 9s linear infinite;transform-origin:50px 50px">
+            <circle cx="50" cy="16" r="4" fill="#07070A" stroke="#1B305B" stroke-width="1.2" filter="url(#gf6)"/>
+            <circle cx="50" cy="84" r="4" fill="#07070A" stroke="#1B305B" stroke-width="1.2" filter="url(#gf6)"/>
+          </g>
+          <!-- Orbit rings -->
+          <circle cx="50" cy="50" r="36" fill="none" stroke="#1B305B" stroke-width=".7" stroke-dasharray="3 4" style="animation:dash 6s linear infinite"/>
+          <!-- Pulse -->
+          <circle cx="50" cy="50" r="5" fill="none" stroke="#5B94D2" stroke-width="1" style="animation:ripple 2.2s ease-out infinite"/>
+        </svg>
+      </div>
+      <div class="card-body">
+        <div class="card-name display">Coinlayer</div>
+        <div class="card-tagline">Cryptocurrency exchange rates and conversion API. Real-time data from 25+ exchanges covering 385+ coins in JSON format — updated every 60 seconds.</div>
+        <div class="card-features">
+          <span class="feat-pill">385+ Coins</span>
+          <span class="feat-pill">25 Exchanges</span>
+          <span class="feat-pill">60s Updates</span>
+          <span class="feat-pill">Historical Data</span>
+          <span class="feat-pill">Conversion</span>
+        </div>
+        <div class="card-use">
+          <div class="use-label">Built for</div>
+          <div class="use-list">
+            <div class="use-item">Crypto portfolio trackers and wallet applications</div>
+            <div class="use-item">E-commerce platforms accepting cryptocurrency payments</div>
+            <div class="use-item">DeFi dashboards displaying live cross-exchange rate data</div>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer">
+        <div class="card-price">
+          <span class="price-free">Free tier</span>
+          <span class="price-paid">From $9.99 <em>/ month</em></span>
+        </div>
+        <a href="https://apilayer.com?fpr=thabang75" target="_blank" rel="noopener" class="card-cta">
+          <span>Get started</span>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- 7. Serpstack -->
+    <div class="api-card reveal" data-cat="tools">
+      <div class="card-vis">
+        <div class="partner-badge"><div class="partner-badge-dot"></div>APIlayer</div>
+        <div class="cat-chip">Dev Tools</div>
+        <svg class="icon-main" width="100" height="100" viewBox="0 0 100 100">
+          <defs><filter id="gf7"><feGaussianBlur stdDeviation="2" result="b1"/><feGaussianBlur stdDeviation="6" result="b2"/><feMerge><feMergeNode in="b2"/><feMergeNode in="b1"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+          <!-- SERP results mockup -->
+          <rect x="14" y="18" width="72" height="64" rx="6" fill="rgba(27,48,91,.07)" stroke="#1B305B" stroke-width="1.3" filter="url(#gf7)"/>
+          <!-- Search bar at top -->
+          <rect x="20" y="24" width="60" height="10" rx="5" fill="rgba(27,48,91,.15)" stroke="#1B305B" stroke-width=".7"/>
+          <circle cx="74" cy="29" r="3.5" fill="rgba(27,48,91,.4)" stroke="#5B94D2" stroke-width=".9"/>
+          <!-- Result rows -->
+          <rect x="20" y="40" width="20" height="4" rx="2" fill="#5B94D2" opacity=".6" filter="url(#gf7)"/>
+          <rect x="20" y="46" width="60" height="2.5" rx="1" fill="#1B305B" opacity=".35"/>
+          <rect x="20" y="50" width="48" height="2" rx="1" fill="#1B305B" opacity=".25"/>
+          <!-- Divider -->
+          <line x1="20" y1="58" x2="80" y2="58" stroke="#1B305B" stroke-width=".5" opacity=".3"/>
+          <!-- Row 2 -->
+          <rect x="20" y="62" width="22" height="3.5" rx="1.5" fill="#5B94D2" opacity=".5" filter="url(#gf7)" style="animation:flicker 5s .5s infinite"/>
+          <rect x="20" y="68" width="58" height="2" rx="1" fill="#1B305B" opacity=".3"/>
+          <rect x="20" y="72" width="44" height="2" rx="1" fill="#1B305B" opacity=".2"/>
+          <!-- Position 1 badge -->
+          <rect x="70" y="39" width="12" height="8" rx="2" fill="rgba(27,48,91,.35)" stroke="#5B94D2" stroke-width=".8" filter="url(#gf7)"/>
+          <text x="73" y="46" font-family="DM Mono,monospace" font-size="5" fill="#5B94D2">#1</text>
+          <!-- Scan line -->
+          <rect x="14" y="0" width="72" height="3" rx="1" fill="rgba(91,148,210,.2)" style="animation:scan 4s ease-in-out infinite"/>
+        </svg>
+      </div>
+      <div class="card-body">
+        <div class="card-name display">Serpstack</div>
+        <div class="card-tagline">Real-time Google Search Results API. Retrieve structured SERP data — organic results, ads, featured snippets, knowledge panels — in clean JSON.</div>
+        <div class="card-features">
+          <span class="feat-pill">Google SERP</span>
+          <span class="feat-pill">Organic Results</span>
+          <span class="feat-pill">Featured Snippets</span>
+          <span class="feat-pill">Local Results</span>
+          <span class="feat-pill">Images & News</span>
+        </div>
+        <div class="card-use">
+          <div class="use-label">Built for</div>
+          <div class="use-list">
+            <div class="use-item">SEO tools monitoring keyword rankings and SERP volatility</div>
+            <div class="use-item">Competitive intelligence platforms tracking competitor visibility</div>
+            <div class="use-item">AI applications grounding responses with live search context</div>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer">
+        <div class="card-price">
+          <span class="price-free">Free tier</span>
+          <span class="price-paid">From $29.99 <em>/ month</em></span>
+        </div>
+        <a href="https://apilayer.com?fpr=thabang75" target="_blank" rel="noopener" class="card-cta">
+          <span>Get started</span>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- 8. Aviationstack -->
+    <div class="api-card reveal delay-1" data-cat="data">
+      <div class="card-vis">
+        <div class="partner-badge"><div class="partner-badge-dot"></div>APIlayer</div>
+        <div class="cat-chip">Data</div>
+        <svg class="icon-main" width="100" height="100" viewBox="0 0 100 100">
+          <defs><filter id="gf8"><feGaussianBlur stdDeviation="2" result="b1"/><feGaussianBlur stdDeviation="6" result="b2"/><feMerge><feMergeNode in="b2"/><feMergeNode in="b1"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+          <!-- Globe outline -->
+          <circle cx="50" cy="55" r="30" fill="rgba(27,48,91,.07)" stroke="#1B305B" stroke-width="1.2" filter="url(#gf8)"/>
+          <ellipse cx="50" cy="55" rx="30" ry="9" fill="none" stroke="#1B305B" stroke-width=".5" opacity=".25"/>
+          <ellipse cx="50" cy="47" rx="24" ry="6" fill="none" stroke="#1B305B" stroke-width=".4" opacity=".18"/>
+          <!-- Flight path arc -->
+          <path d="M24 68 Q38 38 76 38" fill="none" stroke="#1B305B" stroke-width="1.2" stroke-dasharray="4 3" filter="url(#gf8)" style="animation:dash 3s linear infinite"/>
+          <!-- Plane icon -->
+          <g style="animation:plane-fly 3s ease-in-out infinite">
+            <path d="M46 46 L52 40 L58 44 L54 46 Z" fill="rgba(27,48,91,.7)" stroke="#5B94D2" stroke-width="1" filter="url(#gf8)"/>
+            <path d="M50 43 L50 50 L47 48 Z" fill="#5B94D2" filter="url(#gf8)"/>
+          </g>
+          <!-- Departure dot -->
+          <circle cx="24" cy="68" r="4.5" fill="#07070A" stroke="#1B305B" stroke-width="1.3" filter="url(#gf8)"/>
+          <circle cx="24" cy="68" r="2" fill="#1B305B"/>
+          <!-- Arrival dot with pulse -->
+          <circle cx="76" cy="38" r="4.5" fill="#07070A" stroke="#5B94D2" stroke-width="1.5" filter="url(#gf8)"/>
+          <circle cx="76" cy="38" r="5" fill="none" stroke="#5B94D2" stroke-width="1" style="animation:ripple 2s ease-out infinite"/>
+          <circle cx="76" cy="38" r="2" fill="#5B94D2"/>
+          <!-- Orbit dash ring -->
+          <circle cx="50" cy="55" r="36" fill="none" stroke="#1B305B" stroke-width=".6" stroke-dasharray="2 5" opacity=".3" style="animation:spin 14s linear infinite"/>
+        </svg>
+      </div>
+      <div class="card-body">
+        <div class="card-name display">Aviationstack</div>
+        <div class="card-tagline">Real-time and historical flight tracking API. Live flight status, schedules, routes, and airport data for 13,000+ airlines and 7,000+ airports worldwide.</div>
+        <div class="card-features">
+          <span class="feat-pill">Live Flight Status</span>
+          <span class="feat-pill">13,000+ Airlines</span>
+          <span class="feat-pill">7,000+ Airports</span>
+          <span class="feat-pill">Historical Data</span>
+          <span class="feat-pill">Route Search</span>
+        </div>
+        <div class="card-use">
+          <div class="use-label">Built for</div>
+          <div class="use-list">
+            <div class="use-item">Travel apps displaying live flight status and delays to passengers</div>
+            <div class="use-item">Corporate travel tools tracking employee flight itineraries</div>
+            <div class="use-item">Airport display systems showing real-time arrivals and departures</div>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer">
+        <div class="card-price">
+          <span class="price-free">Free tier</span>
+          <span class="price-paid">From $9.99 <em>/ month</em></span>
+        </div>
+        <a href="https://apilayer.com?fpr=thabang75" target="_blank" rel="noopener" class="card-cta">
+          <span>Get started</span>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- 9. Languagelayer -->
+    <div class="api-card reveal delay-2" data-cat="data">
+      <div class="card-vis">
+        <div class="partner-badge"><div class="partner-badge-dot"></div>APIlayer</div>
+        <div class="cat-chip">Data</div>
+        <svg class="icon-main" width="100" height="100" viewBox="0 0 100 100">
+          <defs><filter id="gf9"><feGaussianBlur stdDeviation="2" result="b1"/><feGaussianBlur stdDeviation="6" result="b2"/><feMerge><feMergeNode in="b2"/><feMergeNode in="b1"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+          <!-- Speech bubbles -->
+          <rect x="12" y="18" width="46" height="28" rx="8" fill="rgba(27,48,91,.12)" stroke="#1B305B" stroke-width="1.3" filter="url(#gf9)"/>
+          <path d="M24 46 L20 54 L32 46" fill="rgba(27,48,91,.12)" stroke="#1B305B" stroke-width="1"/>
+          <!-- Script text 1 (latin) -->
+          <text x="19" y="31" font-family="Libre Baskerville,serif" font-size="9" fill="#1B305B" opacity=".7">Hello</text>
+          <text x="19" y="42" font-family="DM Mono,monospace" font-size="7" fill="#5B94D2" opacity=".8">EN · 99.2%</text>
+          <!-- Second bubble -->
+          <rect x="42" y="52" width="46" height="28" rx="8" fill="rgba(91,148,210,.07)" stroke="#5B94D2" stroke-width="1.3" filter="url(#gf9)" style="animation:flicker 5s .5s infinite"/>
+          <path d="M56 80 L68 80 L64 88" fill="rgba(91,148,210,.07)" stroke="#5B94D2" stroke-width="1"/>
+          <text x="49" y="65" font-family="Libre Baskerville,serif" font-size="9" fill="#5B94D2" opacity=".75">Hola</text>
+          <text x="49" y="76" font-family="DM Mono,monospace" font-size="7" fill="#5B94D2" opacity=".7">ES · 97.8%</text>
+          <!-- Third small bubble -->
+          <rect x="14" y="58" width="26" height="18" rx="5" fill="rgba(27,48,91,.08)" stroke="#1B305B" stroke-width=".9"/>
+          <text x="19" y="68" font-family="Libre Baskerville,serif" font-size="8" fill="#1B305B" opacity=".6">你好</text>
+          <text x="17" y="74" font-family="DM Mono,monospace" font-size="5.5" fill="#1B305B" opacity=".45">ZH · 95%</text>
+          <!-- Detection arrow -->
+          <path d="M60 36 L76 36" stroke="#5B94D2" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="3 2" filter="url(#gf9)" style="animation:dash 2s linear infinite"/>
+          <circle cx="80" cy="36" r="4" fill="rgba(27,48,91,.3)" stroke="#5B94D2" stroke-width="1" filter="url(#gf9)" style="animation:live-pulse 2s ease-in-out infinite"/>
+        </svg>
+      </div>
+      <div class="card-body">
+        <div class="card-name display">Languagelayer</div>
+        <div class="card-tagline">Language detection API for 173 world languages. Identify the language of any text with confidence scores — single strings or batch requests supported.</div>
+        <div class="card-features">
+          <span class="feat-pill">173 Languages</span>
+          <span class="feat-pill">Confidence Score</span>
+          <span class="feat-pill">Batch Detection</span>
+          <span class="feat-pill">Script Detection</span>
+          <span class="feat-pill">Mixed Content</span>
+        </div>
+        <div class="card-use">
+          <div class="use-label">Built for</div>
+          <div class="use-list">
+            <div class="use-item">Content platforms auto-routing submissions to the correct language review queue</div>
+            <div class="use-item">Customer support tools detecting the language of inbound tickets</div>
+            <div class="use-item">Translation pipelines that need to know the source language before processing</div>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer">
+        <div class="card-price">
+          <span class="price-free">Free tier</span>
+          <span class="price-paid">From $9.99 <em>/ month</em></span>
+        </div>
+        <a href="https://apilayer.com?fpr=thabang75" target="_blank" rel="noopener" class="card-cta">
+          <span>Get started</span>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </a>
+      </div>
+    </div>
+
+  </div><!-- /api-grid -->
+</div>
+</section>
+
+<!-- ── WHY SECTION ── -->
+<section class="why-sect">
+<div class="why-inner">
+  <div class="reveal">
+    <div class="sect-kicker">Why APIlayer</div>
+    <h2 class="sect-h2 display">Battle-tested APIs.<br>Developer-first pricing.</h2>
+    <p class="sect-sub">445,000 developers trust APIlayer. Every API listed on Clive is vetted for documentation quality, uptime reliability, and honest pricing.</p>
+  </div>
+  <div class="why-grid reveal delay-1">
+    <div class="why-card">
+      <div class="why-icon">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M11 2L4 6v5c0 4.5 3 8 7 9.5C15 19 18 15.5 18 11V6L11 2z" stroke="rgba(91,148,210,0.85)" stroke-width="1.4" fill="rgba(27,48,91,0.3)"/><path d="M7.5 11l2.5 2.5L14 9" stroke="rgba(91,148,210,0.8)" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </div>
+      <div class="why-title">Free tier on every API</div>
+      <div class="why-desc">Every APIlayer product includes a free tier so you can test, prototype, and validate your integration before spending a cent. No credit card required to start.</div>
+    </div>
+    <div class="why-card">
+      <div class="why-icon">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="9" stroke="rgba(91,148,210,0.85)" stroke-width="1.4" fill="rgba(27,48,91,0.3)"/><path d="M7 11l3 3 5-5" stroke="rgba(91,148,210,0.8)" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </div>
+      <div class="why-title">OpenAPI 3.0 specs included</div>
+      <div class="why-desc">Every API ships with a complete OpenAPI specification, Postman collection, and code examples in Python, JavaScript, PHP, and cURL. Integration takes minutes.</div>
+    </div>
+    <div class="why-card">
+      <div class="why-icon">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M3 12l2-2 4 4 8-8 2 2L9 18 3 12z" stroke="rgba(91,148,210,0.85)" stroke-width="1.4" fill="rgba(27,48,91,0.3)" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="why-title">Upgrade anytime, no lock-in</div>
+      <div class="why-desc">Monthly billing, cancel anytime. Scale from free to Pro to Business as your usage grows — no annual commitments and no surprise overages on most plans.</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ── BOTTOM CTA ── -->
+<section class="bottom-cta">
+  <div class="bottom-cta-inner">
+    <h2 class="display">Ready to build?</h2>
+    <p>Nine production-ready APIs. Free tiers on all of them. Start with IPstack, add Coinlayer, layer in MediaStack — your stack, your pace.</p>
+    <div class="cta-buttons">
+      <a href="https://apilayer.com?fpr=thabang75" target="_blank" rel="noopener sponsored" class="btn-white">Browse all APIlayer APIs →</a>
+      <a href="index.html" class="btn-ghost-white">See Clive's own APIs</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer id="disclosure">
+<div class="footer-inner">
+  <div class="footer-top">
+    <div>
+      <div class="f-brand">Clive</div>
+      <p class="f-sub">Developer platform for APIs, ML models, Chrome extensions, and security tools.</p>
+      <p class="f-disc">Affiliate disclosure: Some products on this page are listed through an affiliate partnership with APIlayer. When you click "Get started" and make a qualifying purchase, Clive earns a commission at no additional cost to you. This does not affect the price you pay or the quality of service you receive.</p>
+    </div>
+    <div>
+      <div class="f-col-head">Clive APIs</div>
+      <div class="f-links-col">
+        <a href="index.html">TenderIQ</a>
+        <a href="index.html">ContractIQ</a>
+        <a href="index.html">MeetingIQ</a>
+        <a href="index.html">ShieldKit</a>
+        <a href="index.html">HackKit</a>
+      </div>
+    </div>
+    <div>
+      <div class="f-col-head">Partner APIs</div>
+      <div class="f-links-col">
+        <a href="https://apilayer.com?fpr=thabang75" target="_blank" rel="noopener">IPstack</a>
+        <a href="https://apilayer.com?fpr=thabang75" target="_blank" rel="noopener">VATlayer</a>
+        <a href="https://apilayer.com?fpr=thabang75" target="_blank" rel="noopener">Aviationstack</a>
+        <a href="https://apilayer.com?fpr=thabang75" target="_blank" rel="noopener">Coinlayer</a>
+        <a href="https://apilayer.com?fpr=thabang75" target="_blank" rel="noopener">MediaStack</a>
+      </div>
+    </div>
+    <div>
+      <div class="f-col-head">Company</div>
+      <div class="f-links-col">
+        <a href="#">About Clive</a>
+        <a href="#">Documentation</a>
+        <a href="#">RapidAPI listings</a>
+        <a href="#">Contact</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="f-copy">© 2026 Clive. All rights reserved.</div>
+    <div class="f-legal">
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of Service</a>
+      <a href="#disclosure">Affiliate Disclosure</a>
+    </div>
+  </div>
+</div>
+</footer>
+
+<script>
+// Custom cursor
+const cur = document.getElementById('cursor');
+document.addEventListener('mousemove', e => { cur.style.left = e.clientX+'px'; cur.style.top = e.clientY+'px'; });
+document.querySelectorAll('a,button,.api-card,.filter-tab').forEach(el => {
+  el.addEventListener('mouseenter', () => document.body.classList.add('hovering'));
+  el.addEventListener('mouseleave', () => document.body.classList.remove('hovering'));
+});
+
+// Scroll reveals
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); obs.unobserve(e.target); } });
+}, { threshold: 0.08 });
+document.querySelectorAll('.reveal,.reveal-r').forEach(el => obs.observe(el));
+
+// Filter
+function filterCards(cat, btn) {
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.api-card').forEach(c => {
+    c.style.display = (cat === 'all' || c.dataset.cat === cat) ? '' : 'none';
+  });
+}
+</script>
+</body>
+</html>
