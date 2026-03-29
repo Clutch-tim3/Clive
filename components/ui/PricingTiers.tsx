@@ -7,27 +7,50 @@ interface PricingTiersProps {
 
 export function PricingTiers({ tiers }: PricingTiersProps) {
   return (
-    <div className="space-y-3">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
       {tiers.map((tier, index) => (
         <div
           key={index}
-          className={`flex items-center justify-between p-4.5 border border-border rounded-lg shadow-sm hover:shadow-md ${
-            tier.highlight ? 'bg-navy text-white' : 'bg-white hover:bg-paper'
-          }`}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '20px 24px',
+            borderRadius: 'var(--r-md)',
+            border: '1px solid var(--border)',
+            background: tier.highlight ? 'var(--navy)' : 'var(--paper)',
+            color: tier.highlight ? 'white' : 'var(--ink)',
+            boxShadow: tier.highlight
+              ? '0 4px 20px rgba(27,48,91,0.25)'
+              : '0 1px 4px rgba(0,0,0,0.04)',
+            transition: 'box-shadow 0.2s',
+          }}
         >
           <div>
-            <div className="text-[11px] font-mono tracking-[0.14em] uppercase mb-1">
+            <div style={{
+              fontSize: '11px',
+              fontFamily: 'DM Mono, monospace',
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              marginBottom: '4px',
+              color: tier.highlight ? 'white' : 'var(--ink)',
+            }}>
               {tier.name}
             </div>
-            <div className={`text-[11px] font-mono ${
-              tier.highlight ? 'text-white/40' : 'text-text3'
-            }`}>
+            <div style={{
+              fontSize: '11px',
+              fontFamily: 'DM Mono, monospace',
+              color: tier.highlight ? 'rgba(255,255,255,0.4)' : 'var(--text3)',
+            }}>
               {tier.calls}
             </div>
           </div>
-          <div className={`text-2xl font-display ${
-            tier.highlight ? 'text-white' : 'text-ink'
-          }`}>
+          <div style={{
+            fontSize: '24px',
+            fontFamily: 'Cormorant Garamond, serif',
+            fontWeight: 300,
+            color: tier.highlight ? 'white' : 'var(--ink)',
+          }}>
             {tier.price}
           </div>
         </div>

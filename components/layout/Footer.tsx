@@ -3,8 +3,8 @@ import React from 'react';
 
 export function Footer() {
   return (
-    <footer className="bg-black2 text-white pt-18 pb-9 px-14">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-18">
+    <footer className="text-white px-14">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4" style={{gap: '72px'}}>
         <div className="col-span-1 md:col-span-2">
           <div className="flex items-center gap-2 mb-6">
             <span className="f-brand text-[26px] font-display tracking-[0.08em] uppercase">
@@ -123,7 +123,7 @@ export function Footer() {
         </div>
       </div>
       
-      <div className="footer-bottom max-w-7xl mx-auto mt-18 pt-6 flex flex-col md:flex-row justify-between items-center gap-3">
+      <div className="footer-bottom max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-3" style={{marginTop: '72px'}}>
         <p className="f-copy text-[10px] font-mono">
           © 2026 Clive · A Donington Vale product.
         </p>

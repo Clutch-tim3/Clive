@@ -10,14 +10,14 @@ const partnerAPIs = [
     name: 'IPstack',
     category: 'geo',
     icon: (
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <defs><filter id="pf1"><feGaussianBlur stdDeviation="1.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-        <circle cx="14" cy="14" r="11" stroke="rgba(91,148,210,0.85)" strokeWidth="1.4" fill="rgba(27,48,91,0.2)" filter="url(#pf1)"/>
-        <ellipse cx="14" cy="14" rx="5" ry="11" stroke="rgba(91,148,210,0.5)" strokeWidth="1" fill="none"/>
-        <line x1="3" y1="14" x2="25" y2="14" stroke="rgba(91,148,210,0.4)" strokeWidth="0.9"/>
-        <line x1="5" y1="9" x2="23" y2="9" stroke="rgba(91,148,210,0.25)" strokeWidth="0.8"/>
-        <line x1="5" y1="19" x2="23" y2="19" stroke="rgba(91,148,210,0.25)" strokeWidth="0.8"/>
-        <circle cx="17" cy="10" r="2.5" fill="rgba(91,148,210,0.7)" filter="url(#pf1)"/>
+      <svg width="34" height="34" viewBox="0 0 32 32" fill="none" style={{overflow:'visible'}}>
+        <defs><filter id="gip"><feGaussianBlur stdDeviation="1.8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+        <circle cx="16" cy="16" r="12" stroke="rgba(91,148,210,0.85)" strokeWidth="1.5" fill="rgba(27,48,91,0.3)" filter="url(#gip)" style={{animation:'neon-flicker 6s ease-in-out infinite'}}/>
+        <ellipse cx="16" cy="16" rx="5.5" ry="12" stroke="rgba(91,148,210,0.4)" strokeWidth="1" fill="none"/>
+        <line x1="4" y1="16" x2="28" y2="16" stroke="rgba(91,148,210,0.3)" strokeWidth="0.9"/>
+        <line x1="6" y1="10" x2="26" y2="10" stroke="rgba(91,148,210,0.18)" strokeWidth="0.7"/>
+        <line x1="6" y1="22" x2="26" y2="22" stroke="rgba(91,148,210,0.18)" strokeWidth="0.7"/>
+        <circle cx="21" cy="8.5" r="3.5" fill="rgba(91,148,210,0.85)" filter="url(#gip)" style={{animation:'twinkle 2s ease-in-out infinite'}}/>
       </svg>
     ),
     provider: 'APIlayer',
@@ -32,11 +32,14 @@ const partnerAPIs = [
     name: 'VatLayer',
     category: 'data',
     icon: (
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <defs><filter id="pf2"><feGaussianBlur stdDeviation="1.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-        <rect x="4" y="5" width="20" height="18" rx="3" stroke="rgba(91,148,210,0.85)" strokeWidth="1.4" fill="rgba(27,48,91,0.2)" filter="url(#pf2)"/>
-        <text x="7" y="16" fontFamily="DM Mono,monospace" fontSize="8" fill="rgba(91,148,210,0.85)">VAT</text>
-        <polyline points="6,20 10,15 14,18 18,12 22,14" fill="none" stroke="rgba(91,148,210,0.5)" strokeWidth="1.2" strokeLinecap="round"/>
+      <svg width="34" height="34" viewBox="0 0 32 32" fill="none" style={{overflow:'visible'}}>
+        <defs><filter id="gvat"><feGaussianBlur stdDeviation="1.8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+        <rect x="5" y="3" width="22" height="26" rx="3" stroke="rgba(91,148,210,0.85)" strokeWidth="1.5" fill="rgba(27,48,91,0.3)" filter="url(#gvat)" style={{animation:'neon-flicker 7s ease-in-out infinite'}}/>
+        <line x1="9" y1="10" x2="23" y2="10" stroke="rgba(91,148,210,0.45)" strokeWidth="1"/>
+        <line x1="9" y1="14" x2="23" y2="14" stroke="rgba(91,148,210,0.3)" strokeWidth="0.9"/>
+        <circle cx="11.5" cy="20.5" r="2.2" stroke="rgba(91,148,210,0.8)" strokeWidth="1.3" fill="none" filter="url(#gvat)"/>
+        <circle cx="20.5" cy="25" r="2.2" stroke="rgba(91,148,210,0.8)" strokeWidth="1.3" fill="none" filter="url(#gvat)"/>
+        <line x1="21" y1="18.5" x2="11" y2="27" stroke="rgba(91,148,210,0.6)" strokeWidth="1.3" strokeLinecap="round"/>
       </svg>
     ),
     provider: 'APIlayer',
@@ -51,10 +54,11 @@ const partnerAPIs = [
     name: 'PositionStack',
     category: 'geo',
     icon: (
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <defs><filter id="pf3"><feGaussianBlur stdDeviation="1.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-        <path d="M14 4C9 4 5 8.1 5 13.2C5 19.6 14 25 14 25S23 19.6 23 13.2C23 8.1 19 4 14 4Z" stroke="rgba(91,148,210,0.85)" strokeWidth="1.4" fill="rgba(27,48,91,0.2)" filter="url(#pf3)"/>
-        <circle cx="14" cy="13" r="3.5" fill="rgba(91,148,210,0.65)" filter="url(#pf3)"/>
+      <svg width="34" height="34" viewBox="0 0 32 32" fill="none" style={{overflow:'visible'}}>
+        <defs><filter id="gps"><feGaussianBlur stdDeviation="1.8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+        <path d="M16 4C11.6 4 8 7.7 8 12.5C8 18.8 16 28 16 28C16 28 24 18.8 24 12.5C24 7.7 20.4 4 16 4Z" stroke="rgba(91,148,210,0.85)" strokeWidth="1.5" fill="rgba(27,48,91,0.3)" filter="url(#gps)" style={{animation:'neon-flicker 5.5s ease-in-out infinite'}}/>
+        <circle cx="16" cy="12" r="4" fill="rgba(91,148,210,0.75)" filter="url(#gps)" style={{animation:'twinkle 2.5s ease-in-out infinite'}}/>
+        <circle cx="16" cy="12" r="7.5" fill="none" stroke="rgba(91,148,210,0.2)" strokeWidth="0.8" strokeDasharray="2 3" style={{animation:'spin-slow 8s linear infinite', transformOrigin:'16px 12px'}}/>
       </svg>
     ),
     provider: 'APIlayer',
@@ -69,11 +73,14 @@ const partnerAPIs = [
     name: 'PDFlayer',
     category: 'dev',
     icon: (
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <defs><filter id="pf4"><feGaussianBlur stdDeviation="1.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-        <path d="M7 3L18 3L23 8L23 25L7 25Z" stroke="rgba(91,148,210,0.85)" strokeWidth="1.4" fill="rgba(27,48,91,0.2)" filter="url(#pf4)"/>
-        <path d="M18 3L18 8L23 8" stroke="rgba(91,148,210,0.5)" strokeWidth="1.2" fill="none"/>
-        <text x="9.5" y="18" fontFamily="DM Mono,monospace" fontSize="6.5" fill="rgba(91,148,210,0.85)">PDF</text>
+      <svg width="34" height="34" viewBox="0 0 32 32" fill="none" style={{overflow:'visible'}}>
+        <defs><filter id="gpdf"><feGaussianBlur stdDeviation="1.8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+        <rect x="5" y="7" width="18" height="22" rx="2" stroke="rgba(91,148,210,0.5)" strokeWidth="1" fill="rgba(27,48,91,0.15)" transform="rotate(-4 14 18)"/>
+        <path d="M7 4L21 4L27 10L27 28L7 28Z" stroke="rgba(91,148,210,0.85)" strokeWidth="1.5" fill="rgba(27,48,91,0.3)" filter="url(#gpdf)" style={{animation:'neon-flicker 6s ease-in-out infinite'}} strokeLinejoin="round"/>
+        <path d="M21 4L21 10L27 10" stroke="rgba(91,148,210,0.5)" strokeWidth="1.2" fill="none"/>
+        <line x1="11" y1="15" x2="23" y2="15" stroke="rgba(91,148,210,0.5)" strokeWidth="1"/>
+        <line x1="11" y1="19" x2="23" y2="19" stroke="rgba(91,148,210,0.35)" strokeWidth="0.9"/>
+        <line x1="11" y1="23" x2="18" y2="23" stroke="rgba(91,148,210,0.25)" strokeWidth="0.9"/>
       </svg>
     ),
     provider: 'APIlayer',
@@ -88,13 +95,14 @@ const partnerAPIs = [
     name: 'Mediastack',
     category: 'media',
     icon: (
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <defs><filter id="pf5"><feGaussianBlur stdDeviation="1.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-        <rect x="3" y="6" width="22" height="16" rx="3" stroke="rgba(91,148,210,0.85)" strokeWidth="1.4" fill="rgba(27,48,91,0.2)" filter="url(#pf5)"/>
-        <line x1="6" y1="11" x2="22" y2="11" stroke="rgba(91,148,210,0.4)" strokeWidth="0.9"/>
-        <line x1="6" y1="15" x2="18" y2="15" stroke="rgba(91,148,210,0.3)" strokeWidth="0.9"/>
-        <line x1="6" y1="19" x2="20" y2="19" stroke="rgba(91,148,210,0.25)" strokeWidth="0.9"/>
-        <circle cx="21" cy="8" r="4" fill="rgba(27,48,91,0.8)" stroke="rgba(91,148,210,0.7)" strokeWidth="1" filter="url(#pf5)"/>
+      <svg width="34" height="34" viewBox="0 0 32 32" fill="none" style={{overflow:'visible'}}>
+        <defs><filter id="gmed"><feGaussianBlur stdDeviation="1.8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+        <rect x="3" y="8" width="26" height="18" rx="3" stroke="rgba(91,148,210,0.85)" strokeWidth="1.5" fill="rgba(27,48,91,0.3)" filter="url(#gmed)" style={{animation:'neon-flicker 6s ease-in-out infinite'}}/>
+        <line x1="7" y1="13" x2="25" y2="13" stroke="rgba(91,148,210,0.45)" strokeWidth="1"/>
+        <line x1="7" y1="17" x2="20" y2="17" stroke="rgba(91,148,210,0.32)" strokeWidth="0.9"/>
+        <line x1="7" y1="21" x2="22" y2="21" stroke="rgba(91,148,210,0.22)" strokeWidth="0.9"/>
+        <circle cx="23" cy="5" r="5" fill="rgba(27,48,91,0.9)" stroke="rgba(91,148,210,0.8)" strokeWidth="1.3" filter="url(#gmed)"/>
+        <circle cx="23" cy="5" r="2.2" fill="rgba(91,148,210,0.9)" style={{animation:'badge-live 1.5s ease-in-out infinite'}}/>
       </svg>
     ),
     provider: 'APIlayer',
@@ -109,12 +117,12 @@ const partnerAPIs = [
     name: 'Coinlayer',
     category: 'data',
     icon: (
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <defs><filter id="pf6"><feGaussianBlur stdDeviation="1.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-        <circle cx="14" cy="14" r="10" stroke="rgba(91,148,210,0.85)" strokeWidth="1.4" fill="rgba(27,48,91,0.2)" filter="url(#pf6)"/>
-        <circle cx="14" cy="14" r="7" stroke="rgba(91,148,210,0.35)" strokeWidth="0.8" fill="none"/>
-        <text x="11" y="18" fontFamily="Cormorant Garamond,serif" fontSize="10" fill="rgba(91,148,210,0.85)" fontWeight="300">₿</text>
-        <circle cx="14" cy="14" r="12" fill="none" stroke="rgba(91,148,210,0.2)" strokeWidth="0.7" strokeDasharray="2 3" style={{ animation: 'spin-slow 8s linear infinite', transformOrigin: '14px 14px' }}/>
+      <svg width="34" height="34" viewBox="0 0 32 32" fill="none" style={{overflow:'visible'}}>
+        <defs><filter id="gcoin"><feGaussianBlur stdDeviation="1.8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+        <circle cx="16" cy="16" r="11" stroke="rgba(91,148,210,0.85)" strokeWidth="1.5" fill="rgba(27,48,91,0.3)" filter="url(#gcoin)" style={{animation:'neon-flicker 5s ease-in-out infinite'}}/>
+        <circle cx="16" cy="16" r="7.5" stroke="rgba(91,148,210,0.3)" strokeWidth="0.8" fill="none"/>
+        <text x="12.5" y="20" fontFamily="serif" fontSize="11" fill="rgba(91,148,210,0.9)" fontWeight="300">₿</text>
+        <circle cx="16" cy="16" r="14" fill="none" stroke="rgba(91,148,210,0.18)" strokeWidth="0.8" strokeDasharray="2 3" style={{animation:'spin-slow 8s linear infinite', transformOrigin:'16px 16px'}}/>
       </svg>
     ),
     provider: 'APIlayer',
@@ -129,13 +137,14 @@ const partnerAPIs = [
     name: 'Serpstack',
     category: 'dev',
     icon: (
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <defs><filter id="pf7"><feGaussianBlur stdDeviation="1.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-        <circle cx="12" cy="12" r="8" stroke="rgba(91,148,210,0.85)" strokeWidth="1.4" fill="rgba(27,48,91,0.2)" filter="url(#pf7)"/>
-        <line x1="18" y1="18" x2="25" y2="25" stroke="rgba(91,148,210,0.75)" strokeWidth="2.5" strokeLinecap="round" filter="url(#pf7)"/>
-        <line x1="7" y1="10" x2="17" y2="10" stroke="rgba(91,148,210,0.5)" strokeWidth="0.9"/>
-        <line x1="7" y1="13" x2="15" y2="13" stroke="rgba(91,148,210,0.35)" strokeWidth="0.9"/>
-        <line x1="7" y1="16" x2="13" y2="16" stroke="rgba(91,148,210,0.25)" strokeWidth="0.9"/>
+      <svg width="34" height="34" viewBox="0 0 32 32" fill="none" style={{overflow:'visible'}}>
+        <defs><filter id="gserp"><feGaussianBlur stdDeviation="1.8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+        <circle cx="13" cy="13" r="9" stroke="rgba(91,148,210,0.85)" strokeWidth="1.5" fill="rgba(27,48,91,0.3)" filter="url(#gserp)" style={{animation:'neon-flicker 5s ease-in-out infinite'}}/>
+        <line x1="19.5" y1="19.5" x2="28" y2="28" stroke="rgba(91,148,210,0.75)" strokeWidth="3" strokeLinecap="round" filter="url(#gserp)"/>
+        <line x1="8" y1="10" x2="18" y2="10" stroke="rgba(91,148,210,0.5)" strokeWidth="0.9"/>
+        <line x1="8" y1="13" x2="16" y2="13" stroke="rgba(91,148,210,0.38)" strokeWidth="0.9"/>
+        <line x1="8" y1="16" x2="14" y2="16" stroke="rgba(91,148,210,0.25)" strokeWidth="0.9"/>
+        <circle cx="13" cy="13" r="5" fill="none" stroke="rgba(91,148,210,0.18)" style={{animation:'pulse-ring 2.5s ease-out infinite'}}/>
       </svg>
     ),
     provider: 'APIlayer',
@@ -150,12 +159,12 @@ const partnerAPIs = [
     name: 'Aviationstack',
     category: 'data',
     icon: (
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <defs><filter id="pf8"><feGaussianBlur stdDeviation="1.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-        <path d="M5 16L12 10L20 7L22 9L16 14L20 16L18 18L13 17L10 20L8 19L10 15Z" stroke="rgba(91,148,210,0.85)" strokeWidth="1.3" fill="rgba(27,48,91,0.25)" strokeLinejoin="round" filter="url(#pf8)"/>
-        <circle cx="22" cy="7" r="2" fill="rgba(91,148,210,0.5)" filter="url(#pf8)"/>
-        <line x1="5" y1="22" x2="14" y2="22" stroke="rgba(91,148,210,0.25)" strokeWidth="0.8" strokeDasharray="2 2"/>
-        <line x1="16" y1="22" x2="24" y2="22" stroke="rgba(91,148,210,0.18)" strokeWidth="0.8" strokeDasharray="2 2"/>
+      <svg width="34" height="34" viewBox="0 0 32 32" fill="none" style={{overflow:'visible'}}>
+        <defs><filter id="gavi"><feGaussianBlur stdDeviation="1.8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+        <path d="M5 19L13 12L22 8L24 10.5L18 15.5L22 18L20 20.5L14.5 19L11 22.5L9 21.5L11 17.5Z" stroke="rgba(91,148,210,0.85)" strokeWidth="1.5" fill="rgba(27,48,91,0.3)" strokeLinejoin="round" filter="url(#gavi)" style={{animation:'neon-flicker 6s ease-in-out infinite'}}/>
+        <circle cx="23" cy="8" r="2.5" fill="rgba(91,148,210,0.75)" filter="url(#gavi)" style={{animation:'twinkle 2s ease-in-out infinite'}}/>
+        <line x1="4" y1="26" x2="14" y2="26" stroke="rgba(91,148,210,0.22)" strokeWidth="0.8" strokeDasharray="2 2"/>
+        <line x1="16" y1="26" x2="26" y2="26" stroke="rgba(91,148,210,0.15)" strokeWidth="0.8" strokeDasharray="2 2"/>
       </svg>
     ),
     provider: 'APIlayer',
@@ -170,10 +179,10 @@ const partnerAPIs = [
     name: 'Languagelayer',
     category: 'media',
     icon: (
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <defs><filter id="pf9"><feGaussianBlur stdDeviation="1.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-        <path d="M4 8L4 18Q4 21 7 21L14 21L17 24L17 21L21 21Q24 21 24 18L24 8Q24 5 21 5L7 5Q4 5 4 8Z" stroke="rgba(91,148,210,0.85)" strokeWidth="1.3" fill="rgba(27,48,91,0.2)" filter="url(#pf9)"/>
-        <text x="8" y="15.5" fontFamily="DM Mono,monospace" fontSize="7.5" fill="rgba(91,148,210,0.8)">Aあ文</text>
+      <svg width="34" height="34" viewBox="0 0 32 32" fill="none" style={{overflow:'visible'}}>
+        <defs><filter id="glang"><feGaussianBlur stdDeviation="1.8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+        <path d="M4 9L4 20Q4 24 7 24L15 24L19 28L19 24L25 24Q28 24 28 20L28 9Q28 6 25 6L7 6Q4 6 4 9Z" stroke="rgba(91,148,210,0.85)" strokeWidth="1.5" fill="rgba(27,48,91,0.3)" filter="url(#glang)" style={{animation:'neon-flicker 5.5s ease-in-out infinite'}}/>
+        <text x="9" y="18" fontFamily="'Libre Baskerville',serif" fontSize="9" fill="rgba(91,148,210,0.88)" style={{animation:'neon-flicker 4s ease-in-out 0.5s infinite'}}>Aあ文</text>
       </svg>
     ),
     provider: 'APIlayer',
@@ -203,7 +212,7 @@ export default function PartnersPage() {
     : partnerAPIs.filter(partner => partner.category === activeCategory);
 
   return (
-    <div className="partner-page">
+    <div className="partner-page" style={{ background: '#07070A' }}>
       {/* Hero Section */}
       <section className="min-h-screen py-32 px-14 flex items-center relative overflow-hidden bg-black">
         {/* Background Orbs */}
@@ -385,7 +394,7 @@ export default function PartnersPage() {
       </section>
 
       {/* Products Section */}
-      <section className="py-20 px-14 relative bg-black">
+      <section className="py-20 px-14 relative" style={{ background: '#07070A' }}>
         <div className="max-w-7xl mx-auto">
           <ScrollReveal>
             <div className="font-mono text-[9.5px] tracking-[0.24em] uppercase text-steel/55 mb-3.5 flex items-center gap-3">
@@ -425,81 +434,113 @@ export default function PartnersPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {filteredPartners.map((partner, index) => (
               <ScrollReveal key={partner.id} delay={index * 0.1}>
-                <div className="rounded-2xl bg-white/055 backdrop-blur-md border border-white/10 border-t-2 border-white/22 shadow-xl p-8 relative overflow-hidden animate-border-glow">
-                  {/* Refraction Sweep */}
-                  <div className="absolute inset-0 rounded-2xl pointer-events-none z-0 bg-gradient-to-r from-transparent via-white/08 to-transparent bg-[length:250%_100%] animate-sweep-card"></div>
-                  
-                  {/* Scan Line */}
-                  <div className="absolute left-0 right-0 h-px pointer-events-none z-0 bg-gradient-to-r from-transparent via-steel/20 to-transparent animate-scan"></div>
+                <div style={{
+                  background: '#07070A',
+                  border: '1px solid rgba(255,255,255,0.09)',
+                  borderTop: '1.5px solid rgba(255,255,255,0.16)',
+                  borderRadius: '40px',
+                  padding: '32px 30px',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  transition: 'transform 0.3s, box-shadow 0.3s',
+                  boxShadow: '0 1px 0 rgba(255,255,255,0.07) inset, 0 16px 44px rgba(0,0,0,0.38)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: '100%',
+                }}>
+                  {/* top row: icon + badge */}
+                  <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', marginBottom:'20px' }}>
+                    <div style={{
+                      width: '52px', height: '52px', borderRadius: '16px',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: 'rgba(27,48,91,0.55)',
+                      border: '1px solid rgba(91,148,210,0.35)',
+                      borderTop: '1px solid rgba(91,148,210,0.55)',
+                      boxShadow: '0 0 20px rgba(27,48,91,0.5), 0 1px 0 rgba(91,148,210,0.2) inset',
+                      flexShrink: 0,
+                    }}>
+                      {partner.icon}
+                    </div>
+                    <div style={{
+                      display: 'inline-flex', alignItems: 'center', gap: '6px',
+                      padding: '4px 10px', borderRadius: '100px',
+                      border: '1px solid rgba(91,148,210,0.2)',
+                      background: 'rgba(27,48,91,0.25)',
+                      fontFamily: 'DM Mono, monospace', fontSize: '9px',
+                      letterSpacing: '0.14em', textTransform: 'uppercase',
+                      color: 'rgba(91,148,210,0.65)',
+                    }}>
+                      <span style={{ width:'5px', height:'5px', borderRadius:'50%', background:'rgba(91,148,210,0.7)', display:'inline-block' }} />
+                      {partner.provider}
+                    </div>
+                  </div>
 
-                  <div className="relative z-10">
-                    {/* Card Top */}
-                    <div className="flex items-start justify-between mb-5">
-                      <div className="w-13 h-13 rounded-lg flex items-center justify-center bg-navy/25 border border-steel/20 border-t-steel/35 shadow-lg transition-all flex-shrink-0">
-                        {partner.icon}
+                  {/* free tag */}
+                  <div style={{
+                    fontFamily: 'DM Mono, monospace', fontSize: '9px',
+                    letterSpacing: '0.16em', textTransform: 'uppercase',
+                    color: 'rgba(91,148,210,0.6)', marginBottom: '6px',
+                  }}>✓ Free · {partner.freeTier}</div>
+
+                  {/* category */}
+                  <div style={{
+                    fontFamily: 'DM Mono, monospace', fontSize: '9px',
+                    letterSpacing: '0.18em', textTransform: 'uppercase',
+                    color: 'rgba(255,255,255,0.25)', marginBottom: '10px',
+                  }}>
+                    {filterCategories.find(cat => cat.id === partner.category)?.label || partner.category}
+                  </div>
+
+                  {/* name */}
+                  <div style={{
+                    fontFamily: 'Cormorant Garamond, serif', fontSize: '26px',
+                    fontWeight: 400, color: 'white', marginBottom: '10px', lineHeight: 1.1,
+                  }}>{partner.name}</div>
+
+                  {/* description */}
+                  <div style={{
+                    fontSize: '13px', fontFamily: 'Libre Baskerville, serif',
+                    color: 'rgba(255,255,255,0.45)', lineHeight: 1.75, marginBottom: '18px',
+                  }}>{partner.description}</div>
+
+                  {/* chips */}
+                  <div style={{ display:'flex', flexWrap:'wrap', gap:'6px', marginBottom:'20px' }}>
+                    {partner.chips.map((chip, chipIndex) => (
+                      <span key={chipIndex} style={{
+                        padding: '3px 10px', borderRadius: '100px',
+                        border: '1px solid rgba(91,148,210,0.2)',
+                        fontFamily: 'DM Mono, monospace', fontSize: '9px',
+                        letterSpacing: '0.12em', textTransform: 'uppercase',
+                        color: 'rgba(91,148,210,0.6)',
+                      }}>{chip}</span>
+                    ))}
+                  </div>
+
+                  {/* rule */}
+                  <div style={{ height:'1px', background:'rgba(255,255,255,0.07)', marginBottom:'20px', marginTop:'auto' }} />
+
+                  {/* footer */}
+                  <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                    <div>
+                      <div style={{ fontFamily:'DM Mono, monospace', fontSize:'9px', color:'rgba(255,255,255,0.3)', letterSpacing:'0.1em', marginBottom:'3px' }}>
+                        Free · then from
                       </div>
-                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-navy/20 border border-navy/35 text-[8.5px] font-mono tracking-[0.12em] uppercase text-steel/60">
-                        <div className="w-1 h-1 rounded-full bg-steel/60"></div>
-                        {partner.provider}
+                      <div style={{ fontFamily:'Cormorant Garamond, serif', fontSize:'22px', color:'white', fontWeight:400 }}>
+                        {partner.price}<em style={{ fontSize:'13px', color:'rgba(255,255,255,0.4)' }}>/month</em>
                       </div>
                     </div>
-
-                    {/* Free Tag */}
-                    <div className="inline-flex items-center gap-1.5 text-[8px] font-mono tracking-[0.1em] uppercase px-2.25 py-0.75 rounded-full bg-steel/08 border border-steel/15 text-steel/55 mb-2.5">
-                      ✓ Free · {partner.freeTier}
-                    </div>
-
-                    {/* Category */}
-                    <div className="font-mono text-[9px] tracking-[0.18em] uppercase text-steel/55 mb-2 flex items-center gap-2">
-                      <span className="w-3 h-px bg-steel/40"></span>
-                      {filterCategories.find(cat => cat.id === partner.category)?.label || partner.category}
-                    </div>
-
-                    {/* Name */}
-                    <div className="font-display text-2xl text-white mb-3">
-                      {partner.name}
-                    </div>
-
-                    {/* Description */}
-                    <div className="text-sm leading-relaxed text-white/60 mb-5.5">
-                      {partner.description}
-                    </div>
-
-                    {/* Chips */}
-                    <div className="flex flex-wrap gap-1.5 mb-6">
-                      {partner.chips.map((chip, chipIndex) => (
-                        <span
-                          key={chipIndex}
-                          className="font-mono text-[8.5px] tracking-[0.1em] uppercase px-2.5 py-1 rounded-full bg-navy/15 border border-navy/30 text-steel/70"
-                        >
-                          {chip}
-                        </span>
-                      ))}
-                    </div>
-
-                    {/* Rule */}
-                    <div className="h-px bg-white/07 mb-5"></div>
-
-                    {/* Footer */}
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex flex-col gap-0.5">
-                        <div className="font-mono text-[9px] tracking-[0.12em] uppercase text-steel/70">
-                          Free · then from
-                        </div>
-                        <div className="font-display text-lg text-white">
-                          {partner.price}<em className="text-white/40 text-sm">/month</em>
-                        </div>
-                      </div>
-                      <a
-                        href={partner.href}
-                        target="_blank"
-                        rel="noopener"
-                        className="inline-flex items-center gap-2 px-5.5 py-2.5 rounded-full font-mono text-[10px] font-medium tracking-[0.1em] uppercase text-white relative overflow-hidden bg-navy/70 backdrop-blur-md border border-steel/30 border-t-steel/50 shadow-lg transition-all"
-                      >
-                        <span className="absolute inset-0 rounded-full bg-gradient-to-br from-white/08 to-transparent pointer-events-none"></span>
-                        Get started <span className="text-sm transition-transform group-hover:translate-x-1">→</span>
-                      </a>
-                    </div>
+                    <a href={partner.href} target="_blank" rel="noopener" style={{
+                      padding: '9px 18px', borderRadius: '100px',
+                      background: 'rgba(27,48,91,0.7)',
+                      border: '1px solid rgba(91,148,210,0.3)',
+                      fontFamily: 'DM Mono, monospace', fontSize: '10px',
+                      letterSpacing: '0.1em', textTransform: 'uppercase',
+                      color: 'rgba(255,255,255,0.85)',
+                      textDecoration: 'none',
+                      transition: 'all 0.2s',
+                    }}>
+                      Get started →
+                    </a>
                   </div>
                 </div>
               </ScrollReveal>

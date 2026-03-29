@@ -6,30 +6,57 @@ interface EndpointListProps {
 }
 
 export function EndpointList({ endpoints }: EndpointListProps) {
-  const methodColors = {
-    POST: 'bg-black text-white border-black',
-    GET: 'bg-navy text-white border-navy',
-    DEL: 'bg-black3 text-white border-black3',
+  const methodColors: Record<string, { bg: string; color: string }> = {
+    POST: { bg: '#07070A', color: 'white' },
+    GET:  { bg: 'var(--navy)', color: 'white' },
+    DEL:  { bg: 'var(--black3)', color: 'white' },
   };
 
   return (
-    <div className="space-y-3">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
       {endpoints.map((endpoint, index) => (
         <div
           key={index}
-          className="flex items-center p-3 border border-border hover:bg-paper transition-colors rounded-lg shadow-sm hover:shadow-md"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            borderRadius: 'var(--r-md)',
+            border: '1px solid var(--border)',
+            background: 'var(--paper)',
+            overflow: 'hidden',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+            transition: 'box-shadow 0.2s',
+          }}
         >
-          <span
-            className={`px-3 py-1 text-[10px] font-mono font-medium rounded-sm mr-4 ${
-              methodColors[endpoint.method]
-            }`}
-          >
+          <span style={{
+            padding: '18px 20px',
+            fontFamily: 'DM Mono, monospace',
+            fontSize: '10px',
+            fontWeight: 500,
+            letterSpacing: '0.08em',
+            background: methodColors[endpoint.method]?.bg ?? '#07070A',
+            color: methodColors[endpoint.method]?.color ?? 'white',
+            flexShrink: 0,
+          }}>
             {endpoint.method}
           </span>
-          <span className="flex-1 text-[11px] font-mono text-ink border-r border-border pr-4 mr-4">
+          <span style={{
+            padding: '18px 22px',
+            fontFamily: 'DM Mono, monospace',
+            fontSize: '11px',
+            color: 'var(--ink)',
+            borderRight: '1px solid var(--border)',
+            flexShrink: 0,
+          }}>
             {endpoint.path}
           </span>
-          <span className="text-[12.5px] font-serif italic text-text2">
+          <span style={{
+            padding: '18px 22px',
+            fontSize: '12.5px',
+            fontFamily: 'Libre Baskerville, serif',
+            fontStyle: 'italic',
+            color: 'var(--text2)',
+          }}>
             {endpoint.description}
           </span>
         </div>

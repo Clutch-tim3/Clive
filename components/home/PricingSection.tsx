@@ -67,38 +67,23 @@ export function PricingSection() {
         <div className="pricing-grid grid grid-cols-1 md:grid-cols-3 gap-5">
           {pricingTiers.map((tier, index) => (
             <ScrollReveal key={index} delay={index * 0.15}>
-              <div className={`price-card rounded-[40px] p-10 relative overflow-hidden transition-all ${
-                tier.isFeatured 
-                  ? 'featured bg-navy border border-steel/40 border-t border-steel/60 shadow-[0_1px_0_rgba(91,148,210,0.2)_inset,0_24px_64px_rgba(27,48,91,0.35)] hover:translate-y-[-6px] hover:shadow-[0_1px_0_rgba(91,148,210,0.25)_inset,0_32px_80px_rgba(27,48,91,0.45)]' 
-                  : 'lg border border-white/12 bg-white/06 hover:translate-y-[-4px] hover:shadow-lg'
-              }`}>
-                <div className="price-tier text-[10px] font-mono tracking-[0.2em] uppercase mb-6">
-                  {tier.isFeatured ? 'Developer' : tier.name}
-                </div>
-                <div className="price-n font-display text-[64px] font-light leading-none mb-1 tracking-[-0.03em]">
+              <div className={`price-card ${tier.isFeatured ? 'featured' : 'lg'}`}>
+                <div className="price-tier">{tier.isFeatured ? 'Developer' : tier.name}</div>
+                <div className="price-n">
                   <span><sup>$</sup>{tier.price.replace('$', '')}</span>
                 </div>
-                <div className="price-per text-[10px] font-mono tracking-[0.08em] mb-7">
-                  {tier.period}
-                </div>
-                <div className="price-rule h-px mb-6"></div>
-                <ul className="price-list space-y-3 mb-8">
+                <div className="price-per">{tier.period}</div>
+                <div className="price-rule" />
+                <ul className="price-list">
                   {tier.features.map((feature, i) => (
-                    <li key={i} className="text-sm flex items-start gap-2.5">
-                      <span className="text-[10px] font-mono mt-0.5 text-steel/50">–</span>
-                      <span>
-                        {feature}
-                      </span>
+                    <li key={i}>
+                      {feature}
                     </li>
                   ))}
                 </ul>
                 <Link
                   href="/#"
-                  className={`price-cta block w-full text-center text-[10.5px] font-mono tracking-[0.12em] uppercase rounded-[100px] transition-all ${
-                    tier.isFeatured
-                      ? 'bg-white/90 text-navy border-transparent hover:bg-white'
-                      : ''
-                  }`}
+                  className="price-cta"
                 >
                   {tier.isFeatured ? 'Start Developer plan' : (
                     tier.price === '$0' ? 'Get started' : 'Contact sales'

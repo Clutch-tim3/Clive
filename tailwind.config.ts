@@ -12,6 +12,9 @@ const config: Config = {
         paper: '#FAFAF8',
         off: '#F4F3F0',
         ink: '#1A1A1A',
+        black2: '#0C0C10',
+        black3: '#131318',
+        steel: '#5B94D2',
         navy: {
           DEFAULT: '#1B305B',
           dark: '#142447',

@@ -62,17 +62,17 @@ export function WhyClive() {
             </p>
           </div>
         </ScrollReveal>
-        <div className="lg-card-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="lg-card-grid">
           {features.map((feature, index) => (
             <ScrollReveal key={index} delay={0.1 * index}>
-              <div className="lg-info-card rounded-[28px] p-7 hover:translate-y-[-3px] transition-transform">
-                <div className="lg-info-icon w-12 h-12 rounded-[20px] flex items-center justify-center bg-navy/30 border border-steel/20 border-t-steel/35 mb-4.5 shadow-[0_0_16px_rgba(27,48,91,0.3),0_1px_0_rgba(91,148,210,0.2)_inset]">
+              <div className="lg-info-card">
+                <div className="lg-info-icon">
                   {feature.icon}
                 </div>
-                <div className="lg-info-title font-display text-[22px] font-normal text-white mb-2">
+                <div className="lg-info-title">
                   {feature.title}
                 </div>
-                <div className="lg-info-desc text-sm text-white/42 leading-relaxed">
+                <div className="lg-info-desc">
                   {feature.description}
                 </div>
               </div>
