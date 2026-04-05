@@ -3,6 +3,8 @@ import { adminDb } from '@/lib/firebase/admin';
 import { verifyStitchWebhook } from '@/lib/payments/stitch';
 import { FieldValue } from 'firebase-admin/firestore';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   const body      = await req.text();
   const signature = req.headers.get('stitch-signature') ?? '';
@@ -13,7 +15,7 @@ export async function POST(req: NextRequest) {
   const event = JSON.parse(body);
 
   if (event.status === 'Complete' && event.externalReference) {
-    const subSnap = await adminDb
+    const subSnap = await adminDb()
       .collection('subscriptions')
       .where('stitchReference', '==', event.externalReference)
       .limit(1)
@@ -33,7 +35,7 @@ export async function POST(req: NextRequest) {
         currentPeriodEnd:   new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000),
       });
 
-      await adminDb.collection('transactions').add({
+      await adminDb().collection('transactions').add({
         subscriptionId:   subRef.id,
         userId:           sub.userId,
         providerId:       sub.providerId,
@@ -49,13 +51,13 @@ export async function POST(req: NextRequest) {
         createdAt:        now,
       });
 
-      await adminDb.collection('users').doc(sub.providerId).update({
+      await adminDb().collection('users').doc(sub.providerId).update({
         'providerProfile.availableBalance': FieldValue.increment(net),
         'providerProfile.totalEarned':      FieldValue.increment(net),
         updatedAt: now,
       });
 
-      await adminDb.collection('products').doc(sub.productId).update({
+      await adminDb().collection('products').doc(sub.productId).update({
         'stats.totalSubscribers': FieldValue.increment(1),
         'stats.monthlyRevenue':   FieldValue.increment(gross),
         updatedAt: now,

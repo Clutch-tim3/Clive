@@ -1,8 +1,9 @@
 'use client';
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { auth } from '@/lib/firebase/client';
-import { onAuthStateChanged } from 'firebase/auth';
+// Firebase imported dynamically inside effects to avoid SSR initialisation errors
 
 /* ─── types ─────────────────────────────────────────────── */
 type Tab = 'dashboard' | 'add-product' | 'my-products' | 'testing' | 'analytics' | 'earnings';
@@ -984,9 +985,15 @@ export default function ConsolePage() {
   }, []);
 
   useEffect(() => {
-    return onAuthStateChanged(auth, user => {
-      setUserEmail(user?.email || user?.displayName || 'your@email.com');
-    });
+    let unsub: (() => void) | undefined;
+    import('@/lib/firebase/client').then(({ auth }) =>
+      import('firebase/auth').then(({ onAuthStateChanged }) => {
+        unsub = onAuthStateChanged(auth, user => {
+          setUserEmail(user?.email || user?.displayName || 'your@email.com');
+        });
+      })
+    );
+    return () => unsub?.();
   }, []);
 
   const navigateTo = (tab: Tab) => { setActiveTab(tab); setSidebarOpen(false); };

@@ -2,13 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireProvider, handleRouteError } from '@/lib/firebase/auth';
 import { adminDb } from '@/lib/firebase/admin';
 
+export const dynamic = 'force-dynamic';
+
 /** GET — public list of live products */
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const category = searchParams.get('category');
 
-    let query = adminDb
+    let query = adminDb()
       .collection('products')
       .where('status', '==', 'live')
       .orderBy('stats.totalSubscribers', 'desc') as FirebaseFirestore.Query;
@@ -49,14 +51,14 @@ export async function POST(req: NextRequest) {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '');
-    const slugCheck = await adminDb
+    const slugCheck = await adminDb()
       .collection('products')
       .where('slug', '==', baseSlug)
       .limit(1)
       .get();
     const slug = slugCheck.empty ? baseSlug : `${baseSlug}-${Date.now()}`;
 
-    const docRef = adminDb.collection('products').doc();
+    const docRef = adminDb().collection('products').doc();
     await docRef.set({
       id:              docRef.id,
       providerId:      user.uid,
@@ -93,7 +95,7 @@ export async function POST(req: NextRequest) {
 
     // Upgrade user role to provider if not already
     if (user.role === 'consumer') {
-      await adminDb.collection('users').doc(user.uid).update({
+      await adminDb().collection('users').doc(user.uid).update({
         role: 'provider', updatedAt: new Date(),
       });
     }

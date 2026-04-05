@@ -1,18 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminAuth, adminDb } from '@/lib/firebase/admin';
 
+export const dynamic = 'force-dynamic';
+
 /** POST — exchange Firebase ID token for a 14-day session cookie */
 export async function POST(req: NextRequest) {
   try {
     const { idToken, role } = await req.json();
     if (!idToken) return NextResponse.json({ error: 'Missing token' }, { status: 400 });
 
-    const decoded    = await adminAuth.verifyIdToken(idToken);
+    const decoded    = await adminAuth().verifyIdToken(idToken);
     const expiresIn  = 60 * 60 * 24 * 14 * 1000; // 14 days ms
-    const sessionCookie = await adminAuth.createSessionCookie(idToken, { expiresIn });
+    const sessionCookie = await adminAuth().createSessionCookie(idToken, { expiresIn });
 
     // Create user doc on first sign-in
-    const userRef  = adminDb.collection('users').doc(decoded.uid);
+    const userRef  = adminDb().collection('users').doc(decoded.uid);
     const userSnap = await userRef.get();
     if (!userSnap.exists) {
       await userRef.set({

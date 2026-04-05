@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin, handleRouteError } from '@/lib/firebase/auth';
 import { adminDb } from '@/lib/firebase/admin';
 
+export const dynamic = 'force-dynamic';
+
 /** POST — admin approves or rejects a product */
 export async function POST(
   req: NextRequest,
@@ -14,7 +16,7 @@ export async function POST(
     if (!['approve', 'reject'].includes(action))
       return NextResponse.json({ error: 'action must be "approve" or "reject"' }, { status: 400 });
 
-    await adminDb.collection('products').doc(params.productId).update({
+    await adminDb().collection('products').doc(params.productId).update({
       status:      action === 'approve' ? 'live' : 'rejected',
       reviewNotes: notes ?? null,
       reviewedAt:  new Date(),

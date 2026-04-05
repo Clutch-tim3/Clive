@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth, handleRouteError } from '@/lib/firebase/auth';
 import { adminDb } from '@/lib/firebase/admin';
 
+export const dynamic = 'force-dynamic';
+
 /** DELETE — revoke an API key */
 export async function DELETE(
   _req: NextRequest,
@@ -9,7 +11,7 @@ export async function DELETE(
 ) {
   try {
     const user   = await requireAuth();
-    const keyRef = adminDb.collection('apiKeys').doc(params.keyId);
+    const keyRef = adminDb().collection('apiKeys').doc(params.keyId);
     const keyDoc = await keyRef.get();
 
     if (!keyDoc.exists)

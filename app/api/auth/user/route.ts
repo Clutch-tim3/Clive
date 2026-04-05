@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/firebase/auth';
 
+export const dynamic = 'force-dynamic';
+
 /** GET — return current session user profile */
 export async function GET() {
   const user = await getSessionUser();

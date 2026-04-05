@@ -2,18 +2,20 @@ import { NextResponse } from 'next/server';
 import { requireProvider, handleRouteError } from '@/lib/firebase/auth';
 import { adminDb } from '@/lib/firebase/admin';
 
+export const dynamic = 'force-dynamic';
+
 /** GET — provider earnings: transactions, payouts, and balance */
 export async function GET() {
   try {
     const user = await requireProvider();
 
     // User doc for balance figures
-    const userDoc  = await adminDb.collection('users').doc(user.uid).get();
+    const userDoc  = await adminDb().collection('users').doc(user.uid).get();
     const userData = userDoc.data()!;
     const profile  = userData.providerProfile ?? {};
 
     // Transaction history
-    const txSnap = await adminDb
+    const txSnap = await adminDb()
       .collection('transactions')
       .where('providerId', '==', user.uid)
       .orderBy('createdAt', 'desc')
@@ -36,7 +38,7 @@ export async function GET() {
     });
 
     // Payout history
-    const payoutSnap = await adminDb
+    const payoutSnap = await adminDb()
       .collection('payouts')
       .where('providerId', '==', user.uid)
       .orderBy('requestedAt', 'desc')

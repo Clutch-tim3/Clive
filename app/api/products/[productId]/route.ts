@@ -2,11 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth, requireAdmin, handleRouteError } from '@/lib/firebase/auth';
 import { adminDb } from '@/lib/firebase/admin';
 
+export const dynamic = 'force-dynamic';
+
 type Ctx = { params: { productId: string } };
 
 export async function GET(_req: NextRequest, { params }: Ctx) {
   try {
-    const doc = await adminDb.collection('products').doc(params.productId).get();
+    const doc = await adminDb().collection('products').doc(params.productId).get();
     if (!doc.exists) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
     const data = doc.data()!;
@@ -25,7 +27,7 @@ export async function GET(_req: NextRequest, { params }: Ctx) {
 export async function PUT(req: NextRequest, { params }: Ctx) {
   try {
     const user   = await requireAuth();
-    const docRef = adminDb.collection('products').doc(params.productId);
+    const docRef = adminDb().collection('products').doc(params.productId);
     const doc    = await docRef.get();
     if (!doc.exists) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
@@ -48,7 +50,7 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
 export async function DELETE(_req: NextRequest, { params }: Ctx) {
   try {
     await requireAdmin();
-    await adminDb.collection('products').doc(params.productId).delete();
+    await adminDb().collection('products').doc(params.productId).delete();
     return NextResponse.json({ ok: true });
   } catch (err) {
     return handleRouteError(err);

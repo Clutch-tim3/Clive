@@ -3,11 +3,13 @@ import { requireAuth, handleRouteError } from '@/lib/firebase/auth';
 import { adminDb } from '@/lib/firebase/admin';
 import { generateApiKey } from '@/lib/keys/generator';
 
+export const dynamic = 'force-dynamic';
+
 /** GET — list user's active API keys (masked, never plaintext) */
 export async function GET() {
   try {
     const user = await requireAuth();
-    const snap = await adminDb
+    const snap = await adminDb()
       .collection('apiKeys')
       .where('userId', '==', user.uid)
       .where('isActive', '==', true)
@@ -41,7 +43,7 @@ export async function POST(req: NextRequest) {
       keyType === 'test' ? 'test' : 'live',
     );
 
-    const keyRef = adminDb.collection('apiKeys').doc();
+    const keyRef = adminDb().collection('apiKeys').doc();
     await keyRef.set({
       id:            keyRef.id,
       userId:        user.uid,

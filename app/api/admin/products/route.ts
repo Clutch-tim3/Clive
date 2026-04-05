@@ -2,11 +2,13 @@ import { NextResponse } from 'next/server';
 import { requireAdmin, handleRouteError } from '@/lib/firebase/auth';
 import { adminDb } from '@/lib/firebase/admin';
 
+export const dynamic = 'force-dynamic';
+
 /** GET — list products pending review */
 export async function GET() {
   try {
     await requireAdmin();
-    const snap = await adminDb
+    const snap = await adminDb()
       .collection('products')
       .where('status', '==', 'review')
       .orderBy('submittedAt', 'asc')

@@ -3,12 +3,14 @@ import { requireAuth, handleRouteError } from '@/lib/firebase/auth';
 import { adminDb } from '@/lib/firebase/admin';
 import { createPayPalOrder } from '@/lib/payments/paypal';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   try {
     const user = await requireAuth();
     const { productId, tierId } = await req.json();
 
-    const productSnap = await adminDb.collection('products').doc(productId).get();
+    const productSnap = await adminDb().collection('products').doc(productId).get();
     if (!productSnap.exists)
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
 
@@ -24,7 +26,7 @@ export async function POST(req: NextRequest) {
     );
 
     // Store pending subscription intent
-    await adminDb.collection('subscriptions').add({
+    await adminDb().collection('subscriptions').add({
       userId:        user.uid,
       productId,
       tierId,

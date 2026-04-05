@@ -2,11 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth, handleRouteError } from '@/lib/firebase/auth';
 import { adminDb } from '@/lib/firebase/admin';
 
+export const dynamic = 'force-dynamic';
+
 /** GET — list current user's subscriptions */
 export async function GET() {
   try {
     const user = await requireAuth();
-    const snap = await adminDb
+    const snap = await adminDb()
       .collection('subscriptions')
       .where('userId', '==', user.uid)
       .orderBy('createdAt', 'desc')
@@ -38,7 +40,7 @@ export async function POST(req: NextRequest) {
     const user = await requireAuth();
     const { productId, tierId } = await req.json();
 
-    const productSnap = await adminDb.collection('products').doc(productId).get();
+    const productSnap = await adminDb().collection('products').doc(productId).get();
     if (!productSnap.exists)
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
 
@@ -49,7 +51,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Use payment endpoints for paid tiers' }, { status: 400 });
 
     // Check for existing active subscription
-    const existing = await adminDb
+    const existing = await adminDb()
       .collection('subscriptions')
       .where('userId', '==', user.uid)
       .where('productId', '==', productId)
@@ -61,7 +63,7 @@ export async function POST(req: NextRequest) {
 
     const now    = new Date();
     const period = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-    const subRef = adminDb.collection('subscriptions').doc();
+    const subRef = adminDb().collection('subscriptions').doc();
     await subRef.set({
       id:                 subRef.id,
       userId:             user.uid,
@@ -78,9 +80,9 @@ export async function POST(req: NextRequest) {
     });
 
     // Increment subscriber count
-    await adminDb.collection('products').doc(productId).update({
-      'stats.totalSubscribers': adminDb.collection('products').doc().id
-        ? (await adminDb.collection('products').doc(productId).get()).data()!.stats.totalSubscribers + 1
+    await adminDb().collection('products').doc(productId).update({
+      'stats.totalSubscribers': adminDb().collection('products').doc().id
+        ? (await adminDb().collection('products').doc(productId).get()).data()!.stats.totalSubscribers + 1
         : 1,
       updatedAt: now,
     });

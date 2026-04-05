@@ -4,13 +4,15 @@ import { adminDb } from '@/lib/firebase/admin';
 import { sendPayPalPayout } from '@/lib/payments/paypal';
 import { FieldValue } from 'firebase-admin/firestore';
 
+export const dynamic = 'force-dynamic';
+
 /** POST — admin triggers a payout to a provider */
 export async function POST(req: NextRequest) {
   try {
     await requireAdmin();
     const { providerId, amountZAR } = await req.json();
 
-    const userDoc  = await adminDb.collection('users').doc(providerId).get();
+    const userDoc  = await adminDb().collection('users').doc(providerId).get();
     if (!userDoc.exists) return NextResponse.json({ error: 'Provider not found' }, { status: 404 });
 
     const profile = userDoc.data()!.providerProfile;
@@ -20,7 +22,7 @@ export async function POST(req: NextRequest) {
     const reference = `clv-payout-${providerId.slice(0, 6)}-${Date.now()}`;
     const result    = await sendPayPalPayout(profile.paypalEmail, amountZAR, reference);
 
-    const payoutRef = adminDb.collection('payouts').doc();
+    const payoutRef = adminDb().collection('payouts').doc();
     await payoutRef.set({
       id:            payoutRef.id,
       providerId,
@@ -32,7 +34,7 @@ export async function POST(req: NextRequest) {
     });
 
     // Deduct from available balance
-    await adminDb.collection('users').doc(providerId).update({
+    await adminDb().collection('users').doc(providerId).update({
       'providerProfile.availableBalance': FieldValue.increment(-amountZAR),
       'providerProfile.pendingPayout':    FieldValue.increment(amountZAR),
       updatedAt: new Date(),

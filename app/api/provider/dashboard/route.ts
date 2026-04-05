@@ -2,12 +2,14 @@ import { NextResponse } from 'next/server';
 import { requireProvider, handleRouteError } from '@/lib/firebase/auth';
 import { adminDb } from '@/lib/firebase/admin';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const user = await requireProvider();
 
     // Provider's products
-    const productsSnap = await adminDb
+    const productsSnap = await adminDb()
       .collection('products')
       .where('providerId', '==', user.uid)
       .orderBy('createdAt', 'desc')
@@ -28,7 +30,7 @@ export async function GET() {
 
     let totalCalls = 0;
     for (const p of products) {
-      const analyticsSnap = await adminDb
+      const analyticsSnap = await adminDb()
         .collection('products').doc(p.id)
         .collection('analytics')
         .where('date', '>=', sinceStr)
@@ -37,7 +39,7 @@ export async function GET() {
     }
 
     // Recent transactions
-    const txSnap = await adminDb
+    const txSnap = await adminDb()
       .collection('transactions')
       .where('providerId', '==', user.uid)
       .orderBy('createdAt', 'desc')
@@ -80,7 +82,7 @@ export async function GET() {
 
 async function getMonthlyRevenue(providerId: string): Promise<number[]> {
   const result = Array(12).fill(0);
-  const txSnap = await adminDb
+  const txSnap = await adminDb()
     .collection('transactions')
     .where('providerId', '==', providerId)
     .where('status', '==', 'completed')

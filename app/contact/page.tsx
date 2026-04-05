@@ -1,7 +1,7 @@
 'use client';
+export const dynamic = 'force-dynamic';
+
 import React, { useState } from 'react';
-import { db } from '@/lib/firebase/client';
-import { collection, addDoc } from 'firebase/firestore';
 
 export default function ContactPage() {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
@@ -22,6 +22,8 @@ export default function ContactPage() {
     if (!form.name || !form.email || !form.message) return;
     setStatus('loading');
     try {
+      const { db } = await import('@/lib/firebase/client');
+      const { collection, addDoc } = await import('firebase/firestore');
       await addDoc(collection(db, 'contactMessages'), {
         ...form,
         createdAt: new Date(),

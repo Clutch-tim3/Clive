@@ -1,12 +1,9 @@
 'use client';
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { auth, googleProvider, githubProvider } from '@/lib/firebase/client';
-import {
-  signInWithPopup,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-} from 'firebase/auth';
+// Firebase is imported dynamically inside handlers to avoid SSR initialisation errors
 
 /* ─── types ─────────────────────────────────────────────── */
 type Screen = 'gate' | 'signin' | 'signup' | 'onboard';
@@ -229,8 +226,11 @@ function SignInScreen({ onBack, onSignUp, onSuccess }: { onBack: () => void; onS
 
   const showNetworkErr = () => { setNetworkErr(true); setTimeout(() => setNetworkErr(false), 5000); };
 
-  const handleOAuth = async (provider: 'google' | 'github') => {
+  
+    const handleOAuth = async (provider: 'google' | 'github') => {
     try {
+      const { auth, googleProvider, githubProvider } = await import('@/lib/firebase/client');
+      const { signInWithPopup } = await import('firebase/auth');
       const p = provider === 'google' ? googleProvider : githubProvider;
       const result = await signInWithPopup(auth, p);
       await fetch('/api/auth/session', {
@@ -267,7 +267,10 @@ function SignInScreen({ onBack, onSignUp, onSuccess }: { onBack: () => void; onS
     if (!ok) return;
     setLoading(true);
     try {
-      const result = await signInWithEmailAndPassword(auth, email, pw);
+    
+      const { auth: _auth } = await import('@/lib/firebase/client');
+      const { signInWithEmailAndPassword } = await import('firebase/auth');
+      const result = await signInWithEmailAndPassword(_auth, email, pw);
       await fetch('/api/auth/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -357,8 +360,11 @@ function SignUpScreen({ onBack, onSignIn, onSuccess }: { onBack: () => void; onS
 
   const isValid = name.length >= 2 && validateEmail(email) && pw.length >= 8 && pw === confirm && terms;
 
-  const handleOAuth = async (provider: 'google' | 'github') => {
+  
+    const handleOAuth = async (provider: 'google' | 'github') => {
     try {
+      const { auth, googleProvider, githubProvider } = await import('@/lib/firebase/client');
+      const { signInWithPopup } = await import('firebase/auth');
       const p = provider === 'google' ? googleProvider : githubProvider;
       const result = await signInWithPopup(auth, p);
       await fetch('/api/auth/session', {
@@ -385,7 +391,10 @@ function SignUpScreen({ onBack, onSignIn, onSuccess }: { onBack: () => void; onS
     if (Object.keys(errs).length) return;
     setLoading(true);
     try {
-      const result = await createUserWithEmailAndPassword(auth, email, pw);
+    
+      const { auth: _fauth } = await import('@/lib/firebase/client');
+      const { createUserWithEmailAndPassword } = await import('firebase/auth');
+      const result = await createUserWithEmailAndPassword(_fauth, email, pw);
       await fetch('/api/auth/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

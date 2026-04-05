@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireProvider, handleRouteError } from '@/lib/firebase/auth';
 import { adminDb } from '@/lib/firebase/admin';
 
+export const dynamic = 'force-dynamic';
+
 /** GET — analytics for a provider's products
  *  Query params: productId (optional), period = '7d' | '30d' | '90d' (default 30d)
  */
@@ -21,12 +23,12 @@ export async function GET(req: NextRequest) {
     let productIds: string[] = [];
     if (productId) {
       // Verify ownership
-      const doc = await adminDb.collection('products').doc(productId).get();
+      const doc = await adminDb().collection('products').doc(productId).get();
       if (!doc.exists || doc.data()!.providerId !== user.uid)
         return NextResponse.json({ error: 'Not found' }, { status: 404 });
       productIds = [productId];
     } else {
-      const snap = await adminDb
+      const snap = await adminDb()
         .collection('products')
         .where('providerId', '==', user.uid)
         .get();
@@ -36,7 +38,7 @@ export async function GET(req: NextRequest) {
     // Fetch analytics for each product
     const results: Record<string, any[]> = {};
     for (const pid of productIds) {
-      const snap = await adminDb
+      const snap = await adminDb()
         .collection('products').doc(pid)
         .collection('analytics')
         .where('date', '>=', sinceStr)

@@ -3,6 +3,8 @@ import { adminDb } from '@/lib/firebase/admin';
 import { verifyPayPalWebhook } from '@/lib/payments/paypal';
 import { FieldValue } from 'firebase-admin/firestore';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   const body = await req.text();
 
@@ -23,7 +25,7 @@ export async function POST(req: NextRequest) {
   if (event.event_type === 'BILLING.SUBSCRIPTION.CANCELLED') {
     const subId = event.resource?.custom_id;
     if (subId) {
-      await adminDb.collection('subscriptions').doc(subId).update({
+      await adminDb().collection('subscriptions').doc(subId).update({
         status: 'cancelled', cancelledAt: new Date(),
       });
     }
@@ -33,7 +35,7 @@ export async function POST(req: NextRequest) {
 }
 
 async function handleCapture(orderId: string) {
-  const subSnap = await adminDb
+  const subSnap = await adminDb()
     .collection('subscriptions')
     .where('paypalOrderId', '==', orderId)
     .limit(1)
@@ -53,7 +55,7 @@ async function handleCapture(orderId: string) {
     currentPeriodEnd:   new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000),
   });
 
-  await adminDb.collection('transactions').add({
+  await adminDb().collection('transactions').add({
     subscriptionId:   subRef.id,
     userId:           sub.userId,
     providerId:       sub.providerId,
@@ -69,13 +71,13 @@ async function handleCapture(orderId: string) {
     createdAt:        now,
   });
 
-  await adminDb.collection('users').doc(sub.providerId).update({
+  await adminDb().collection('users').doc(sub.providerId).update({
     'providerProfile.availableBalance': FieldValue.increment(net),
     'providerProfile.totalEarned':      FieldValue.increment(net),
     updatedAt: now,
   });
 
-  await adminDb.collection('products').doc(sub.productId).update({
+  await adminDb().collection('products').doc(sub.productId).update({
     'stats.totalSubscribers': FieldValue.increment(1),
     'stats.monthlyRevenue':   FieldValue.increment(gross),
     updatedAt: now,
