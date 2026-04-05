@@ -7,49 +7,34 @@ interface PricingTiersProps {
 
 export function PricingTiers({ tiers }: PricingTiersProps) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
       {tiers.map((tier, index) => (
-        <div
-          key={index}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '20px 24px',
-            borderRadius: 'var(--r-md)',
-            border: '1px solid var(--border)',
-            background: tier.highlight ? 'var(--navy)' : 'var(--paper)',
-            color: tier.highlight ? 'white' : 'var(--ink)',
-            boxShadow: tier.highlight
-              ? '0 4px 20px rgba(27,48,91,0.25)'
-              : '0 1px 4px rgba(0,0,0,0.04)',
-            transition: 'box-shadow 0.2s',
-          }}
-        >
+        <div key={index} className={`tier-row-dark${tier.highlight ? ' highlight' : ''}`}>
           <div>
             <div style={{
-              fontSize: '11px',
               fontFamily: 'DM Mono, monospace',
-              letterSpacing: '0.14em',
+              fontSize: '11px',
+              letterSpacing: '0.1em',
               textTransform: 'uppercase',
+              color: tier.highlight ? 'white' : 'rgba(255,255,255,0.65)',
               marginBottom: '4px',
-              color: tier.highlight ? 'white' : 'var(--ink)',
             }}>
               {tier.name}
             </div>
             <div style={{
-              fontSize: '11px',
               fontFamily: 'DM Mono, monospace',
-              color: tier.highlight ? 'rgba(255,255,255,0.4)' : 'var(--text3)',
+              fontSize: '11px',
+              color: tier.highlight ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.32)',
             }}>
               {tier.calls}
             </div>
           </div>
           <div style={{
-            fontSize: '24px',
             fontFamily: 'Cormorant Garamond, serif',
+            fontSize: '28px',
             fontWeight: 300,
-            color: tier.highlight ? 'white' : 'var(--ink)',
+            color: tier.highlight ? 'white' : 'rgba(255,255,255,0.75)',
+            letterSpacing: '-0.02em',
           }}>
             {tier.price}
           </div>

@@ -1,0 +1,99 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuth() { return request.auth != null; }
+    function isOwner(uid) { return isAuth() && request.auth.uid == uid; }
+    function isAdmin() {
+      return isAuth() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    function isProvider() {
+      return isAuth() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['provider', 'admin'];
+    }
+
+    // Users — owner or admin
+    match /users/{uid} {
+      allow read:   if isOwner(uid) || isAdmin();
+      allow create: if isOwner(uid);
+      allow update: if isOwner(uid) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Products — public read if live; provider write own; admin write all
+    match /products/{productId} {
+      allow read: if resource.data.status == 'live'
+                  || isAdmin()
+                  || (isAuth() && resource.data.providerId == request.auth.uid);
+      allow create: if isProvider();
+      allow update: if isAdmin()
+                    || (isAuth()
+                        && resource.data.providerId == request.auth.uid
+                        && resource.data.status in ['draft', 'rejected']);
+      allow delete: if isAdmin();
+
+      match /analytics/{day} {
+        allow read: if isAdmin()
+                    || (isAuth() &&
+                        get(/databases/$(database)/documents/products/$(productId))
+                          .data.providerId == request.auth.uid);
+        allow write: if isAdmin();
+      }
+    }
+
+    // API Keys — owner only
+    match /apiKeys/{keyId} {
+      allow read, delete: if isAuth() && resource.data.userId == request.auth.uid;
+      allow create:       if isAuth() && request.resource.data.userId == request.auth.uid;
+    }
+
+    // Subscriptions — buyer, provider, or admin
+    match /subscriptions/{subId} {
+      allow read: if isAuth() && (
+        resource.data.userId     == request.auth.uid ||
+        resource.data.providerId == request.auth.uid ||
+        isAdmin()
+      );
+      allow create: if isAuth();
+      allow update: if isAdmin();
+    }
+
+    // Transactions — read-only for buyer/provider; write admin only
+    match /transactions/{txId} {
+      allow read: if isAuth() && (
+        resource.data.userId     == request.auth.uid ||
+        resource.data.providerId == request.auth.uid ||
+        isAdmin()
+      );
+      allow create, update: if isAdmin();
+    }
+
+    // Payouts — provider or admin
+    match /payouts/{payoutId} {
+      allow read: if isAuth() && (
+        resource.data.providerId == request.auth.uid || isAdmin()
+      );
+      allow create: if isProvider() &&
+                    request.resource.data.providerId == request.auth.uid;
+      allow update: if isAdmin();
+    }
+
+    // Contact messages — create only (anyone), read admin only
+    match /contactMessages/{msgId} {
+      allow create: if true;
+      allow read:   if isAdmin();
+    }
+
+    // Admin notifications — admin only
+    match /adminNotifications/{notifId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Platform status — public read, admin write
+    match /platformStatus/{serviceId} {
+      allow read:  if true;
+      allow write: if isAdmin();
+    }
+  }
+}

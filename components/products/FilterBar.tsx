@@ -21,6 +21,7 @@ export function FilterBar({ activeCategory, onCategoryChange }: FilterBarProps) 
         <button
           key={category.value}
           onClick={() => onCategoryChange(category.value)}
+          style={{ fontFamily: "'DM Mono', monospace" }}
           className={`filter-tab px-5 py-2.5 text-[10px] font-mono tracking-[0.14em] uppercase border-[1.5px] border-border transition-all rounded-[100px] ${
             activeCategory === category.value
               ? 'active bg-navy text-white border-navy shadow-[0_4px_16px_rgba(27,48,91,0.25)]'

@@ -30,7 +30,7 @@ export function Nav() {
         color: 'white',
         textDecoration: 'none',
       }}>
-        <em style={{ fontStyle: 'normal', color: 'rgba(91,148,210,0.9)' }}>C</em>LIVE
+        <img src="/logo.png" alt="Clive" style={{ height: '32px', width: 'auto' }} />
       </Link>
 
       <div style={{
@@ -44,8 +44,9 @@ export function Nav() {
           { href: '/products', label: 'Products', accent: false },
           { href: '/', label: 'Platform', accent: false },
           { href: '/pricing', label: 'Pricing', accent: false },
-          { href: '/partners', label: 'Partner APIs', accent: true },
-          { href: '/docs', label: 'Documentation', accent: false },
+          { href: '/sell', label: 'Sell', accent: false },
+          { href: '/docs', label: 'Docs', accent: false },
+          { href: '/console', label: 'Console', accent: true },
         ].map(({ href, label, accent }) => (
           <Link
             key={label}
@@ -73,7 +74,7 @@ export function Nav() {
 
       <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
         <Link
-          href="/#"
+          href="/auth?screen=signin"
           style={{
             fontFamily: "'DM Mono', monospace",
             fontSize: '10.5px',
@@ -104,7 +105,7 @@ export function Nav() {
           Sign in
         </Link>
         <Link
-          href="/#"
+          href="/auth?screen=signup"
           style={{
             fontFamily: "'DM Mono', monospace",
             fontSize: '10.5px',

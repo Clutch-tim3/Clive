@@ -4,7 +4,7 @@ import React from 'react';
 export function Footer() {
   return (
     <footer className="text-white px-14">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4" style={{gap: '72px'}}>
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3" style={{gap: '72px'}}>
         <div className="col-span-1 md:col-span-2">
           <div className="flex items-center gap-2 mb-6">
             <span className="f-brand text-[26px] font-display tracking-[0.08em] uppercase">
@@ -63,39 +63,6 @@ export function Footer() {
         
         <div>
           <h3 className="f-col-head text-[9.5px] font-mono tracking-[0.14em] uppercase mb-5">
-            Platform
-          </h3>
-          <ul className="f-links space-y-3">
-            <li>
-              <Link href="/docs" className="text-[12px] font-serif hover:text-white transition-colors">
-                Documentation
-              </Link>
-            </li>
-            <li>
-              <Link href="/docs/api" className="text-[12px] font-serif hover:text-white transition-colors">
-                API Reference
-              </Link>
-            </li>
-            <li>
-              <Link href="/docs/sdk" className="text-[12px] font-serif hover:text-white transition-colors">
-                SDK
-              </Link>
-            </li>
-            <li>
-              <Link href="/changelog" className="text-[12px] font-serif hover:text-white transition-colors">
-                Changelog
-              </Link>
-            </li>
-            <li>
-              <Link href="/status" className="text-[12px] font-serif hover:text-white transition-colors">
-                Status
-              </Link>
-            </li>
-          </ul>
-        </div>
-        
-        <div>
-          <h3 className="f-col-head text-[9.5px] font-mono tracking-[0.14em] uppercase mb-5">
             Company
           </h3>
           <ul className="f-links space-y-3">
@@ -105,13 +72,13 @@ export function Footer() {
               </Link>
             </li>
             <li>
-              <Link href="https://aws.amazon.com/marketplace" target="_blank" className="text-[12px] font-serif hover:text-white transition-colors">
-                AWS Marketplace
+              <Link href="/docs" className="text-[12px] font-serif hover:text-white transition-colors">
+                Documentation
               </Link>
             </li>
             <li>
-              <Link href="https://rapidapi.com/clive" target="_blank" className="text-[12px] font-serif hover:text-white transition-colors">
-                RapidAPI
+              <Link href="/sell" className="text-[12px] font-serif hover:text-white transition-colors">
+                Sell on Clive
               </Link>
             </li>
             <li>
@@ -133,9 +100,6 @@ export function Footer() {
           </Link>
           <Link href="/terms" className="text-[10px] font-mono hover:text-white transition-colors">
             Terms
-          </Link>
-          <Link href="/security" className="text-[10px] font-mono hover:text-white transition-colors">
-            Security
           </Link>
         </div>
       </div>

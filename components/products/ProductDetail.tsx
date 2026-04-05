@@ -3,7 +3,6 @@ import Link from 'next/link';
 import React from 'react';
 import { Product } from '@/lib/products';
 import { ShimmerBlock } from '../ui/ShimmerBlock';
-import { SectionKicker } from '../ui/SectionKicker';
 import { EndpointList } from '../ui/EndpointList';
 import { PricingTiers } from '../ui/PricingTiers';
 
@@ -27,186 +26,196 @@ export function ProductDetail({ product }: ProductDetailProps) {
     'chrome-store': 'Chrome Web Store',
   };
 
-  const metaCardStyle: React.CSSProperties = {
-    padding: '24px 28px',
-    border: '1px solid var(--border)',
-    background: 'var(--paper)',
-    borderRadius: 'var(--r-md)',
-    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-    transition: 'box-shadow 0.2s',
-  };
-
-  const metaLabelStyle: React.CSSProperties = {
-    fontSize: '10px',
-    fontFamily: 'DM Mono, monospace',
-    letterSpacing: '0.14em',
-    textTransform: 'uppercase',
-    color: 'var(--text3)',
-    marginBottom: '8px',
-  };
-
-  const metaValStyle: React.CSSProperties = {
-    fontSize: '20px',
-    fontFamily: 'Cormorant Garamond, serif',
-    fontWeight: 300,
-    color: 'var(--ink)',
-  };
-
   return (
-    <div>
-      {/* Hero row */}
-      <section className="pt-24 pb-18 px-14 border-b border-border">
+    <div className="detail-page">
+      {/* Atmosphere layers */}
+      <div className="detail-mesh" />
+      <div className="detail-scan" />
+
+      {/* ── Hero section ── */}
+      <section style={{ padding: '96px 48px 72px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
         <div
-          className="max-w-7xl mx-auto items-start"
-          style={{ display: 'grid', gridTemplateColumns: '1fr 420px', gap: '80px' }}
+          className="max-w-7xl mx-auto"
+          style={{ display: 'grid', gridTemplateColumns: '1fr 420px', gap: '80px', alignItems: 'start' }}
         >
+          {/* Left — headings + CTAs */}
           <div>
-            <Link
-              href="/#products"
-              className="inline-block mb-6 text-[10px] font-mono tracking-[0.14em] uppercase text-text3 hover:text-ink transition-colors"
-            >
+            <Link href="/#products" className="detail-back">
               ← All products
             </Link>
-            <SectionKicker>{categoryLabels[product.category]}</SectionKicker>
-            <h1 className="text-[clamp(52px,6.5vw,88px)] font-display font-light mb-4">
+
+            <div className="detail-cat">{categoryLabels[product.category]}</div>
+
+            <h1 style={{
+              fontFamily: 'Cormorant Garamond, serif',
+              fontSize: 'clamp(54px, 7vw, 92px)',
+              fontWeight: 300,
+              color: 'white',
+              marginBottom: '18px',
+              letterSpacing: '-0.03em',
+              lineHeight: 1,
+            }}>
               {product.name}
             </h1>
-            <p className="text-[17px] font-serif italic text-text2 mb-8">
+
+            <p style={{
+              fontSize: '17px',
+              fontStyle: 'italic',
+              color: 'rgba(255,255,255,0.45)',
+              lineHeight: 1.75,
+              maxWidth: '500px',
+              marginBottom: '36px',
+              fontFamily: 'Libre Baskerville, serif',
+            }}>
               {product.tagline}
             </p>
-            <div className="flex items-center space-x-4">
-              <Link
-                href="/#"
-                className="px-6 py-3 bg-black text-white text-[11px] font-mono tracking-[0.12em] uppercase rounded-sm hover:bg-navy transition-colors"
-              >
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <Link href={`/auth?screen=signup&product=${product.slug}`} className="side-cta" style={{ display: 'inline-block', width: 'auto', padding: '12px 28px', marginBottom: 0 }}>
                 Get started
               </Link>
-              <Link
-                href="/docs"
-                className="px-6 py-3 border border-border text-[11px] font-mono tracking-[0.12em] uppercase rounded-sm hover:bg-paper transition-colors"
-              >
-                View documentation
+              <Link href="/docs" className="side-cta-ghost" style={{ display: 'inline-block', width: 'auto', padding: '11px 28px' }}>
+                Documentation
               </Link>
             </div>
           </div>
 
-          <div className="sticky top-22">
+          {/* Right — sticky sidebar price card */}
+          <div className="detail-side">
             <ShimmerBlock variant="lg-strong">
-              <div className="p-9">
-                <div className="text-[9.5px] font-mono text-white/20 mb-2">
+              <div style={{ padding: '40px' }}>
+                <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '9.5px', color: 'rgba(255,255,255,0.2)', marginBottom: '8px', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
                   {product.pricing.label}
                 </div>
-                <div className="text-[60px] font-display font-light text-white leading-none mb-1">
+                <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '62px', fontWeight: 300, color: 'white', lineHeight: 1, marginBottom: '4px', letterSpacing: '-0.03em' }}>
                   {product.pricing.display}
                 </div>
-                <div className="text-[10px] font-mono text-white/25 mb-7">
+                <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '10px', color: 'rgba(255,255,255,0.25)', marginBottom: '28px' }}>
                   {product.pricing.unit}
                 </div>
-                <hr className="border-white/08 mb-7" />
-                <ul style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '28px' }}>
-                  {product.features.slice(0, 4).map((feature, index) => (
-                    <li key={index} className="flex items-start space-x-3">
-                      <span className="text-[11px] font-mono text-navy/65 mt-0.5">–</span>
-                      <span className="text-[12.5px] font-serif text-white/38">
+                <hr style={{ borderColor: 'rgba(255,255,255,0.08)', marginBottom: '28px' }} />
+                <ul style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '28px', listStyle: 'none', padding: 0 }}>
+                  {product.features.slice(0, 4).map((feature, i) => (
+                    <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                      <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '11px', color: 'rgba(91,148,210,0.65)', marginTop: '2px', flexShrink: 0 }}>–</span>
+                      <span style={{ fontSize: '12.5px', fontFamily: 'Libre Baskerville, serif', color: 'rgba(255,255,255,0.38)', lineHeight: 1.6 }}>
                         {feature}
                       </span>
                     </li>
                   ))}
                 </ul>
-                <Link
-                  href="/#"
-                  className="block w-full py-3 text-center bg-white text-black text-[11px] font-mono tracking-[0.12em] uppercase rounded-sm hover:bg-paper transition-colors mb-3"
-                >
-                  Get started
-                </Link>
-                <Link
-                  href="/#"
-                  className="block w-full py-3 text-center border border-white/10 text-[11px] font-mono tracking-[0.12em] uppercase rounded-sm hover:bg-white/05 transition-colors"
-                >
-                  View documentation
-                </Link>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <Link href={`/auth?screen=signup&product=${product.slug}`} className="side-cta">Get started</Link>
+                  <Link href="/docs" className="side-cta-ghost">View documentation</Link>
+                </div>
               </div>
             </ShimmerBlock>
           </div>
         </div>
       </section>
 
-      {/* Body row */}
-      <section className="py-18 px-14">
-        <div
-          className="max-w-7xl mx-auto"
-          style={{ display: 'grid', gridTemplateColumns: '1fr 420px', gap: '80px', alignItems: 'start' }}
-        >
-          {/* Main content */}
-          <div>
-            <div style={{ marginBottom: '80px' }}>
-              <SectionKicker>Overview</SectionKicker>
-              <h2 className="text-[34px] font-display font-light" style={{ marginBottom: '20px' }}>
-                {product.overview.title}
-              </h2>
-              <div className="space-y-4">
-                {product.overview.body.map((paragraph, index) => (
-                  <p key={index} className="text-[14px] font-serif text-text2 line-height-190">
-                    {paragraph}
-                  </p>
-                ))}
-              </div>
-            </div>
+      {/* ── Body section ── */}
+      <div style={{ maxWidth: '1300px', margin: '0 auto', padding: '80px 48px 120px', display: 'grid', gridTemplateColumns: '1fr 420px', gap: '80px', alignItems: 'start' }}>
 
-            <div style={{ marginBottom: '80px' }}>
-              <SectionKicker>Endpoints / Capabilities</SectionKicker>
-              <h2 className="text-[34px] font-display font-light" style={{ marginBottom: '24px' }}>
-                API endpoints
-              </h2>
-              <EndpointList endpoints={product.endpoints} />
+        {/* Main content */}
+        <div>
+          {/* Overview */}
+          <div style={{ marginBottom: '80px' }}>
+            <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '9.5px', letterSpacing: '0.22em', textTransform: 'uppercase', color: 'rgba(91,148,210,0.65)', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <span style={{ width: '18px', height: '1px', background: 'rgba(91,148,210,0.5)', flexShrink: 0 }} />
+              Overview
             </div>
-
-            <div>
-              <SectionKicker>Pricing</SectionKicker>
-              <h2 className="text-[34px] font-display font-light" style={{ marginBottom: '24px' }}>
-                Pricing tiers
-              </h2>
-              <PricingTiers tiers={product.pricing.tiers} />
+            <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '38px', fontWeight: 300, color: 'white', marginBottom: '20px', letterSpacing: '-0.02em' }}>
+              {product.overview.title}
+            </h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {product.overview.body.map((paragraph, i) => (
+                <p key={i} style={{ fontSize: '14px', lineHeight: 1.9, color: 'rgba(255,255,255,0.5)', fontFamily: 'Libre Baskerville, serif' }}>
+                  {paragraph}
+                </p>
+              ))}
             </div>
           </div>
 
-          {/* Sidebar meta cards */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <div style={metaCardStyle}>
-              <div style={metaLabelStyle}>Category</div>
-              <div style={metaValStyle}>{categoryLabels[product.category]}</div>
+          {/* Endpoints */}
+          <div style={{ marginBottom: '80px' }}>
+            <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '9.5px', letterSpacing: '0.22em', textTransform: 'uppercase', color: 'rgba(91,148,210,0.65)', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <span style={{ width: '18px', height: '1px', background: 'rgba(91,148,210,0.5)', flexShrink: 0 }} />
+              Endpoints / Capabilities
             </div>
+            <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '38px', fontWeight: 300, color: 'white', marginBottom: '24px', letterSpacing: '-0.02em' }}>
+              API endpoints
+            </h2>
+            <EndpointList endpoints={product.endpoints} />
+          </div>
 
-            <div style={metaCardStyle}>
-              <div style={metaLabelStyle}>Available on</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                {product.channels.map((channel, index) => (
-                  <div key={index} style={metaValStyle}>
-                    {channelLabels[channel]}
-                  </div>
-                ))}
-              </div>
+          {/* Pricing */}
+          <div>
+            <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '9.5px', letterSpacing: '0.22em', textTransform: 'uppercase', color: 'rgba(91,148,210,0.65)', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <span style={{ width: '18px', height: '1px', background: 'rgba(91,148,210,0.5)', flexShrink: 0 }} />
+              Pricing
             </div>
-
-            <div style={metaCardStyle}>
-              <div style={metaLabelStyle}>Free tier</div>
-              <div style={metaValStyle}>{product.freeTier}</div>
-            </div>
-
-            <div style={metaCardStyle}>
-              <div style={metaLabelStyle}>Authentication</div>
-              <div style={metaValStyle}>API key</div>
-            </div>
-
-            {product.licence && (
-              <div style={metaCardStyle}>
-                <div style={metaLabelStyle}>Data licence</div>
-                <div style={metaValStyle}>{product.licence}</div>
-              </div>
-            )}
+            <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '38px', fontWeight: 300, color: 'white', marginBottom: '24px', letterSpacing: '-0.02em' }}>
+              Pricing tiers
+            </h2>
+            <PricingTiers tiers={product.pricing.tiers} />
           </div>
         </div>
-      </section>
+
+        {/* Sidebar meta cards */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', position: 'sticky', top: '88px' }}>
+          <div className="meta-card-dark">
+            <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '9px', letterSpacing: '0.16em', textTransform: 'uppercase', color: 'rgba(91,148,210,0.55)', marginBottom: '10px' }}>
+              Category
+            </div>
+            <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '20px', fontWeight: 300, color: 'white' }}>
+              {categoryLabels[product.category]}
+            </div>
+          </div>
+
+          <div className="meta-card-dark">
+            <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '9px', letterSpacing: '0.16em', textTransform: 'uppercase', color: 'rgba(91,148,210,0.55)', marginBottom: '10px' }}>
+              Available on
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              {product.channels.map((channel, i) => (
+                <div key={i} style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '20px', fontWeight: 300, color: 'white' }}>
+                  {channelLabels[channel]}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="meta-card-dark">
+            <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '9px', letterSpacing: '0.16em', textTransform: 'uppercase', color: 'rgba(91,148,210,0.55)', marginBottom: '10px' }}>
+              Free tier
+            </div>
+            <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '20px', fontWeight: 300, color: 'white' }}>
+              {product.freeTier}
+            </div>
+          </div>
+
+          <div className="meta-card-dark">
+            <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '9px', letterSpacing: '0.16em', textTransform: 'uppercase', color: 'rgba(91,148,210,0.55)', marginBottom: '10px' }}>
+              Authentication
+            </div>
+            <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '20px', fontWeight: 300, color: 'white' }}>
+              API Key (Header)
+            </div>
+          </div>
+
+          {product.licence && (
+            <div className="meta-card-dark">
+              <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '9px', letterSpacing: '0.16em', textTransform: 'uppercase', color: 'rgba(91,148,210,0.55)', marginBottom: '10px' }}>
+                Data licence
+              </div>
+              <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '20px', fontWeight: 300, color: 'white' }}>
+                {product.licence}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

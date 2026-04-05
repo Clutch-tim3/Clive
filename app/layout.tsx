@@ -3,7 +3,6 @@ import { Cormorant_Garamond, DM_Mono, Libre_Baskerville } from 'next/font/google
 import '@/styles/globals.css';
 import { Nav } from '@/components/layout/Nav';
 import { Footer } from '@/components/layout/Footer';
-import { Cursor } from '@/components/layout/Cursor';
 
 const cormorantGaramond = Cormorant_Garamond({
   subsets: ['latin'],
@@ -30,7 +29,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Clive — Developer Platform',
     description: 'APIs, ML models, Chrome extensions, and security tools. Everything a developer needs, priced for builders.',
-    images: '/og/home.png',
+    images: '/logo.png',
     type: 'website',
   },
 };
@@ -45,7 +44,6 @@ export default function RootLayout({
       <body
         className={`${cormorantGaramond.variable} ${libreBaskerville.variable} ${dmMono.variable} antialiased`}
       >
-        <Cursor />
         <Nav />
         <main className="pt-16">
           {children}

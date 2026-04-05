@@ -6,7 +6,7 @@ const channels = [
     number: '01',
     name: 'Clive Direct',
     description: 'Buy direct at the best price available, with bundle discounts on platform subscriptions.',
-    href: '/',
+    href: '/products',
     linkLabel: 'Learn more',
   },
   {

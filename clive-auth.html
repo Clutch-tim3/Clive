@@ -1,0 +1,2128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clive — Sign In</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+
+/* === ROOT VARIABLES === */
+:root {
+  --black:      #07070A;
+  --black2:     #0C0C10;
+  --black3:     #131318;
+  --navy:       #1B305B;
+  --navy2:      #142447;
+  --navy3:      #0E1A33;
+  --steel:      rgba(91,148,210,1);
+  --steel-dim:  rgba(91,148,210,0.18);
+  --steel-mid:  rgba(91,148,210,0.45);
+  --steel-glow: rgba(91,148,210,0.55);
+  --white:      #FFFFFF;
+  --text-dim:   rgba(255,255,255,0.42);
+  --text-muted: rgba(255,255,255,0.22);
+  --border-dim: rgba(255,255,255,0.08);
+  --border-mid: rgba(255,255,255,0.14);
+  --r-sm:   10px;
+  --r-md:   18px;
+  --r-lg:   26px;
+  --r-xl:   38px;
+  --r-pill: 100px;
+}
+
+/* === RESET === */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; overflow: hidden; }
+body {
+  background: var(--black);
+  color: var(--white);
+  font-family: 'Libre Baskerville', serif;
+  cursor: none;
+}
+
+/* === CUSTOM CURSOR === */
+#cursor-ring {
+  position: fixed;
+  width: 36px;
+  height: 36px;
+  border: 1.5px solid rgba(27,48,91,0.35);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  left: 0; top: 0;
+  transform: translate(-50%, -50%);
+  transition: width 0.2s ease, height 0.2s ease, border-color 0.2s ease;
+  will-change: left, top;
+}
+#cursor-dot {
+  position: fixed;
+  width: 6px;
+  height: 6px;
+  background: rgba(91,148,210,0.8);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 10000;
+  left: 0; top: 0;
+  transform: translate(-50%, -50%);
+  transition: width 0.15s ease, height 0.15s ease;
+  will-change: left, top;
+}
+body.cursor-hover #cursor-ring {
+  width: 52px;
+  height: 52px;
+  border-color: rgba(91,148,210,0.5);
+}
+body.cursor-hover #cursor-dot {
+  width: 4px;
+  height: 4px;
+}
+
+/* === LAYOUT === */
+#left-panel {
+  position: fixed;
+  left: 0; top: 0;
+  width: 50vw;
+  height: 100vh;
+  background: var(--black);
+  overflow: hidden;
+  z-index: 1;
+}
+#right-panel {
+  position: fixed;
+  right: 0; top: 0;
+  width: 50vw;
+  height: 100vh;
+  background: var(--black2);
+  overflow-y: auto;
+  z-index: 2;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(91,148,210,0.15) transparent;
+}
+#right-panel::-webkit-scrollbar { width: 4px; }
+#right-panel::-webkit-scrollbar-track { background: transparent; }
+#right-panel::-webkit-scrollbar-thumb { background: rgba(91,148,210,0.2); border-radius: 2px; }
+
+/* === LEFT PANEL LAYERS === */
+.left-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(27,48,91,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(27,48,91,0.06) 1px, transparent 1px);
+  background-size: 52px 52px;
+}
+
+/* Orbs */
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.orb-1 {
+  width: 560px; height: 560px;
+  background: rgba(27,48,91,0.28);
+  filter: blur(80px);
+  right: -150px; top: -80px;
+  animation: float1 14s ease-in-out infinite;
+}
+.orb-2 {
+  width: 360px; height: 360px;
+  background: rgba(27,48,91,0.16);
+  filter: blur(60px);
+  left: -80px; bottom: -60px;
+  animation: float2 11s ease-in-out infinite 3s;
+}
+.orb-3 {
+  width: 220px; height: 220px;
+  background: rgba(91,148,210,0.07);
+  filter: blur(50px);
+  left: 40%; top: 35%;
+  animation: float3 9s ease-in-out infinite 6s;
+}
+@keyframes float1 {
+  0%,100% { transform: translate(0,0); }
+  33%     { transform: translate(-30px,40px); }
+  66%     { transform: translate(20px,-20px); }
+}
+@keyframes float2 {
+  0%,100% { transform: translate(0,0); }
+  50%     { transform: translate(40px,-30px); }
+}
+@keyframes float3 {
+  0%,100% { transform: translate(0,0); }
+  33%     { transform: translate(-20px,30px); }
+  66%     { transform: translate(15px,-15px); }
+}
+
+/* Scan line */
+.scan-line {
+  position: absolute;
+  left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(91,148,210,0.35), transparent);
+  animation: scan 7s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 2;
+}
+@keyframes scan {
+  0%   { top: -2px; }
+  48%  { top: 48vh; }
+  50%  { top: 50vh; animation-timing-function: ease-in-out; }
+  52%  { top: 52vh; }
+  100% { top: 101vh; }
+}
+
+/* C Lettermark */
+.left-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+}
+.left-lettermark {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: clamp(180px, 18vw, 260px);
+  color: #1B305B;
+  line-height: 1;
+  user-select: none;
+  animation: glow-pulse 4s ease-in-out infinite;
+}
+@keyframes glow-pulse {
+  0%,100% {
+    filter:
+      drop-shadow(0 0 8px rgba(80,160,255,0.9))
+      drop-shadow(0 0 22px rgba(80,160,255,0.65))
+      drop-shadow(0 0 55px rgba(60,140,255,0.40))
+      drop-shadow(0 0 110px rgba(40,120,255,0.15));
+  }
+  50% {
+    filter:
+      drop-shadow(0 0 8px rgba(80,160,255,0.9))
+      drop-shadow(0 0 22px rgba(80,160,255,0.65))
+      drop-shadow(0 0 55px rgba(60,140,255,0.40))
+      drop-shadow(0 0 110px rgba(40,120,255,0.28));
+  }
+}
+
+/* Brand text */
+.left-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+.left-brand-rule {
+  width: 48px;
+  height: 1px;
+  background: rgba(91,148,210,0.25);
+}
+.left-brand-name {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  color: rgba(255,255,255,0.15);
+  text-transform: uppercase;
+}
+
+/* Stats chips */
+.left-stats {
+  position: absolute;
+  bottom: 80px;
+  left: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 3;
+}
+.stat-chip {
+  display: inline-block;
+  background: rgba(27,48,91,0.35);
+  border: 1px solid rgba(91,148,210,0.2);
+  border-radius: var(--r-pill);
+  padding: 5px 14px;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: rgba(255,255,255,0.5);
+  animation: stat-float 6s ease-in-out infinite;
+  width: fit-content;
+}
+.stat-chip:nth-child(2) { animation-delay: 2s; }
+.stat-chip:nth-child(3) { animation-delay: 4s; }
+@keyframes stat-float {
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(-6px); }
+}
+
+/* Testimonial */
+.left-testimonial {
+  position: absolute;
+  bottom: 28px;
+  left: 40px;
+  right: 40px;
+  z-index: 3;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  padding-top: 14px;
+}
+.left-testimonial p {
+  font-family: 'Libre Baskerville', serif;
+  font-style: italic;
+  font-size: 13px;
+  color: rgba(255,255,255,0.28);
+  line-height: 1.6;
+}
+.left-testimonial .attr {
+  margin-top: 6px;
+  font-family: 'DM Mono', monospace;
+  font-style: normal;
+  font-size: 9px;
+  color: rgba(255,255,255,0.18);
+  letter-spacing: 0.08em;
+}
+
+/* === RIGHT PANEL SCREENS === */
+.screen {
+  display: none;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: 64px 72px;
+  align-items: center;
+  justify-content: center;
+}
+.screen.active { display: flex; }
+
+.screen-inner {
+  width: 100%;
+  max-width: 460px;
+  animation: fade-up 0.5s ease 0.3s both;
+}
+.screen-inner-wide {
+  width: 100%;
+  max-width: 520px;
+  animation: fade-up 0.5s ease 0.3s both;
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Back button */
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.3);
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-bottom: 40px;
+  padding: 0;
+  transition: color 0.2s;
+}
+.back-btn:hover { color: rgba(255,255,255,0.65); }
+.back-btn:focus-visible { outline: 2px solid var(--steel-glow); outline-offset: 4px; border-radius: 4px; }
+
+/* Headings */
+.auth-heading {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: 46px;
+  color: white;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin-bottom: 10px;
+}
+.auth-sub {
+  font-family: 'Libre Baskerville', serif;
+  font-style: italic;
+  font-size: 14px;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 36px;
+  line-height: 1.65;
+}
+
+/* === OAuth === */
+.oauth-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+.oauth-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 0;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-top: 1.5px solid rgba(255,255,255,0.18);
+  border-radius: var(--r-md);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.7);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.oauth-btn:hover {
+  background: rgba(255,255,255,0.09);
+  transform: translateY(-1px);
+}
+.oauth-btn:focus-visible { outline: 2px solid var(--steel-glow); outline-offset: 2px; }
+.oauth-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+/* Divider */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 0 0 28px;
+}
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255,255,255,0.1);
+}
+.auth-divider span {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: rgba(255,255,255,0.2);
+  white-space: nowrap;
+  letter-spacing: 0.06em;
+}
+
+/* === FLOAT LABEL INPUTS === */
+.field-group {
+  position: relative;
+  margin-bottom: 20px;
+}
+.field-group label {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  color: rgba(255,255,255,0.28);
+  letter-spacing: 0.04em;
+  transition: all 0.2s ease;
+  pointer-events: none;
+  z-index: 1;
+  background: transparent;
+}
+.field-group.focused label,
+.field-group.has-value label {
+  top: 0;
+  transform: translateY(-50%);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(91,148,210,0.7);
+  background: var(--black2);
+  padding: 0 4px;
+  left: 14px;
+}
+.field-group input {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--r-md);
+  padding: 16px 18px;
+  font-family: 'Libre Baskerville', serif;
+  font-size: 14px;
+  color: white;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  -webkit-appearance: none;
+}
+.field-group input::placeholder { color: transparent; }
+.field-group input:focus {
+  border-color: rgba(91,148,210,0.5);
+  box-shadow: 0 0 0 3px rgba(91,148,210,0.1);
+}
+
+/* Password wrap */
+.pw-wrap { position: relative; }
+.pw-wrap input { padding-right: 48px; }
+.pw-toggle {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: rgba(255,255,255,0.25);
+  transition: color 0.2s;
+  z-index: 2;
+  line-height: 0;
+}
+.pw-toggle:hover { color: rgba(255,255,255,0.6); }
+.pw-toggle svg { width: 16px; height: 16px; }
+
+/* Field states */
+.field-group.error input {
+  border-color: rgba(220,80,80,0.5) !important;
+  background: rgba(220,80,80,0.04) !important;
+  box-shadow: none !important;
+}
+.field-error {
+  display: none;
+  font-family: 'DM Mono', monospace;
+  font-size: 9.5px;
+  color: rgba(220,80,80,0.85);
+  margin-top: 6px;
+  padding-left: 4px;
+}
+.field-group.error .field-error { display: block; }
+.field-group.success input { border-right: 2px solid rgba(80,200,120,0.6); }
+
+/* Shake */
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20%     { transform: translateX(-6px); }
+  40%     { transform: translateX(6px); }
+  60%     { transform: translateX(-4px); }
+  80%     { transform: translateX(4px); }
+}
+.shake { animation: shake 0.4s ease; }
+
+/* Password strength */
+.pw-strength { margin-top: 8px; }
+.pw-strength-bar {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 5px;
+}
+.pw-seg {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.08);
+  transition: background 0.3s;
+}
+.pw-strength-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: rgba(255,255,255,0.3);
+  transition: color 0.3s;
+  min-height: 12px;
+}
+
+/* Forgot link */
+.forgot-link {
+  display: block;
+  text-align: right;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: rgba(91,148,210,0.65);
+  margin-top: -10px;
+  margin-bottom: 28px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.forgot-link:hover { color: rgba(91,148,210,1); text-decoration: underline; }
+
+/* === BUTTONS === */
+.btn-primary {
+  display: block;
+  width: 100%;
+  padding: 16px;
+  background: var(--navy);
+  border: 1px solid rgba(91,148,210,0.35);
+  border-top: 1.5px solid rgba(91,148,210,0.55);
+  border-radius: var(--r-pill);
+  font-family: 'DM Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 20px rgba(27,48,91,0.5), 0 1px 0 rgba(255,255,255,0.08) inset;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  line-height: 1;
+}
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(27,48,91,0.65), 0 1px 0 rgba(255,255,255,0.1) inset;
+  background: #213a6e;
+}
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-primary:focus-visible { outline: 2px solid var(--steel-glow); outline-offset: 3px; }
+
+.btn-ghost {
+  display: block;
+  width: 100%;
+  padding: 15px;
+  background: transparent;
+  border: 1.5px solid rgba(255,255,255,0.12);
+  border-radius: var(--r-pill);
+  font-family: 'DM Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.6);
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  line-height: 1;
+}
+.btn-ghost:hover {
+  border-color: rgba(255,255,255,0.25);
+  color: white;
+}
+.btn-ghost:focus-visible { outline: 2px solid var(--steel-glow); outline-offset: 3px; }
+
+/* Loading dots */
+.loading-dots {
+  display: inline-flex;
+  gap: 3px;
+  align-items: center;
+  justify-content: center;
+}
+.loading-dots span {
+  font-size: 22px;
+  line-height: 0.5;
+  animation: dot-pulse 0.9s ease-in-out infinite;
+  opacity: 0.2;
+}
+.loading-dots span:nth-child(2) { animation-delay: 0.13s; }
+.loading-dots span:nth-child(3) { animation-delay: 0.26s; }
+@keyframes dot-pulse {
+  0%,100% { opacity: 0.2; }
+  50%     { opacity: 1; }
+}
+
+/* Ripple */
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  transform: scale(0);
+  animation: ripple-out 0.42s ease-out forwards;
+  pointer-events: none;
+}
+@keyframes ripple-out {
+  to { transform: scale(4); opacity: 0; }
+}
+
+/* Auth footer */
+.auth-switch {
+  margin-top: 24px;
+  font-family: 'Libre Baskerville', serif;
+  font-style: italic;
+  font-size: 13px;
+  color: rgba(255,255,255,0.35);
+  text-align: center;
+}
+.auth-switch .link {
+  color: rgba(91,148,210,0.8);
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.auth-switch .link:hover { color: rgba(91,148,210,1); }
+
+/* Custom checkbox */
+.checkbox-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.custom-checkbox {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.custom-checkbox input[type="checkbox"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  z-index: 1;
+}
+.check-box {
+  width: 18px;
+  height: 18px;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 5px;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.custom-checkbox input[type="checkbox"]:checked ~ .check-box {
+  background: var(--navy);
+  border-color: var(--navy);
+}
+.check-icon { display: none; }
+.custom-checkbox input[type="checkbox"]:checked ~ .check-box .check-icon { display: block; }
+.checkbox-label {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 13px;
+  color: rgba(255,255,255,0.4);
+  line-height: 1.55;
+  cursor: default;
+}
+.checkbox-label a {
+  color: rgba(91,148,210,0.8);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.checkbox-label a:hover { color: rgba(91,148,210,1); }
+
+/* ================================
+   SCREEN 1 — LANDING GATE
+================================= */
+.gate-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: 52px;
+  color: white;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.gate-kicker {
+  font-family: 'DM Mono', monospace;
+  font-size: 9.5px;
+  color: rgba(91,148,210,0.6);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  margin-bottom: 52px;
+}
+.gate-headline {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: clamp(38px, 4vw, 56px);
+  color: white;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin-bottom: 16px;
+}
+.gate-sub {
+  font-family: 'Libre Baskerville', serif;
+  font-style: italic;
+  font-size: 14px;
+  color: rgba(255,255,255,0.4);
+  line-height: 1.7;
+  margin-bottom: 48px;
+  max-width: 400px;
+}
+.gate-ctas {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.gate-notice {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: rgba(255,255,255,0.2);
+  letter-spacing: 0.1em;
+  text-align: center;
+  margin-bottom: 36px;
+}
+.gate-social {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: rgba(255,255,255,0.18);
+  letter-spacing: 0.06em;
+  text-align: center;
+  line-height: 2;
+}
+.gate-social-names {
+  color: rgba(255,255,255,0.3);
+}
+
+/* ================================
+   SCREEN 4 — ONBOARDING
+================================= */
+/* Step indicator */
+.step-indicator {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 44px;
+  gap: 0;
+}
+.step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.step-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.3);
+  background: transparent;
+  transition: all 0.3s;
+  line-height: 1;
+}
+.step-circle.active {
+  background: var(--navy);
+  border: 1.5px solid rgba(91,148,210,0.6);
+  color: white;
+}
+.step-circle.done {
+  background: rgba(91,148,210,0.2);
+  border-color: rgba(91,148,210,0.4);
+  color: rgba(91,148,210,0.9);
+  font-size: 12px;
+}
+.step-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.22);
+  white-space: nowrap;
+  transition: color 0.3s;
+}
+.step-label.active { color: rgba(91,148,210,0.7); }
+.step-connector {
+  flex: 1;
+  height: 1px;
+  background: rgba(255,255,255,0.1);
+  margin-top: 14px;
+  position: relative;
+  overflow: hidden;
+  min-width: 40px;
+}
+.step-connector-fill {
+  position: absolute;
+  left: 0; top: 0;
+  height: 100%;
+  width: 0%;
+  background: rgba(91,148,210,0.5);
+  transition: width 0.35s ease;
+}
+
+/* Step panes */
+.step-pane {
+  display: none;
+  flex-direction: column;
+}
+.step-pane.active { display: flex; }
+.step-pane.slide-in  { animation: step-in  0.28s ease-out; }
+.step-pane.slide-out { animation: step-out 0.28s ease-out; }
+@keyframes step-in  { from { opacity:0; transform: translateX(40px); } to { opacity:1; transform:translateX(0); } }
+@keyframes step-out { from { opacity:1; transform: translateX(0); } to { opacity:0; transform: translateX(-40px); } }
+
+.step-heading {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: 36px;
+  color: white;
+  letter-spacing: -0.02em;
+  margin-bottom: 10px;
+  line-height: 1.1;
+}
+.step-sub {
+  font-family: 'Libre Baskerville', serif;
+  font-style: italic;
+  font-size: 13px;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 28px;
+}
+
+/* Use case grid */
+.usecase-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+.usecase-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--r-lg);
+  padding: 20px 18px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.usecase-card:hover:not(.selected) {
+  background: rgba(255,255,255,0.065);
+  border-color: rgba(255,255,255,0.15);
+  transform: translateY(-2px);
+}
+.usecase-card.selected {
+  background: rgba(27,48,91,0.45);
+  border: 1.5px solid rgba(91,148,210,0.45);
+  border-top-color: rgba(91,148,210,0.65);
+  box-shadow: 0 0 0 3px rgba(91,148,210,0.1);
+}
+.usecase-icon {
+  font-size: 20px;
+  margin-bottom: 10px;
+  line-height: 1;
+}
+.usecase-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: white;
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+}
+.usecase-sub {
+  font-family: 'Libre Baskerville', serif;
+  font-style: italic;
+  font-size: 12px;
+  color: rgba(255,255,255,0.38);
+}
+
+/* API cards (step 2) */
+.api-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.api-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--r-lg);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.api-card:hover:not(.selected) {
+  background: rgba(255,255,255,0.065);
+  border-color: rgba(255,255,255,0.15);
+  transform: translateY(-1px);
+}
+.api-card.selected {
+  background: rgba(27,48,91,0.45);
+  border: 1.5px solid rgba(91,148,210,0.45);
+  border-top-color: rgba(91,148,210,0.65);
+  box-shadow: 0 0 0 3px rgba(91,148,210,0.1);
+}
+.api-icon-box {
+  width: 44px; height: 44px;
+  flex-shrink: 0;
+  background: rgba(27,48,91,0.5);
+  border: 1px solid rgba(91,148,210,0.2);
+  border-radius: var(--r-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+.api-info { flex: 1; min-width: 0; }
+.api-name {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  color: white;
+  margin-bottom: 3px;
+}
+.api-tagline {
+  font-family: 'Libre Baskerville', serif;
+  font-style: italic;
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 4px;
+}
+.api-free {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: rgba(91,148,210,0.65);
+}
+.api-price { text-align: right; flex-shrink: 0; }
+.api-price-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: 22px;
+  color: white;
+  line-height: 1;
+}
+.api-price-unit {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  color: rgba(255,255,255,0.3);
+}
+
+.browse-link {
+  font-family: 'DM Mono', monospace;
+  font-size: 9.5px;
+  color: rgba(91,148,210,0.6);
+  cursor: pointer;
+  margin-bottom: 14px;
+  display: inline-block;
+  transition: color 0.2s;
+  letter-spacing: 0.06em;
+}
+.browse-link:hover { color: rgba(91,148,210,1); }
+
+.browse-expanded {
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding: 12px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: var(--r-md);
+  max-height: 240px;
+  overflow-y: auto;
+}
+.browse-expanded.open { display: flex; }
+
+.step-back-btn {
+  display: block;
+  text-align: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: rgba(255,255,255,0.3);
+  margin-top: 12px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  transition: color 0.2s;
+  letter-spacing: 0.06em;
+  width: 100%;
+  padding: 4px 0;
+}
+.step-back-btn:hover { color: rgba(255,255,255,0.65); }
+
+/* Step 3 — API Key */
+.key-box {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-left: 3px solid rgba(91,148,210,0.6);
+  border-radius: 0 var(--r-md) var(--r-md) 0;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+}
+.key-text {
+  flex: 1;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: rgba(91,148,210,0.85);
+  word-break: break-all;
+  line-height: 1.5;
+}
+.key-reveal-btn {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: rgba(91,148,210,0.7);
+  background: none;
+  border: 1px solid rgba(91,148,210,0.25);
+  border-radius: var(--r-pill);
+  padding: 5px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.key-reveal-btn:hover {
+  color: rgba(91,148,210,1);
+  border-color: rgba(91,148,210,0.5);
+}
+
+/* Code block */
+.code-block {
+  background: rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--r-md);
+  padding: 18px 20px;
+  margin-bottom: 24px;
+  position: relative;
+}
+.code-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.code-tabs { display: flex; gap: 16px; }
+.code-tab {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.3);
+  cursor: pointer;
+  padding-bottom: 5px;
+  border: none;
+  border-bottom: 1px solid transparent;
+  background: none;
+  transition: all 0.2s;
+}
+.code-tab.active {
+  color: rgba(91,148,210,0.85);
+  border-bottom-color: rgba(91,148,210,0.5);
+}
+.code-copy {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.3);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s;
+  padding: 0;
+}
+.code-copy:hover { color: rgba(255,255,255,0.7); }
+.code-pre {
+  font-family: 'DM Mono', monospace;
+  font-size: 11.5px;
+  line-height: 1.9;
+  color: rgba(255,255,255,0.6);
+  white-space: pre;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(91,148,210,0.15) transparent;
+}
+.code-pre::-webkit-scrollbar { height: 3px; }
+.code-pre::-webkit-scrollbar-thumb { background: rgba(91,148,210,0.2); border-radius: 2px; }
+
+.step3-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+.help-links {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: rgba(255,255,255,0.2);
+  text-align: center;
+  letter-spacing: 0.04em;
+  line-height: 2;
+}
+.help-links a {
+  color: rgba(91,148,210,0.55);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.help-links a:hover { color: rgba(91,148,210,1); }
+
+/* Confetti canvas */
+#confetti-canvas {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 50;
+}
+
+/* === MOBILE === */
+@media (max-width: 768px) {
+  html, body { overflow: auto; }
+  #left-panel {
+    position: fixed;
+    width: 100%;
+    height: 60px;
+  }
+  .left-center, .left-stats, .left-testimonial { display: none; }
+  .left-mobile-bar {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+  }
+  .left-mobile-c {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: 34px;
+    color: #1B305B;
+    filter: drop-shadow(0 0 8px rgba(80,160,255,0.9)) drop-shadow(0 0 20px rgba(80,160,255,0.6));
+    line-height: 1;
+  }
+  #right-panel {
+    position: fixed;
+    left: 0; right: 0;
+    top: 60px;
+    width: 100%;
+    height: calc(100vh - 60px);
+  }
+  .screen { padding: 32px 24px; }
+  .oauth-row { flex-direction: column; }
+  .oauth-btn { flex-direction: row; gap: 10px; padding: 13px 20px; justify-content: center; }
+  .usecase-grid { grid-template-columns: 1fr; }
+  .code-pre { font-size: 10px; }
+}
+
+/* Focus visible */
+*:focus-visible { outline: 2px solid rgba(91,148,210,0.6); outline-offset: 2px; border-radius: 4px; }
+input:focus-visible { outline: none; }
+button:focus-visible { border-radius: 4px; }
+
+</style>
+</head>
+<body>
+
+<!-- Custom cursor -->
+<div id="cursor-ring"></div>
+<div id="cursor-dot"></div>
+
+<!-- Confetti canvas -->
+<canvas id="confetti-canvas"></canvas>
+
+<!-- ==============================================
+     LEFT PANEL — Brand atmosphere
+=============================================== -->
+<div id="left-panel">
+  <div class="left-grid"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="scan-line"></div>
+
+  <!-- Desktop: C lettermark + brand -->
+  <div class="left-center">
+    <div class="left-lettermark">C</div>
+    <div class="left-brand">
+      <div class="left-brand-rule"></div>
+      <div class="left-brand-name">Clive</div>
+    </div>
+  </div>
+
+  <!-- Mobile top bar (hidden on desktop via CSS) -->
+  <div class="left-mobile-bar" style="display:none;">
+    <div class="left-mobile-c">C</div>
+  </div>
+
+  <!-- Stats -->
+  <div class="left-stats">
+    <div class="stat-chip">13 APIs</div>
+    <div class="stat-chip">10K+ Devs</div>
+    <div class="stat-chip">Free tier</div>
+  </div>
+
+  <!-- Testimonial -->
+  <div class="left-testimonial">
+    <p>"The only API platform I've kept after my free trial."</p>
+    <p class="attr">— a developer, Cape Town</p>
+  </div>
+</div>
+
+<!-- ==============================================
+     RIGHT PANEL
+=============================================== -->
+<div id="right-panel">
+
+  <!-- ========== SCREEN 1: LANDING GATE ========== -->
+  <div id="screen-gate" class="screen active">
+    <div class="screen-inner">
+      <div class="gate-logo">Clive</div>
+      <div class="gate-kicker">Developer Platform</div>
+
+      <div class="gate-headline">Build faster with<br>intelligent APIs.</div>
+      <p class="gate-sub">Thirteen production-ready APIs. One credential.<br>Start building in under five minutes.</p>
+
+      <div class="gate-ctas">
+        <button class="btn-primary" id="gate-signup-btn">Get started free</button>
+        <button class="btn-ghost"   id="gate-signin-btn">Sign in</button>
+      </div>
+
+      <p class="gate-notice">No credit card required · Free tier on every API</p>
+
+      <div class="gate-social">
+        Trusted by developers at<br>
+        <span class="gate-social-names">Standard Bank · Absa · FNB</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SCREEN 2: SIGN IN ========== -->
+  <div id="screen-signin" class="screen">
+    <div class="screen-inner">
+      <button class="back-btn" id="si-back">← Back</button>
+
+      <h1 class="auth-heading">Welcome back.</h1>
+      <p class="auth-sub">Sign in to your Clive workspace.</p>
+
+      <!-- OAuth -->
+      <div class="oauth-row">
+        <button class="oauth-btn">
+          <svg viewBox="0 0 18 18" fill="none">
+            <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
+            <path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/>
+            <path d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z" fill="#FBBC05"/>
+            <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z" fill="#EA4335"/>
+          </svg>
+          Google
+        </button>
+        <button class="oauth-btn">
+          <svg viewBox="0 0 18 18" fill="white">
+            <path d="M9 .5A9 9 0 0 0 0 9.5c0 3.978 2.579 7.348 6.155 8.538.45.083.615-.195.615-.433 0-.214-.008-.781-.012-1.533-2.504.543-3.032-1.206-3.032-1.206-.41-1.04-1-1.317-1-1.317-.817-.558.062-.547.062-.547.903.063 1.38.928 1.38.928.803 1.374 2.107.977 2.62.747.082-.581.314-.977.571-1.202-2.000-.227-4.103-1.000-4.103-4.452 0-.983.351-1.787.928-2.416-.093-.228-.402-1.143.088-2.382 0 0 .757-.242 2.479.924A8.635 8.635 0 0 1 9 5.17a8.64 8.64 0 0 1 2.259.305c1.721-1.166 2.476-.924 2.476-.924.492 1.239.183 2.154.09 2.382.579.629.927 1.433.927 2.416 0 3.462-2.107 4.223-4.114 4.445.323.279.611.829.611 1.670 0 1.204-.011 2.177-.011 2.473 0 .240.163.521.619.433A9.003 9.003 0 0 0 18 9.5 9 9 0 0 0 9 .5z"/>
+          </svg>
+          GitHub
+        </button>
+        <button class="oauth-btn">
+          <svg viewBox="0 0 18 18" fill="none">
+            <path d="M9 16.5l3.3-10.17H5.7L9 16.5z" fill="#FC6D26"/>
+            <path d="M9 16.5L5.7 6.33H1.22L9 16.5z" fill="#FCA326"/>
+            <path d="M1.22 6.33L.14 9.63a.75.75 0 0 0 .273.839L9 16.5 1.22 6.33z" fill="#E24329"/>
+            <path d="M1.22 6.33h4.48L3.8 1.02a.375.375 0 0 0-.712 0L1.22 6.33z" fill="#FC6D26"/>
+            <path d="M9 16.5l3.3-10.17h4.48L9 16.5z" fill="#FCA326"/>
+            <path d="M16.78 6.33l1.08 3.3a.75.75 0 0 1-.273.839L9 16.5l7.78-10.17z" fill="#E24329"/>
+            <path d="M16.78 6.33h-4.48l1.892-5.31a.375.375 0 0 1 .712 0l1.876 5.31z" fill="#FC6D26"/>
+          </svg>
+          GitLab
+        </button>
+      </div>
+
+      <div class="auth-divider"><span>or continue with email</span></div>
+
+      <div class="field-group" id="si-email-group">
+        <label for="si-email">Email address</label>
+        <input type="email" id="si-email" placeholder="Email address" autocomplete="email" tabindex="1">
+        <div class="field-error">↳ Please enter a valid email address</div>
+      </div>
+
+      <div class="field-group" id="si-pw-group">
+        <label for="si-pw">Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="si-pw" placeholder="Password" autocomplete="current-password" tabindex="2">
+          <button type="button" class="pw-toggle" id="si-pw-toggle" tabindex="-1" aria-label="Toggle password visibility">
+            <svg id="si-eye-open" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z"/>
+              <circle cx="10" cy="10" r="2.5"/>
+            </svg>
+          </button>
+        </div>
+        <div class="field-error">↳ Password must be at least 8 characters</div>
+      </div>
+
+      <a class="forgot-link" href="#" onclick="return false;" tabindex="-1">Forgot password?</a>
+
+      <button class="btn-primary" id="si-btn" tabindex="3">Sign in</button>
+
+      <div class="auth-switch">
+        Don't have an account? <span class="link" id="si-to-signup">Get started free →</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SCREEN 3: SIGN UP ========== -->
+  <div id="screen-signup" class="screen">
+    <div class="screen-inner">
+      <button class="back-btn" id="su-back">← Back</button>
+
+      <h1 class="auth-heading">Create your account.</h1>
+      <p class="auth-sub">Free tier included on every API. No credit card.</p>
+
+      <!-- OAuth (same buttons) -->
+      <div class="oauth-row">
+        <button class="oauth-btn">
+          <svg viewBox="0 0 18 18" fill="none">
+            <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
+            <path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/>
+            <path d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z" fill="#FBBC05"/>
+            <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z" fill="#EA4335"/>
+          </svg>
+          Google
+        </button>
+        <button class="oauth-btn">
+          <svg viewBox="0 0 18 18" fill="white">
+            <path d="M9 .5A9 9 0 0 0 0 9.5c0 3.978 2.579 7.348 6.155 8.538.45.083.615-.195.615-.433 0-.214-.008-.781-.012-1.533-2.504.543-3.032-1.206-3.032-1.206-.41-1.04-1-1.317-1-1.317-.817-.558.062-.547.062-.547.903.063 1.38.928 1.38.928.803 1.374 2.107.977 2.62.747.082-.581.314-.977.571-1.202-2.000-.227-4.103-1.000-4.103-4.452 0-.983.351-1.787.928-2.416-.093-.228-.402-1.143.088-2.382 0 0 .757-.242 2.479.924A8.635 8.635 0 0 1 9 5.17a8.64 8.64 0 0 1 2.259.305c1.721-1.166 2.476-.924 2.476-.924.492 1.239.183 2.154.09 2.382.579.629.927 1.433.927 2.416 0 3.462-2.107 4.223-4.114 4.445.323.279.611.829.611 1.670 0 1.204-.011 2.177-.011 2.473 0 .240.163.521.619.433A9.003 9.003 0 0 0 18 9.5 9 9 0 0 0 9 .5z"/>
+          </svg>
+          GitHub
+        </button>
+        <button class="oauth-btn">
+          <svg viewBox="0 0 18 18" fill="none">
+            <path d="M9 16.5l3.3-10.17H5.7L9 16.5z" fill="#FC6D26"/>
+            <path d="M9 16.5L5.7 6.33H1.22L9 16.5z" fill="#FCA326"/>
+            <path d="M1.22 6.33L.14 9.63a.75.75 0 0 0 .273.839L9 16.5 1.22 6.33z" fill="#E24329"/>
+            <path d="M1.22 6.33h4.48L3.8 1.02a.375.375 0 0 0-.712 0L1.22 6.33z" fill="#FC6D26"/>
+            <path d="M9 16.5l3.3-10.17h4.48L9 16.5z" fill="#FCA326"/>
+            <path d="M16.78 6.33l1.08 3.3a.75.75 0 0 1-.273.839L9 16.5l7.78-10.17z" fill="#E24329"/>
+            <path d="M16.78 6.33h-4.48l1.892-5.31a.375.375 0 0 1 .712 0l1.876 5.31z" fill="#FC6D26"/>
+          </svg>
+          GitLab
+        </button>
+      </div>
+
+      <div class="auth-divider"><span>or continue with email</span></div>
+
+      <div class="field-group" id="su-name-group">
+        <label for="su-name">Full name</label>
+        <input type="text" id="su-name" placeholder="Full name" autocomplete="name" tabindex="1">
+        <div class="field-error">↳ Please enter your full name (letters only)</div>
+      </div>
+
+      <div class="field-group" id="su-email-group">
+        <label for="su-email">Email address</label>
+        <input type="email" id="su-email" placeholder="Email address" autocomplete="email" tabindex="2">
+        <div class="field-error">↳ Please enter a valid email address</div>
+      </div>
+
+      <div class="field-group" id="su-pw-group">
+        <label for="su-pw">Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="su-pw" placeholder="Password" autocomplete="new-password" tabindex="3">
+          <button type="button" class="pw-toggle" id="su-pw-toggle" tabindex="-1" aria-label="Toggle password visibility">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z"/>
+              <circle cx="10" cy="10" r="2.5"/>
+            </svg>
+          </button>
+        </div>
+        <div class="pw-strength">
+          <div class="pw-strength-bar">
+            <div class="pw-seg" id="seg-0"></div>
+            <div class="pw-seg" id="seg-1"></div>
+            <div class="pw-seg" id="seg-2"></div>
+            <div class="pw-seg" id="seg-3"></div>
+          </div>
+          <div class="pw-strength-label" id="pw-label"></div>
+        </div>
+        <div class="field-error">↳ Password must be at least 8 characters</div>
+      </div>
+
+      <div class="field-group" id="su-confirm-group">
+        <label for="su-confirm">Confirm password</label>
+        <div class="pw-wrap">
+          <input type="password" id="su-confirm" placeholder="Confirm password" autocomplete="new-password" tabindex="4">
+          <button type="button" class="pw-toggle" id="su-confirm-toggle" tabindex="-1" aria-label="Toggle password visibility">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M2 10s3-6 8-6 8 6 8 6-3 6-8 6-8-6-8-6z"/>
+              <circle cx="10" cy="10" r="2.5"/>
+            </svg>
+          </button>
+        </div>
+        <div class="field-error">↳ Passwords do not match</div>
+      </div>
+
+      <div class="checkbox-row">
+        <div class="custom-checkbox">
+          <input type="checkbox" id="su-terms" tabindex="5">
+          <div class="check-box">
+            <svg class="check-icon" width="10" height="8" viewBox="0 0 10 8" fill="none">
+              <path d="M1 4l3 3 5-6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+        <label class="checkbox-label" for="su-terms">
+          I agree to the <a href="#" onclick="return false;">Terms of Service</a> and <a href="#" onclick="return false;">Privacy Policy</a>
+        </label>
+      </div>
+
+      <button class="btn-primary" id="su-btn" tabindex="6" disabled>Create account</button>
+
+      <div class="auth-switch">
+        Already have an account? <span class="link" id="su-to-signin">Sign in →</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SCREEN 4: ONBOARDING ========== -->
+  <div id="screen-onboard" class="screen">
+    <div class="screen-inner-wide">
+
+      <!-- Step indicator -->
+      <div class="step-indicator">
+        <div class="step-item">
+          <div class="step-circle active" id="sc-1">1</div>
+          <div class="step-label active" id="sl-1">Use case</div>
+        </div>
+        <div class="step-connector">
+          <div class="step-connector-fill" id="conn-1"></div>
+        </div>
+        <div class="step-item">
+          <div class="step-circle" id="sc-2">2</div>
+          <div class="step-label" id="sl-2">First product</div>
+        </div>
+        <div class="step-connector">
+          <div class="step-connector-fill" id="conn-2"></div>
+        </div>
+        <div class="step-item">
+          <div class="step-circle" id="sc-3">3</div>
+          <div class="step-label" id="sl-3">Your key</div>
+        </div>
+      </div>
+
+      <!-- STEP 1 -->
+      <div class="step-pane active" id="step-1">
+        <div class="step-heading">What will you build with Clive?</div>
+        <div class="step-sub">We'll recommend the right APIs for your project.</div>
+        <div class="usecase-grid">
+          <div class="usecase-card" data-uc="security">
+            <div class="usecase-icon">🛡</div>
+            <div class="usecase-title">Security &amp; Pentesting</div>
+            <div class="usecase-sub">HackKit, ShieldKit</div>
+          </div>
+          <div class="usecase-card" data-uc="search">
+            <div class="usecase-icon">🔍</div>
+            <div class="usecase-title">Search &amp; Discovery</div>
+            <div class="usecase-sub">SearchCore, EmbedCore</div>
+          </div>
+          <div class="usecase-card" data-uc="documents">
+            <div class="usecase-icon">📄</div>
+            <div class="usecase-title">Documents &amp; Contracts</div>
+            <div class="usecase-sub">ContractIQ, MeetingIQ</div>
+          </div>
+          <div class="usecase-card" data-uc="finance">
+            <div class="usecase-icon">💰</div>
+            <div class="usecase-title">Finance &amp; FX</div>
+            <div class="usecase-sub">FXBridge, WealthMind</div>
+          </div>
+          <div class="usecase-card" data-uc="government">
+            <div class="usecase-icon">🏛</div>
+            <div class="usecase-title">Government &amp; Tenders</div>
+            <div class="usecase-sub">TenderIQ</div>
+          </div>
+          <div class="usecase-card" data-uc="devtools">
+            <div class="usecase-icon">⚙</div>
+            <div class="usecase-title">Developer Utilities</div>
+            <div class="usecase-sub">DevKit, OracleIQ</div>
+          </div>
+        </div>
+        <button class="btn-primary" id="s1-continue" disabled>Continue →</button>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="step-pane" id="step-2">
+        <div class="step-heading">Pick your first API.</div>
+        <div class="step-sub">Recommended based on your use case. All include a free tier.</div>
+        <div class="api-cards" id="api-cards-container"></div>
+        <div class="browse-link" id="browse-link">Browse all 13 APIs →</div>
+        <div class="browse-expanded" id="browse-expanded"></div>
+        <button class="btn-primary" id="s2-continue" disabled>Continue →</button>
+        <button class="step-back-btn" id="s2-back">← Back</button>
+      </div>
+
+      <!-- STEP 3 -->
+      <div class="step-pane" id="step-3">
+        <div class="step-heading">You're ready to build.</div>
+        <div class="step-sub">Here is your Clive API key. Keep it safe.</div>
+
+        <div class="key-box">
+          <div class="key-text" id="key-display">clive_live_sk_••••••••••••••••••••••••</div>
+          <button class="key-reveal-btn" id="key-btn">Reveal</button>
+        </div>
+
+        <div class="code-block">
+          <div class="code-block-header">
+            <div class="code-tabs">
+              <button class="code-tab active" data-lang="curl">curl</button>
+              <button class="code-tab" data-lang="python">Python</button>
+              <button class="code-tab" data-lang="node">Node</button>
+            </div>
+            <button class="code-copy" id="copy-btn">⎘ Copy</button>
+          </div>
+          <pre class="code-pre" id="snippet-pre"></pre>
+        </div>
+
+        <div class="step3-actions">
+          <button class="btn-primary" id="dashboard-btn">Open Dashboard →</button>
+          <button class="btn-ghost">View documentation</button>
+        </div>
+
+        <div class="help-links">
+          Need help? <a href="#">Join our Discord</a> · <a href="#">Read the docs</a> · <a href="#">Email support</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /right-panel -->
+
+<script>
+/* ================================================================
+   CLIVE AUTH — ALL JAVASCRIPT
+================================================================ */
+
+/* === CURSOR === */
+const cursorRing = document.getElementById('cursor-ring');
+const cursorDot  = document.getElementById('cursor-dot');
+let mx = 0, my = 0, rx = 0, ry = 0;
+
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cursorDot.style.left = mx + 'px';
+  cursorDot.style.top  = my + 'px';
+});
+
+(function animRing() {
+  rx += (mx - rx) * 0.12;
+  ry += (my - ry) * 0.12;
+  cursorRing.style.left = rx + 'px';
+  cursorRing.style.top  = ry + 'px';
+  requestAnimationFrame(animRing);
+})();
+
+function bindCursorTargets() {
+  document.querySelectorAll('button,a,input,[data-uc],.api-card,.usecase-card,label').forEach(el => {
+    if (el._cBound) return;
+    el._cBound = true;
+    el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
+    el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
+  });
+}
+bindCursorTargets();
+new MutationObserver(bindCursorTargets).observe(document.body, { childList: true, subtree: true });
+
+/* === RIPPLE === */
+function ripple(btn, e) {
+  const r    = btn.getBoundingClientRect();
+  const size = Math.max(r.width, r.height);
+  const x    = (e ? e.clientX - r.left : r.width  / 2) - size / 2;
+  const y    = (e ? e.clientY - r.top  : r.height / 2) - size / 2;
+  const el   = document.createElement('span');
+  el.className = 'ripple';
+  el.style.cssText = `width:${size}px;height:${size}px;left:${x}px;top:${y}px;`;
+  btn.appendChild(el);
+  setTimeout(() => el.remove(), 450);
+}
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.btn-primary, .btn-ghost');
+  if (btn && !btn.disabled) ripple(btn, e);
+});
+
+/* === SCREEN TRANSITIONS === */
+function switchScreen(fromId, toId) {
+  const from = document.getElementById(fromId);
+  const to   = document.getElementById(toId);
+  if (!from || !to || from === to) return;
+
+  from.style.transition = 'opacity 160ms ease, transform 160ms ease';
+  from.style.opacity    = '0';
+  from.style.transform  = 'translateY(12px)';
+
+  setTimeout(() => {
+    from.style.display = 'none';
+    from.classList.remove('active');
+    from.style.opacity = from.style.transform = '';
+
+    to.style.display    = 'flex';
+    to.classList.add('active');
+    to.style.opacity    = '0';
+    to.style.transform  = 'translateY(-12px)';
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        to.style.transition = 'opacity 240ms ease, transform 240ms ease';
+        to.style.opacity    = '1';
+        to.style.transform  = 'translateY(0)';
+        setTimeout(() => { to.style.transition = ''; }, 260);
+      });
+    });
+  }, 170);
+}
+
+/* === WIRE UP SCREEN NAVIGATION === */
+document.getElementById('gate-signup-btn').addEventListener('click', () => switchScreen('screen-gate','screen-signup'));
+document.getElementById('gate-signin-btn').addEventListener('click', () => switchScreen('screen-gate','screen-signin'));
+document.getElementById('si-back').addEventListener('click', () => switchScreen('screen-signin','screen-gate'));
+document.getElementById('su-back').addEventListener('click', () => switchScreen('screen-signup','screen-gate'));
+document.getElementById('si-to-signup').addEventListener('click', () => switchScreen('screen-signin','screen-signup'));
+document.getElementById('su-to-signin').addEventListener('click', () => switchScreen('screen-signup','screen-signin'));
+
+/* === FLOAT LABELS === */
+document.querySelectorAll('.field-group input').forEach(input => {
+  const g = input.closest('.field-group');
+  const update = () => g.classList.toggle('has-value', input.value.length > 0);
+  input.addEventListener('focus', () => g.classList.add('focused'));
+  input.addEventListener('blur',  () => { g.classList.remove('focused'); update(); });
+  input.addEventListener('input', update);
+  update();
+});
+
+/* === PASSWORD TOGGLE === */
+function setupPwToggle(inputId, btnId) {
+  const input = document.getElementById(inputId);
+  const btn   = document.getElementById(btnId);
+  if (!btn) return;
+  btn.addEventListener('click', () => {
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    btn.style.color = show ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.25)';
+  });
+}
+setupPwToggle('si-pw',      'si-pw-toggle');
+setupPwToggle('su-pw',      'su-pw-toggle');
+setupPwToggle('su-confirm', 'su-confirm-toggle');
+
+/* === VALIDATION HELPERS === */
+const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function fieldError(groupId, msg) {
+  const g   = document.getElementById(groupId);
+  const inp = g.querySelector('input');
+  g.classList.add('error');
+  g.classList.remove('success');
+  const errEl = g.querySelector('.field-error');
+  if (errEl && msg) errEl.textContent = '↳ ' + msg;
+  inp.classList.add('shake');
+  setTimeout(() => inp.classList.remove('shake'), 420);
+}
+function fieldOk(groupId) {
+  const g = document.getElementById(groupId);
+  g.classList.remove('error');
+  g.classList.add('success');
+}
+function fieldClear(groupId) {
+  document.getElementById(groupId).classList.remove('error','success');
+}
+
+/* === SIGN IN === */
+const siEmail = document.getElementById('si-email');
+const siPw    = document.getElementById('si-pw');
+const siBtn   = document.getElementById('si-btn');
+
+siEmail.addEventListener('blur', () => {
+  if (!siEmail.value) { fieldClear('si-email-group'); return; }
+  emailRe.test(siEmail.value) ? fieldOk('si-email-group') : fieldError('si-email-group','Please enter a valid email address');
+});
+siPw.addEventListener('input', () => {
+  siPw.value.length >= 8 ? fieldOk('si-pw-group') : fieldClear('si-pw-group');
+});
+
+siBtn.addEventListener('click', () => {
+  let ok = true;
+  if (!emailRe.test(siEmail.value)) { fieldError('si-email-group','Please enter a valid email address'); ok = false; } else fieldOk('si-email-group');
+  if (siPw.value.length < 8)        { fieldError('si-pw-group','Password must be at least 8 characters'); ok = false; } else fieldOk('si-pw-group');
+  if (!ok) return;
+  startLoad(siBtn, [siEmail, siPw], () => switchScreen('screen-signin','screen-onboard'));
+});
+
+/* === SIGN UP === */
+const suName    = document.getElementById('su-name');
+const suEmail   = document.getElementById('su-email');
+const suPw      = document.getElementById('su-pw');
+const suConfirm = document.getElementById('su-confirm');
+const suTerms   = document.getElementById('su-terms');
+const suBtn     = document.getElementById('su-btn');
+const segs      = [0,1,2,3].map(i => document.getElementById('seg-' + i));
+const pwLabel   = document.getElementById('pw-label');
+
+const strengthCols  = ['rgba(220,80,80,0.8)','rgba(210,150,50,0.8)','rgba(91,148,210,0.8)','rgba(80,200,120,0.8)'];
+const strengthNames = ['','Weak','Fair','Good','Strong'];
+
+function calcStrength(v) {
+  let s = 0;
+  if (v.length >= 8)  s++;
+  if (v.length >= 12) s++;
+  if (/[A-Z]/.test(v) && /[0-9]/.test(v)) s++;
+  if (/[^A-Za-z0-9]/.test(v)) s++;
+  return s;
+}
+
+suPw.addEventListener('input', () => {
+  const v = suPw.value;
+  const s = calcStrength(v);
+  segs.forEach((seg, i) => { seg.style.background = (i < s && v.length) ? strengthCols[s-1] : 'rgba(255,255,255,0.08)'; });
+  pwLabel.textContent = v.length ? strengthNames[s] : '';
+  pwLabel.style.color = (v.length && s) ? strengthCols[s-1] : 'rgba(255,255,255,0.3)';
+  checkConfirm();
+  updateSuBtn();
+});
+
+suConfirm.addEventListener('input', () => { checkConfirm(); updateSuBtn(); });
+[suName, suEmail].forEach(i => i.addEventListener('input', updateSuBtn));
+suTerms.addEventListener('change', updateSuBtn);
+
+function checkConfirm() {
+  if (!suConfirm.value) { fieldClear('su-confirm-group'); return; }
+  suConfirm.value === suPw.value ? fieldOk('su-confirm-group') : document.getElementById('su-confirm-group').classList.add('error');
+}
+
+function updateSuBtn() {
+  const nameOk    = suName.value.trim().length >= 2 && !/\d/.test(suName.value);
+  const emailOk   = emailRe.test(suEmail.value);
+  const pwOk      = suPw.value.length >= 8;
+  const confirmOk = suConfirm.value.length > 0 && suConfirm.value === suPw.value;
+  suBtn.disabled  = !(nameOk && emailOk && pwOk && confirmOk && suTerms.checked);
+}
+
+suBtn.addEventListener('click', () => {
+  let ok = true;
+  if (suName.value.trim().length < 2 || /\d/.test(suName.value)) { fieldError('su-name-group','Please enter your full name (letters only)'); ok = false; } else fieldOk('su-name-group');
+  if (!emailRe.test(suEmail.value))  { fieldError('su-email-group','Please enter a valid email address'); ok = false; } else fieldOk('su-email-group');
+  if (suPw.value.length < 8)         { fieldError('su-pw-group','Password must be at least 8 characters'); ok = false; } else fieldOk('su-pw-group');
+  if (suConfirm.value !== suPw.value){ fieldError('su-confirm-group','Passwords do not match'); ok = false; } else fieldOk('su-confirm-group');
+  if (!ok) return;
+  startLoad(suBtn, [suName, suEmail, suPw, suConfirm], () => {
+    resetOnboarding();
+    switchScreen('screen-signup','screen-onboard');
+  });
+});
+
+/* === LOADING STATE === */
+function startLoad(btn, inputs, onDone) {
+  const orig = btn.textContent;
+  btn.innerHTML = '<span class="loading-dots"><span>·</span><span>·</span><span>·</span></span>';
+  btn.disabled = true;
+  inputs.forEach(i => { i.disabled = true; i.style.opacity = '0.6'; });
+  const delay = 1400 + Math.random() * 400;
+  setTimeout(() => {
+    btn.textContent = '✓';
+    setTimeout(() => {
+      inputs.forEach(i => { i.disabled = false; i.style.opacity = ''; });
+      btn.disabled = false;
+      btn.textContent = orig;
+      onDone();
+    }, 600);
+  }, delay);
+}
+
+/* === ONBOARDING DATA === */
+const apiData = {
+  security:   [
+    { name:'HackKit',   tagline:'Recon, scanning & threat intel',    free:'500 calls/mo',  price:'$19', icon:'🛡' },
+    { name:'ShieldKit', tagline:'Security posture & compliance',       free:'250 calls/mo',  price:'$29', icon:'🔒' },
+    { name:'OracleIQ',  tagline:'Predictive threat modelling',         free:'100 calls/mo',  price:'$49', icon:'🔮' },
+  ],
+  search:     [
+    { name:'SearchCore', tagline:'Full-text & semantic search API',  free:'1000 calls/mo', price:'$9',  icon:'🔍' },
+    { name:'EmbedCore',  tagline:'Embedding & vector similarity',     free:'500 calls/mo',  price:'$14', icon:'📐' },
+    { name:'OracleIQ',   tagline:'AI-powered content discovery',      free:'100 calls/mo',  price:'$49', icon:'🔮' },
+  ],
+  documents:  [
+    { name:'ContractIQ', tagline:'Contract analysis & extraction',    free:'50 calls/mo',   price:'$39', icon:'📄' },
+    { name:'MeetingIQ',  tagline:'Meeting transcription & summaries', free:'200 calls/mo',  price:'$24', icon:'🎙' },
+    { name:'DevKit',     tagline:'Document generation & templating',  free:'300 calls/mo',  price:'$19', icon:'⚙' },
+  ],
+  finance:    [
+    { name:'FXBridge',   tagline:'Real-time forex & currency data',   free:'1000 calls/mo', price:'$12', icon:'💱' },
+    { name:'WealthMind', tagline:'Portfolio & investment analytics',   free:'200 calls/mo',  price:'$34', icon:'📈' },
+    { name:'OracleIQ',   tagline:'Market forecasting models',          free:'100 calls/mo',  price:'$49', icon:'🔮' },
+  ],
+  government: [
+    { name:'TenderIQ',   tagline:'Government tender intelligence',     free:'100 calls/mo',  price:'$29', icon:'🏛' },
+    { name:'ContractIQ', tagline:'Tender document analysis',           free:'50 calls/mo',   price:'$39', icon:'📄' },
+    { name:'SearchCore', tagline:'Public record search & indexing',    free:'1000 calls/mo', price:'$9',  icon:'🔍' },
+  ],
+  devtools:   [
+    { name:'DevKit',     tagline:'Developer utilities & scaffolding',  free:'300 calls/mo',  price:'$19', icon:'⚙' },
+    { name:'OracleIQ',   tagline:'Code intelligence & analysis',       free:'100 calls/mo',  price:'$49', icon:'🔮' },
+    { name:'EmbedCore',  tagline:'Semantic code search & indexing',    free:'500 calls/mo',  price:'$14', icon:'📐' },
+  ],
+};
+
+const allApis = [
+  { name:'HackKit',    tagline:'Recon, scanning & threat intel',    free:'500 calls/mo',  price:'$19', icon:'🛡' },
+  { name:'ShieldKit',  tagline:'Security posture & compliance',      free:'250 calls/mo',  price:'$29', icon:'🔒' },
+  { name:'SearchCore', tagline:'Full-text & semantic search API',   free:'1000 calls/mo', price:'$9',  icon:'🔍' },
+  { name:'EmbedCore',  tagline:'Embedding & vector similarity',      free:'500 calls/mo',  price:'$14', icon:'📐' },
+  { name:'ContractIQ', tagline:'Contract analysis & extraction',     free:'50 calls/mo',   price:'$39', icon:'📄' },
+  { name:'MeetingIQ',  tagline:'Meeting transcription & summaries',  free:'200 calls/mo',  price:'$24', icon:'🎙' },
+  { name:'FXBridge',   tagline:'Real-time forex & currency data',    free:'1000 calls/mo', price:'$12', icon:'💱' },
+  { name:'WealthMind', tagline:'Portfolio & investment analytics',    free:'200 calls/mo',  price:'$34', icon:'📈' },
+  { name:'TenderIQ',   tagline:'Government tender intelligence',      free:'100 calls/mo',  price:'$29', icon:'🏛' },
+  { name:'DevKit',     tagline:'Developer utilities & scaffolding',   free:'300 calls/mo',  price:'$19', icon:'⚙' },
+  { name:'OracleIQ',   tagline:'Predictive intelligence platform',    free:'100 calls/mo',  price:'$49', icon:'🔮' },
+];
+
+const snippets = {
+  curl: {
+    HackKit:    `curl -X POST https://api.clive.dev/v1/recon/domain \\\n  -H "X-Clive-Key: clive_live_sk_..." \\\n  -H "Content-Type: application/json" \\\n  -d '{"domain": "target.com"}'`,
+    SearchCore: `curl -X POST https://api.clive.dev/v1/search/query \\\n  -H "X-Clive-Key: clive_live_sk_..." \\\n  -H "Content-Type: application/json" \\\n  -d '{"q": "machine learning", "limit": 10}'`,
+    FXBridge:   `curl -X GET "https://api.clive.dev/v1/fx/rate?from=USD&to=ZAR" \\\n  -H "X-Clive-Key: clive_live_sk_..."`,
+    DEFAULT:    `curl -X GET https://api.clive.dev/v1/status \\\n  -H "X-Clive-Key: clive_live_sk_..." \\\n  -H "Content-Type: application/json"`,
+  },
+  python: {
+    HackKit:    `import clive\n\nclient = clive.Client(api_key="clive_live_sk_...")\nresult = client.recon.domain(domain="target.com")\nprint(result)`,
+    SearchCore: `import clive\n\nclient = clive.Client(api_key="clive_live_sk_...")\nresults = client.search.query(q="machine learning", limit=10)\nprint(results)`,
+    DEFAULT:    `import clive\n\nclient = clive.Client(api_key="clive_live_sk_...")\nstatus = client.status()\nprint(status)`,
+  },
+  node: {
+    HackKit:    `const { Clive } = require('@clive/sdk');\n\nconst client = new Clive({ apiKey: 'clive_live_sk_...' });\nconst result = await client.recon.domain({ domain: 'target.com' });\nconsole.log(result);`,
+    SearchCore: `const { Clive } = require('@clive/sdk');\n\nconst client = new Clive({ apiKey: 'clive_live_sk_...' });\nconst res = await client.search.query({ q: 'machine learning', limit: 10 });\nconsole.log(res);`,
+    DEFAULT:    `const { Clive } = require('@clive/sdk');\n\nconst client = new Clive({ apiKey: 'clive_live_sk_...' });\nconst status = await client.status();\nconsole.log(status);`,
+  },
+};
+
+let currentStep   = 1;
+let selectedUc    = null;
+let selectedApi   = null;
+let currentLang   = 'curl';
+let browseOpen    = false;
+let keyRevealed   = false;
+const fakeKey     = 'clive_live_sk_a8f3c9d2e1b7045f6a8d2c9b1e4f3a7c';
+
+function resetOnboarding() {
+  currentStep = 1; selectedUc = null; selectedApi = null;
+  currentLang = 'curl'; browseOpen = false; keyRevealed = false;
+
+  // Reset step circles
+  setStepIndicator(1);
+  document.getElementById('conn-1').style.width = '0%';
+  document.getElementById('conn-2').style.width = '0%';
+
+  // Reset panes
+  ['step-1','step-2','step-3'].forEach(id => {
+    const p = document.getElementById(id);
+    p.classList.remove('active');
+    p.style.display = '';
+    p.style.opacity = '';
+    p.style.transform = '';
+  });
+  document.getElementById('step-1').classList.add('active');
+
+  // Reset step 1
+  document.querySelectorAll('.usecase-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('s1-continue').disabled = true;
+
+  // Reset step 3
+  document.getElementById('key-display').textContent = 'clive_live_sk_••••••••••••••••••••••••';
+  document.getElementById('key-btn').textContent = 'Reveal';
+  document.querySelectorAll('.code-tab').forEach((t,i) => t.classList.toggle('active', i===0));
+}
+
+/* === STEP NAVIGATION === */
+function setStepIndicator(active) {
+  [1,2,3].forEach(i => {
+    const c = document.getElementById('sc-' + i);
+    const l = document.getElementById('sl-' + i);
+    c.classList.remove('active','done');
+    l.classList.remove('active');
+    if (i < active)      { c.classList.add('done'); c.textContent = '✓'; }
+    else if (i === active){ c.classList.add('active'); c.textContent = String(i); l.classList.add('active'); }
+    else                  { c.textContent = String(i); }
+  });
+}
+
+function goStep(n) {
+  const from = document.getElementById('step-' + currentStep);
+  const to   = document.getElementById('step-' + n);
+
+  from.style.transition = 'opacity 0.26s ease, transform 0.26s ease';
+  from.style.opacity    = '0';
+  from.style.transform  = n > currentStep ? 'translateX(-40px)' : 'translateX(40px)';
+
+  setTimeout(() => {
+    from.classList.remove('active');
+    from.style.display = 'none';
+    from.style.opacity = from.style.transform = '';
+
+    to.style.display   = 'flex';
+    to.style.opacity   = '0';
+    to.style.transform = n > currentStep ? 'translateX(40px)' : 'translateX(-40px)';
+
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      to.classList.add('active');
+      to.style.transition = 'opacity 0.26s ease, transform 0.26s ease';
+      to.style.opacity    = '1';
+      to.style.transform  = 'translateX(0)';
+      setTimeout(() => { to.style.transition = ''; }, 280);
+    }));
+
+    setStepIndicator(n);
+    if (n >= 2) setTimeout(() => { document.getElementById('conn-1').style.width = '100%'; }, 50);
+    if (n >= 3) setTimeout(() => { document.getElementById('conn-2').style.width = '100%'; }, 50);
+
+    if (n === 2) setupStep2();
+    if (n === 3) setupStep3();
+
+    currentStep = n;
+  }, 270);
+}
+
+/* === STEP 1 — USE CASES === */
+document.querySelectorAll('.usecase-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.usecase-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    selectedUc = card.dataset.uc;
+    document.getElementById('s1-continue').disabled = false;
+  });
+});
+document.getElementById('s1-continue').addEventListener('click', () => { if (selectedUc) goStep(2); });
+
+/* === STEP 2 — API CARDS === */
+function makeApiCard(api, container) {
+  const d = document.createElement('div');
+  d.className = 'api-card';
+  d.innerHTML = `
+    <div class="api-icon-box">${api.icon}</div>
+    <div class="api-info">
+      <div class="api-name">${api.name}</div>
+      <div class="api-tagline">${api.tagline}</div>
+      <div class="api-free">Free tier: ${api.free}</div>
+    </div>
+    <div class="api-price">
+      <div class="api-price-num">${api.price}</div>
+      <div class="api-price-unit">/ month</div>
+    </div>`;
+  d.addEventListener('click', () => {
+    document.querySelectorAll('.api-card').forEach(c => c.classList.remove('selected'));
+    d.classList.add('selected');
+    selectedApi = api;
+    document.getElementById('s2-continue').disabled = false;
+  });
+  container.appendChild(d);
+}
+
+function setupStep2() {
+  const cont = document.getElementById('api-cards-container');
+  const exp  = document.getElementById('browse-expanded');
+  cont.innerHTML = ''; exp.innerHTML = '';
+  exp.classList.remove('open');
+  browseOpen = false;
+  selectedApi = null;
+  document.getElementById('s2-continue').disabled = true;
+
+  const recommended = apiData[selectedUc] || apiData.security;
+  recommended.forEach(a => makeApiCard(a, cont));
+}
+
+document.getElementById('s2-continue').addEventListener('click', () => { if (selectedApi) goStep(3); });
+document.getElementById('s2-back').addEventListener('click',     () => goStep(1));
+
+document.getElementById('browse-link').addEventListener('click', () => {
+  const exp  = document.getElementById('browse-expanded');
+  browseOpen = !browseOpen;
+  exp.classList.toggle('open', browseOpen);
+  document.getElementById('browse-link').textContent = browseOpen ? 'Browse all 13 APIs ↑' : 'Browse all 13 APIs →';
+  if (browseOpen && exp.children.length === 0) {
+    const recNames = (apiData[selectedUc] || []).map(a => a.name);
+    allApis.filter(a => !recNames.includes(a.name)).forEach(a => makeApiCard(a, exp));
+  }
+});
+
+/* === STEP 3 — KEY + CODE === */
+function setupStep3() {
+  keyRevealed = false;
+  document.getElementById('key-display').textContent = 'clive_live_sk_••••••••••••••••••••••••';
+  document.getElementById('key-btn').textContent = 'Reveal';
+  updateSnippet();
+  fireConfetti();
+}
+
+function updateSnippet() {
+  const apiName = selectedApi ? selectedApi.name : 'HackKit';
+  const lang    = currentLang;
+  const src     = snippets[lang];
+  document.getElementById('snippet-pre').textContent = src[apiName] || src.DEFAULT;
+}
+
+document.querySelectorAll('.code-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.code-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentLang = tab.dataset.lang;
+    updateSnippet();
+  });
+});
+
+document.getElementById('copy-btn').addEventListener('click', function() {
+  const text = document.getElementById('snippet-pre').textContent;
+  navigator.clipboard.writeText(text).catch(() => {});
+  this.textContent = '✓ Copied';
+  setTimeout(() => { this.textContent = '⎘ Copy'; }, 2000);
+});
+
+document.getElementById('key-btn').addEventListener('click', function() {
+  if (!keyRevealed) {
+    document.getElementById('key-display').textContent = fakeKey;
+    this.textContent = 'Copy';
+    keyRevealed = true;
+  } else {
+    navigator.clipboard.writeText(fakeKey).catch(() => {});
+    this.textContent = 'Copied ✓';
+    setTimeout(() => { this.textContent = 'Copy'; }, 2000);
+  }
+});
+
+document.getElementById('dashboard-btn').addEventListener('click', function() {
+  const orig = this.textContent;
+  this.textContent = 'Opening…';
+  setTimeout(() => { this.textContent = orig; }, 1500);
+});
+
+/* === CONFETTI === */
+function fireConfetti() {
+  const canvas = document.getElementById('confetti-canvas');
+  const ctx    = canvas.getContext('2d');
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const cols = [
+    'rgba(91,148,210,0.9)', 'rgba(27,48,91,0.9)',
+    'rgba(255,255,255,0.7)', 'rgba(91,148,210,0.5)',
+  ];
+  const cx = canvas.width * 0.75;
+  const cy = canvas.height * 0.38;
+
+  const parts = Array.from({ length: 12 }, () => {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 60 + Math.random() * 80;
+    return {
+      x: cx, y: cy,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 30,
+      col: cols[Math.floor(Math.random() * cols.length)],
+      sz: 4 + Math.random() * 4,
+    };
+  });
+
+  const start    = performance.now();
+  const duration = 900;
+
+  function draw(now) {
+    const t = (now - start) / duration;
+    if (t >= 1) { ctx.clearRect(0, 0, canvas.width, canvas.height); return; }
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    parts.forEach(p => {
+      p.x  += p.vx * (1/60);
+      p.y  += p.vy * (1/60);
+      p.vy += 160 * (1/60);
+      ctx.globalAlpha = 1 - t;
+      ctx.fillStyle   = p.col;
+      ctx.fillRect(p.x - p.sz/2, p.y - p.sz/2, p.sz, p.sz);
+    });
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+}
+
+/* === OAUTH STUB === */
+document.querySelectorAll('.oauth-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    btn.style.opacity = '0.4';
+    setTimeout(() => { btn.style.opacity = ''; }, 900);
+  });
+});
+
+</script>
+</body>
+</html>

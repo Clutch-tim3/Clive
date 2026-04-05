@@ -82,11 +82,11 @@ export function PricingSection() {
                   ))}
                 </ul>
                 <Link
-                  href="/#"
+                  href={tier.price === '$149' ? 'mailto:sales@clive.dev' : '/auth?screen=signup'}
                   className="price-cta"
                 >
                   {tier.isFeatured ? 'Start Developer plan' : (
-                    tier.price === '$0' ? 'Get started' : 'Contact sales'
+                    tier.price === '$0' ? 'Get started free' : 'Contact sales'
                   )}
                 </Link>
               </div>

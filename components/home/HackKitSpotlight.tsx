@@ -131,7 +131,7 @@ export function HackKitSpotlight() {
             <Link href="/products/hackkit" className="hk-btn primary">
               Explore HackKit
             </Link>
-            <Link href="/docs/hackkit" className="hk-btn ghost">
+            <Link href="/docs/api" className="hk-btn ghost">
               View documentation →
             </Link>
           </div>
