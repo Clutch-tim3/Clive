@@ -1,0 +1,31 @@
+runConfig:
+  cpu: 1
+  memoryMiB: 512
+  concurrency: 80
+
+env:
+  # ── Non-sensitive: safe to store here ────────────────────────────────────────
+  - variable: FIREBASE_ADMIN_PROJECT_ID
+    value: clive-6d22e
+    availability:
+      - RUNTIME
+
+  - variable: FIREBASE_ADMIN_CLIENT_EMAIL
+    value: firebase-adminsdk-fbsvc@clive-6d22e.iam.gserviceaccount.com
+    availability:
+      - RUNTIME
+
+  # ── Sensitive: stored in Google Secret Manager ────────────────────────────────
+  # Run this command once to create the secret:
+  # firebase apphosting:secrets:set FIREBASE_ADMIN_PRIVATE_KEY
+  - variable: FIREBASE_ADMIN_PRIVATE_KEY
+    secret: FIREBASE_ADMIN_PRIVATE_KEY
+    availability:
+      - RUNTIME
+
+  # ── Public app URL ────────────────────────────────────────────────────────────
+  - variable: NEXT_PUBLIC_APP_URL
+    value: https://clive--clive-6d22e.us-east4.hosted.app
+    availability:
+      - BUILD
+      - RUNTIME
