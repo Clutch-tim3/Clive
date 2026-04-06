@@ -352,6 +352,7 @@ function SignUpScreen({ onBack, onSignIn, onSuccess }: { onBack: () => void; onS
   const [shakes, setShakes] = useState<Record<string, boolean>>({});
 
   const [signupNetworkErr, setSignupNetworkErr] = useState(false);
+  const [genericErr, setGenericErr] = useState('');
 
   const shake = (field: string) => {
     setShakes(s => ({ ...s, [field]: true }));
@@ -360,46 +361,57 @@ function SignUpScreen({ onBack, onSignIn, onSuccess }: { onBack: () => void; onS
 
   const isValid = name.length >= 2 && validateEmail(email) && pw.length >= 8 && pw === confirm && terms;
 
-  
-    const handleOAuth = async (provider: 'google' | 'github' | 'facebook') => {
+  const handleOAuth = async (provider: 'google' | 'github' | 'facebook') => {
     try {
       const { auth, googleProvider, githubProvider, facebookProvider } = await import('@/lib/firebase/client');
       const { signInWithPopup } = await import('firebase/auth');
       const p = provider === 'google' ? googleProvider : provider === 'github' ? githubProvider : facebookProvider;
       const result = await signInWithPopup(auth, p);
-      await fetch('/api/auth/session', {
+      const res = await fetch('/api/auth/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idToken: await result.user.getIdToken() }),
       });
+      if (!res.ok) throw new Error('Session creation failed');
       onSuccess();
     } catch (err: any) {
       if (err?.code === 'auth/network-request-failed') {
         setSignupNetworkErr(true);
         setTimeout(() => setSignupNetworkErr(false), 5000);
+      } else if (err?.code && err.code !== 'auth/popup-closed-by-user') {
+        setGenericErr(err.code);
       }
     }
   };
 
   const submit = async () => {
+    setGenericErr('');
     const errs: Record<string, string> = {};
     if (name.length < 2) { errs.name = 'Please enter your name'; shake('name'); }
     if (!validateEmail(email)) { errs.email = 'Please enter a valid email address'; shake('email'); }
     if (pw.length < 8) { errs.pw = 'Password must be at least 8 characters'; shake('pw'); }
     if (pw !== confirm) { errs.confirm = 'Passwords do not match'; shake('confirm'); }
+    if (!terms) { errs.terms = 'Please accept the terms'; }
     setErrors(errs);
     if (Object.keys(errs).length) return;
     setLoading(true);
     try {
-    
       const { auth: _fauth } = await import('@/lib/firebase/client');
-      const { createUserWithEmailAndPassword } = await import('firebase/auth');
+      const { createUserWithEmailAndPassword, updateProfile } = await import('firebase/auth');
       const result = await createUserWithEmailAndPassword(_fauth, email, pw);
-      await fetch('/api/auth/session', {
+      // Save display name to Firebase Auth profile
+      await updateProfile(result.user, { displayName: name });
+      // Force refresh token so displayName is in the JWT
+      const idToken = await result.user.getIdToken(true);
+      const res = await fetch('/api/auth/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken: await result.user.getIdToken() }),
+        body: JSON.stringify({ idToken, name }),
       });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error ?? 'Session creation failed');
+      }
       onSuccess();
     } catch (err: any) {
       setLoading(false);
@@ -408,6 +420,10 @@ function SignUpScreen({ onBack, onSignIn, onSuccess }: { onBack: () => void; onS
       else if (err.code === 'auth/network-request-failed') {
         setSignupNetworkErr(true);
         setTimeout(() => setSignupNetworkErr(false), 5000);
+      } else if (err.code === 'auth/operation-not-allowed') {
+        setGenericErr('Email/password sign-up is not enabled. Contact support.');
+      } else {
+        setGenericErr(err.message ?? err.code ?? 'Something went wrong. Please try again.');
       }
     }
   };
@@ -422,6 +438,11 @@ function SignUpScreen({ onBack, onSignIn, onSuccess }: { onBack: () => void; onS
       {signupNetworkErr && (
         <div style={{ background: 'rgba(220,80,80,0.1)', border: '1px solid rgba(220,80,80,0.3)', borderRadius: '10px', padding: '10px 16px', fontFamily: 'DM Mono, monospace', fontSize: '10px', color: 'rgba(220,80,80,0.9)', marginBottom: '16px' }}>
           ✗ Connection error — check your internet and try again.
+        </div>
+      )}
+      {genericErr && (
+        <div style={{ background: 'rgba(220,80,80,0.1)', border: '1px solid rgba(220,80,80,0.3)', borderRadius: '10px', padding: '10px 16px', fontFamily: 'DM Mono, monospace', fontSize: '10px', color: 'rgba(220,80,80,0.9)', marginBottom: '16px' }}>
+          ✗ {genericErr}
         </div>
       )}
       <OAuthRow onOAuth={handleOAuth} />

@@ -6,12 +6,15 @@ export const dynamic = 'force-dynamic';
 /** POST — exchange Firebase ID token for a 14-day session cookie */
 export async function POST(req: NextRequest) {
   try {
-    const { idToken, role } = await req.json();
+    const { idToken, role, name } = await req.json();
     if (!idToken) return NextResponse.json({ error: 'Missing token' }, { status: 400 });
 
     const decoded    = await adminAuth().verifyIdToken(idToken);
     const expiresIn  = 60 * 60 * 24 * 14 * 1000; // 14 days ms
     const sessionCookie = await adminAuth().createSessionCookie(idToken, { expiresIn });
+
+    // Resolve display name: JWT claim > body param > email prefix
+    const displayName = decoded.name ?? name ?? decoded.email?.split('@')[0] ?? '';
 
     // Create user doc on first sign-in
     const userRef  = adminDb().collection('users').doc(decoded.uid);
@@ -20,12 +23,18 @@ export async function POST(req: NextRequest) {
       await userRef.set({
         uid:         decoded.uid,
         email:       decoded.email ?? '',
-        displayName: decoded.name ?? decoded.email?.split('@')[0] ?? '',
+        displayName,
         photoURL:    decoded.picture ?? null,
         role:        role ?? 'consumer',
         createdAt:   new Date(),
         updatedAt:   new Date(),
       });
+    } else {
+      // Update displayName if it was previously empty
+      const existing = userSnap.data();
+      if (!existing?.displayName && displayName) {
+        await userRef.update({ displayName, updatedAt: new Date() });
+      }
     }
 
     const res = NextResponse.json({ ok: true });
