@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireProvider, handleRouteError } from '@/lib/firebase/auth';
+import { requireAuth, handleRouteError } from '@/lib/firebase/auth';
 import { adminDb } from '@/lib/firebase/admin';
 
 export const dynamic = 'force-dynamic';
@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
 /** POST — provider submits a new product for review */
 export async function POST(req: NextRequest) {
   try {
-    const user = await requireProvider();
+    const user = await requireAuth();
     const body = await req.json();
 
     // Validate required fields
@@ -75,6 +75,7 @@ export async function POST(req: NextRequest) {
       apiVersion:      body.apiVersion ?? 'v1',
       authType:        body.authType ?? 'API Key (Header)',
       apiKeyHeader:    body.apiKeyHeader ?? 'X-Clive-Key',
+      logoUrl:         body.logoUrl ?? null,
       endpoints:       body.endpoints,
       tiers:           body.tiers,
       status:          'review',

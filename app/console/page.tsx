@@ -176,11 +176,33 @@ function AddProduct() {
   });
 
   const [submitError, setSubmitError] = useState('');
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    setLogoFile(file);
+    if (file) setLogoPreview(URL.createObjectURL(file));
+    else setLogoPreview(null);
+  };
 
   const handleSubmit = async () => {
     setSubmitting(true);
     setSubmitError('');
     try {
+      // 1. Upload logo to Firebase Storage if provided
+      let logoUrl: string | null = null;
+      if (logoFile) {
+        const { storage } = await import('@/lib/firebase/client');
+        const { ref, uploadBytes, getDownloadURL } = await import('firebase/storage');
+        const ext = logoFile.name.split('.').pop();
+        const path = `products/logos/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+        const storageRef = ref(storage, path);
+        await uploadBytes(storageRef, logoFile);
+        logoUrl = await getDownloadURL(storageRef);
+      }
+
+      // 2. Save product to Firestore via API
       const res = await fetch('/api/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -192,10 +214,11 @@ function AddProduct() {
           baseUrl:     form.baseUrl,
           apiVersion:  form.version,
           authType:    form.auth,
+          logoUrl,
           endpoints,
           tiers: tiers.map(t => ({
             ...t,
-            priceZAR:     parseFloat(t.price) * 100,
+            priceZAR:      parseFloat(t.price) * 100,
             callsPerMonth: parseInt(t.calls),
           })),
         }),
@@ -206,8 +229,8 @@ function AddProduct() {
         const data = await res.json().catch(() => ({}));
         setSubmitError(data.error || 'Submission failed — please try again');
       }
-    } catch {
-      setSubmitError('Connection error — please try again');
+    } catch (err: any) {
+      setSubmitError(err?.message || 'Connection error — please try again');
     } finally {
       setSubmitting(false);
     }
@@ -315,12 +338,16 @@ function AddProduct() {
               </select>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <label style={{ ...labelStyle, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', textTransform: 'none', fontSize: '13px', color: 'rgba(255,255,255,0.5)' }}>
-              <input type="file" style={{ display: 'none' }} accept="image/*" />
-              <div style={{ padding: '10px 20px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', cursor: 'pointer', fontSize: '13px' }}>
-                Upload logo / icon
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <input type="file" style={{ display: 'none' }} accept="image/*" onChange={handleLogoChange} />
+              <div style={{ padding: '10px 20px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', cursor: 'pointer', fontSize: '13px', color: 'rgba(255,255,255,0.5)', fontFamily: 'DM Mono, monospace' }}>
+                {logoFile ? 'Change logo' : 'Upload logo / icon'}
               </div>
+              {logoPreview && (
+                <img src={logoPreview} alt="Logo preview" style={{ width: '44px', height: '44px', borderRadius: '10px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.12)' }} />
+              )}
+              {logoFile && <span style={{ fontSize: '12px', color: 'rgba(91,148,210,0.8)', fontFamily: 'DM Mono, monospace' }}>{logoFile.name}</span>}
             </label>
           </div>
         </div>

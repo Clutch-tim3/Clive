@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, GithubAuthProvider } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, GithubAuthProvider, FacebookAuthProvider } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
@@ -25,3 +25,9 @@ googleProvider.addScope('profile');
 export const githubProvider = new GithubAuthProvider();
 githubProvider.addScope('read:user');
 githubProvider.addScope('user:email');
+
+// Facebook — enable in Firebase Console → Authentication → Sign-in method → Facebook
+// Requires a Facebook App ID + Secret from developers.facebook.com
+export const facebookProvider = new FacebookAuthProvider();
+facebookProvider.addScope('email');
+facebookProvider.addScope('public_profile');
