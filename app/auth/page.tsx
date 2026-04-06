@@ -2,7 +2,7 @@
 export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect, useRef, useCallback, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 // Firebase is imported dynamically inside handlers to avoid SSR initialisation errors
 
 /* ─── types ─────────────────────────────────────────────── */
@@ -743,7 +743,6 @@ function Cursor() {
 
 /* ─── main auth content ──────────────────────────────────── */
 function AuthContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [screen, setScreen] = useState<Screen>('gate');
   const [visible, setVisible] = useState(true);
@@ -760,9 +759,11 @@ function AuthContent() {
     setTimeout(() => { setScreen(next); setVisible(true); }, 165);
   }, []);
 
-  const handleSuccess = () => router.push('/console');
+  // Hard redirect so the __session cookie from the fetch response is
+  // guaranteed to be present when the middleware checks the next request.
+  const handleSuccess = () => { window.location.href = '/console'; };
 
-  const handleDone = () => router.push('/console');
+  const handleDone = () => { window.location.href = '/console'; };
 
   return (
     <>
