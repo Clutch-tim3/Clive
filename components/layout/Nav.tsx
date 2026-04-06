@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import React from 'react';
+import { SearchBar } from '../ui/SearchBar';
 
 export function Nav() {
   return (
@@ -42,6 +43,7 @@ export function Nav() {
       }}>
         {[
           { href: '/products', label: 'Products', accent: false },
+          { href: '/domains', label: 'Domains', accent: false },
           { href: '/', label: 'Platform', accent: false },
           { href: '/pricing', label: 'Pricing', accent: false },
           { href: '/sell', label: 'Sell', accent: false },
@@ -73,6 +75,7 @@ export function Nav() {
       </div>
 
       <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+        <SearchBar navMode />
         <Link
           href="/auth?screen=signin"
           style={{

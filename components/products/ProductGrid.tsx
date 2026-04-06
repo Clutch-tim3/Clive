@@ -1,9 +1,10 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { products, getProductsByCategory, Product } from '@/lib/products';
+import { products, getProductsByCategory } from '@/lib/products';
 import { FilterBar } from './FilterBar';
 import { ProductCard } from './ProductCard';
 import { ScrollReveal } from '../ui/ScrollReveal';
+import { SearchBar } from '../ui/SearchBar';
 
 interface ProductGridProps {
   initialCategory?: string;
@@ -11,22 +12,35 @@ interface ProductGridProps {
 
 export function ProductGrid({ initialCategory = 'all' }: ProductGridProps) {
   const [activeCategory, setActiveCategory] = useState(initialCategory);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    if (initialCategory) {
-      setActiveCategory(initialCategory);
-    }
+    if (initialCategory) setActiveCategory(initialCategory);
   }, [initialCategory]);
 
-  const filteredProducts = getProductsByCategory(activeCategory);
+  const byCategory = getProductsByCategory(activeCategory);
+  const filteredProducts = searchQuery.trim().length >= 2
+    ? products.filter(p =>
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.tagline.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.category.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : byCategory;
 
   return (
     <div>
+      <div style={{ marginBottom: '20px' }}>
+        <SearchBar
+          placeholder="Search products…"
+          onQueryChange={setSearchQuery}
+        />
+      </div>
+
       <FilterBar
         activeCategory={activeCategory}
-        onCategoryChange={setActiveCategory}
+        onCategoryChange={cat => { setActiveCategory(cat); setSearchQuery(''); }}
       />
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredProducts.length === 0 ? (
           <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '80px 32px' }}>

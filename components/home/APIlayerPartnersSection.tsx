@@ -4,6 +4,18 @@ import React, { useState } from 'react';
 import { SectionKicker } from '../ui/SectionKicker';
 import { ScrollReveal } from '../ui/ScrollReveal';
 
+const PARTNER_URLS: Record<string, string> = {
+  'IPstack':       'https://apilayer.com/marketplace/ip_to_geolocation-api?fpr=thabang75',
+  'VATlayer':      'https://apilayer.com/marketplace/vat-api?fpr=thabang75',
+  'PositionStack': 'https://apilayer.com/marketplace/positionstack-api?fpr=thabang75',
+  'PDFlayer':      'https://apilayer.com/marketplace/pdf-api?fpr=thabang75',
+  'MediaStack':    'https://apilayer.com/marketplace/mediastack-api?fpr=thabang75',
+  'Coinlayer':     'https://apilayer.com/marketplace/coinlayer-api?fpr=thabang75',
+  'Serpstack':     'https://apilayer.com/marketplace/serpstack-api?fpr=thabang75',
+  'Aviationstack': 'https://apilayer.com/marketplace/aviationstack-api?fpr=thabang75',
+  'Languagelayer': 'https://apilayer.com/marketplace/languagelayer-api?fpr=thabang75',
+};
+
 const partnerAPIs = [
   {
     name: 'IPstack',
@@ -260,7 +272,7 @@ export function APIlayerPartnersSection() {
                     </span>
                   </div>
                   <a
-                    href="https://apilayer.com?fpr=thabang75"
+                    href={PARTNER_URLS[api.name] ?? 'https://apilayer.com/marketplace?fpr=thabang75'}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-mono text-[10.5px] font-medium tracking-[0.1em] uppercase bg-navy text-white border border-navy shadow-[0_4px_16px_rgba(27,48,91,0.3),0_1px_0_rgba(255,255,255,0.1)_inset] hover:bg-navy2 hover:shadow-[0_8px_28px_rgba(27,48,91,0.45),0_1px_0_rgba(255,255,255,0.1)_inset] transition-all"
@@ -285,8 +297,9 @@ export function APIlayerPartnersSection() {
             </svg>
           </div>
           <p className="font-mono text-[10px] tracking-[0.08em] text-white/40">
-            Clive is an affiliate partner of APIlayer. When you click "Get started" and make a purchase, 
-            Clive may earn a commission — at no additional cost to you.
+            Clive is an affiliate partner of APIlayer. When you click "Get started" and make a purchase via{' '}
+            <a href="https://apilayer.com/marketplace?fpr=thabang75" target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(91,148,210,0.6)', textDecoration: 'none' }}>APIlayer</a>,
+            {' '}Clive may earn a commission — at no additional cost to you.
           </p>
         </div>
       </div>

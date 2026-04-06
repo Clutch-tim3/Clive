@@ -240,16 +240,28 @@ function SignInScreen({ onBack, onSignUp, onSuccess }: { onBack: () => void; onS
       });
       onSuccess();
     } catch (err: any) {
-      if (err?.code === 'auth/network-request-failed') showNetworkErr();
+      if (err?.code === 'auth/popup-blocked') {
+        try {
+          const { auth: _a, googleProvider: gp, githubProvider: ghp, facebookProvider: fbp } = await import('@/lib/firebase/client');
+          const { signInWithRedirect } = await import('firebase/auth');
+          const fallback = provider === 'google' ? gp : provider === 'github' ? ghp : fbp;
+          await signInWithRedirect(_a, fallback);
+        } catch { /* redirect initiated */ }
+      } else if (err?.code === 'auth/network-request-failed') showNetworkErr();
     }
   };
 
-  const handleForgotPw = (e: React.MouseEvent) => {
+  const handleForgotPw = async (e: React.MouseEvent) => {
     e.preventDefault();
-    if (!email) { setPwResetMsg('error'); return; }
-    if (!validateEmail(email)) { setPwResetMsg('error'); return; }
-    setPwResetMsg('sent');
-    setTimeout(() => setPwResetMsg(''), 4000);
+    if (!email || !validateEmail(email)) { setPwResetMsg('error'); return; }
+    try {
+      const { auth: _auth } = await import('@/lib/firebase/client');
+      const { sendPasswordResetEmail } = await import('firebase/auth');
+      await sendPasswordResetEmail(_auth, email);
+      setPwResetMsg('sent');
+    } catch {
+      setPwResetMsg('error');
+    }
   };
 
   const submit = async () => {
@@ -375,7 +387,14 @@ function SignUpScreen({ onBack, onSignIn, onSuccess }: { onBack: () => void; onS
       if (!res.ok) throw new Error('Session creation failed');
       onSuccess();
     } catch (err: any) {
-      if (err?.code === 'auth/network-request-failed') {
+      if (err?.code === 'auth/popup-blocked') {
+        try {
+          const { auth: _a, googleProvider: gp, githubProvider: ghp, facebookProvider: fbp } = await import('@/lib/firebase/client');
+          const { signInWithRedirect } = await import('firebase/auth');
+          const fallback = provider === 'google' ? gp : provider === 'github' ? ghp : fbp;
+          await signInWithRedirect(_a, fallback);
+        } catch { /* redirect initiated */ }
+      } else if (err?.code === 'auth/network-request-failed') {
         setSignupNetworkErr(true);
         setTimeout(() => setSignupNetworkErr(false), 5000);
       } else if (err?.code && err.code !== 'auth/popup-closed-by-user') {

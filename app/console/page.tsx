@@ -6,7 +6,7 @@ import Link from 'next/link';
 // Firebase imported dynamically inside effects to avoid SSR initialisation errors
 
 /* ─── types ─────────────────────────────────────────────── */
-type Tab = 'dashboard' | 'add-product' | 'my-products' | 'testing' | 'analytics' | 'earnings';
+type Tab = 'dashboard' | 'add-product' | 'my-products' | 'testing' | 'analytics' | 'earnings' | 'domains';
 
 interface Endpoint {
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
@@ -987,15 +987,39 @@ function Earnings() {
   );
 }
 
+/* ─── my domains ────────────────────────────────────────── */
+function MyDomains() {
+  return (
+    <div>
+      <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '32px', color: 'white', fontWeight: 400, margin: '0 0 8px' }}>My Domains</h2>
+      <p style={{ fontFamily: "'Libre Baskerville', serif", fontStyle: 'italic', fontSize: '13px', color: 'rgba(255,255,255,0.35)', margin: '0 0 32px' }}>Domains registered through Clive appear here.</p>
+      <div style={{ textAlign: 'center', padding: '80px 32px', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '24px' }}>
+        <div style={{ fontSize: '40px', marginBottom: '18px' }}>🌐</div>
+        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 300, fontSize: '30px', color: '#fff', marginBottom: '10px' }}>No domains yet.</div>
+        <div style={{ fontFamily: "'Libre Baskerville', serif", fontStyle: 'italic', fontSize: '14px', color: 'rgba(255,255,255,0.35)', marginBottom: '28px' }}>
+          Register a domain to give your API a professional home.
+        </div>
+        <a
+          href="/domains"
+          style={{ display: 'inline-block', padding: '12px 28px', background: '#1B305B', border: '1.5px solid rgba(91,148,210,0.35)', borderRadius: '100px', fontFamily: "'DM Mono', monospace", fontSize: '10.5px', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'white', textDecoration: 'none' }}
+        >
+          Search domains →
+        </a>
+      </div>
+    </div>
+  );
+}
+
 /* ─── main console layout ────────────────────────────────── */
 
 const NAV_ITEMS: { id: Tab; label: string; icon: string }[] = [
-  { id: 'dashboard', label: 'Dashboard', icon: '⊞' },
+  { id: 'dashboard',   label: 'Dashboard',   icon: '⊞' },
   { id: 'my-products', label: 'My Products', icon: '◈' },
   { id: 'add-product', label: 'Add Product', icon: '+' },
-  { id: 'testing', label: 'Testing', icon: '▷' },
-  { id: 'analytics', label: 'Analytics', icon: '◎' },
-  { id: 'earnings', label: 'Earnings', icon: '$' },
+  { id: 'domains',     label: 'My Domains',  icon: '🌐' },
+  { id: 'testing',     label: 'Testing',     icon: '▷' },
+  { id: 'analytics',   label: 'Analytics',   icon: '◎' },
+  { id: 'earnings',    label: 'Earnings',    icon: '$' },
 ];
 
 export default function ConsolePage() {
@@ -1105,6 +1129,7 @@ export default function ConsolePage() {
         {activeTab === 'dashboard' && <Dashboard data={dashData} />}
         {activeTab === 'add-product' && <AddProduct />}
         {activeTab === 'my-products' && <MyProducts onAddProduct={() => navigateTo('add-product')} />}
+        {activeTab === 'domains' && <MyDomains />}
         {activeTab === 'testing' && <Testing />}
         {activeTab === 'analytics' && <Analytics />}
         {activeTab === 'earnings' && <Earnings />}
