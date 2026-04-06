@@ -1,6 +1,5 @@
 import { HeroNew as Hero } from '@/components/home/HeroNew';
 import { HackKitSpotlight } from '@/components/home/HackKitSpotlight';
-import { StatsStrip } from '@/components/home/StatsStrip';
 import { ProductsSection } from '@/components/home/ProductsSection';
 import { WhyClive } from '@/components/home/WhyClive';
 import { NavyBand } from '@/components/home/NavyBand';
@@ -14,7 +13,6 @@ export default function Home() {
   return (
     <div>
       <Hero />
-      <StatsStrip />
       <HackKitSpotlight />
       <ProductsSection />
       <WhyClive />
