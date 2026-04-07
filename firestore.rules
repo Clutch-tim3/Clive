@@ -95,5 +95,25 @@ service cloud.firestore {
       allow read:  if true;
       allow write: if isAdmin();
     }
+
+    // Domains — owner read/create/update; admin delete
+    match /domains/{domainId} {
+      allow read:   if isAuth() && resource.data.userId == request.auth.uid;
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+      allow update: if (isAuth() && resource.data.userId == request.auth.uid) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Domain registration audit log — owner create, admin read
+    match /domainAttempts/{id} {
+      allow read:   if isAdmin();
+      allow create: if isAuth();
+    }
+
+    // System docs (TLD price cache etc.) — public read, admin write
+    match /system/{doc} {
+      allow read:  if true;
+      allow write: if isAdmin();
+    }
   }
 }

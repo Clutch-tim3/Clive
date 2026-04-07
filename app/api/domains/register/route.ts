@@ -1,0 +1,168 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { FieldValue } from 'firebase-admin/firestore';
+import { requireAuth } from '@/lib/firebase/auth';
+import { adminDb } from '@/lib/firebase/admin';
+import {
+  searchDomains, registerDomain, lockDomain,
+  buildContact, NamecomError,
+} from '@/lib/domains/namecom';
+import { usdToZAR } from '@/lib/domains/tlds';
+
+export async function POST(req: NextRequest) {
+  const user = await requireAuth().catch(() => null);
+  if (!user) {
+    return NextResponse.json({ error: 'Sign in to register a domain.' }, { status: 401 });
+  }
+
+  const body = await req.json();
+  const {
+    domainName,
+    years = 1,
+    privacyEnabled = true,
+    firstName, lastName, email,
+    phone,
+    address, city, state, zip,
+    country = 'ZA',
+    company,
+  } = body;
+
+  // ── Validate required fields ─────────────────────────────────────────────
+  const missing = ['domainName', 'firstName', 'lastName', 'phone', 'address', 'city']
+    .filter(f => !body[f]);
+  if (missing.length) {
+    return NextResponse.json({ error: `Missing: ${missing.join(', ')}` }, { status: 400 });
+  }
+
+  // ── Live availability re-check (critical — must run before charging) ──────
+  let liveResults;
+  try {
+    liveResults = await searchDomains([domainName]);
+  } catch {
+    return NextResponse.json({
+      error: 'Could not verify domain availability. Please try again.',
+    }, { status: 503 });
+  }
+
+  const live = liveResults.find(r => r.domainName === domainName);
+  if (!live?.purchasable) {
+    return NextResponse.json({
+      error: 'This domain is no longer available. It was just registered by someone else.',
+      code: 'DOMAIN_TAKEN',
+    }, { status: 409 });
+  }
+
+  // ── Belt-and-braces Firestore check ──────────────────────────────────────
+  const existing = await adminDb().collection('domains')
+    .where('domainName', '==', domainName)
+    .where('status', 'in', ['active', 'pending'])
+    .limit(1).get();
+
+  if (!existing.empty) {
+    return NextResponse.json({ error: 'Domain already registered.' }, { status: 409 });
+  }
+
+  // ── Build contact ─────────────────────────────────────────────────────────
+  const contact = buildContact(
+    firstName, lastName,
+    email || user.email,
+    phone, address, city, state || 'GP', zip, country, company
+  );
+  const contacts = {
+    registrant: contact,
+    admin:      contact,
+    tech:       contact,
+    billing:    contact,
+  };
+
+  // ── Register with Name.com ────────────────────────────────────────────────
+  let registration;
+  try {
+    registration = await registerDomain({
+      domainName,
+      nameservers:   ['ns1.name.com', 'ns2.name.com', 'ns3.name.com', 'ns4.name.com'],
+      contacts,
+      privacyEnabled: privacyEnabled && !domainName.endsWith('.co.za'),
+      purchasePrice:  live.purchasePrice,
+      purchaseType:   'registration',
+      years,
+    });
+  } catch (err: any) {
+    if (err instanceof NamecomError) {
+      // Audit log — not billable, so safe to write even on failure
+      await adminDb().collection('domainAttempts').add({
+        userId:      user.uid,
+        domainName,
+        error:       err.message,
+        statusCode:  err.statusCode,
+        attemptedAt: new Date(),
+      });
+      return NextResponse.json({
+        error: `Registration failed: ${err.message}`,
+        code:  'NAMECOM_ERROR',
+      }, { status: 502 });
+    }
+    throw err;
+  }
+
+  // ── Lock immediately after registration ───────────────────────────────────
+  try {
+    await lockDomain(domainName);
+  } catch {
+    console.warn(`Could not lock ${domainName} immediately after registration.`);
+  }
+
+  // ── Write to Firestore ────────────────────────────────────────────────────
+  const tld = domainName.endsWith('.co.za')
+    ? 'co.za'
+    : domainName.split('.').pop()!;
+
+  const expiresAt = new Date();
+  expiresAt.setFullYear(expiresAt.getFullYear() + years);
+
+  const priceUSD = live.purchasePrice;
+  const priceZAR = usdToZAR(priceUSD * years);
+
+  const docRef = adminDb().collection('domains').doc();
+  await docRef.set({
+    id:             docRef.id,
+    userId:         user.uid,
+    userEmail:      user.email,
+    domainName,
+    tld,
+    years,
+    status:         'active',
+    locked:         true,
+    autoRenew:      true,
+    privacyEnabled: privacyEnabled && !domainName.endsWith('.co.za'),
+    nameservers:    ['ns1.name.com', 'ns2.name.com', 'ns3.name.com', 'ns4.name.com'],
+    priceUSD,
+    priceZAR,
+    ncOrderId:      registration.order,
+    registeredAt:   new Date(),
+    expiresAt,
+    renewedAt:      null,
+    contact: {
+      firstName, lastName,
+      email: email || user.email,
+      phone, address, city,
+      state: state || 'GP',
+      zip, country,
+    },
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
+
+  await adminDb().collection('users').doc(user.uid).update({
+    domainCount: FieldValue.increment(1),
+    updatedAt:   new Date(),
+  });
+
+  return NextResponse.json({
+    id:        docRef.id,
+    domainName,
+    expiresAt: expiresAt.toISOString(),
+    order:     registration.order,
+    priceUSD,
+    priceZAR,
+  }, { status: 201 });
+}

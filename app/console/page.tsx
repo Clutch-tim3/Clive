@@ -988,24 +988,123 @@ function Earnings() {
 }
 
 /* ─── my domains ────────────────────────────────────────── */
+interface DomainRecord {
+  id: string;
+  fqdn: string;
+  domainName: string;
+  tld: string;
+  registeredAt: string | null;
+  expiresAt: string | null;
+  status: string;
+  priceZAR: number;
+  registrarOrderId: string;
+}
+
 function MyDomains() {
+  const [domains,  setDomains]  = useState<DomainRecord[]>([]);
+  const [fetching, setFetching] = useState(true);
+  const [renewingId, setRenewingId] = useState<string | null>(null);
+
+  const load = async () => {
+    setFetching(true);
+    try {
+      const res  = await fetch('/api/domains/list');
+      const data = await res.json() as { domains?: DomainRecord[] };
+      setDomains(data.domains ?? []);
+    } catch { /* ignore */ }
+    finally { setFetching(false); }
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const handleRenew = async (domainId: string) => {
+    setRenewingId(domainId);
+    try {
+      await fetch('/api/domains/renew', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ domainId, years: 1 }),
+      });
+      await load();
+    } catch { /* ignore */ }
+    finally { setRenewingId(null); }
+  };
+
+  const fmt = (iso: string | null) =>
+    iso ? new Date(iso).toLocaleDateString('en-ZA', { year: 'numeric', month: 'short', day: 'numeric' }) : '—';
+
+  const statusColor = (s: string) =>
+    s === 'active' ? 'rgba(80,200,120,0.85)' : s === 'expired' ? 'rgba(255,100,100,0.8)' : 'rgba(255,180,0,0.8)';
+
   return (
     <div>
       <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '32px', color: 'white', fontWeight: 400, margin: '0 0 8px' }}>My Domains</h2>
       <p style={{ fontFamily: "'Libre Baskerville', serif", fontStyle: 'italic', fontSize: '13px', color: 'rgba(255,255,255,0.35)', margin: '0 0 32px' }}>Domains registered through Clive appear here.</p>
-      <div style={{ textAlign: 'center', padding: '80px 32px', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '24px' }}>
-        <div style={{ fontSize: '40px', marginBottom: '18px' }}>🌐</div>
-        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 300, fontSize: '30px', color: '#fff', marginBottom: '10px' }}>No domains yet.</div>
-        <div style={{ fontFamily: "'Libre Baskerville', serif", fontStyle: 'italic', fontSize: '14px', color: 'rgba(255,255,255,0.35)', marginBottom: '28px' }}>
-          Register a domain to give your API a professional home.
+
+      {fetching ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '20px', overflow: 'hidden' }}>
+          {[1,2,3].map(i => (
+            <div key={i} style={{ padding: '18px 24px', background: 'rgba(255,255,255,0.02)', display: 'flex', gap: '24px', alignItems: 'center' }}>
+              <div style={{ flex: 1, height: 18, borderRadius: 4, background: 'rgba(255,255,255,0.07)' }} />
+              <div style={{ width: 90, height: 18, borderRadius: 4, background: 'rgba(255,255,255,0.05)' }} />
+              <div style={{ width: 90, height: 18, borderRadius: 4, background: 'rgba(255,255,255,0.05)' }} />
+              <div style={{ width: 64, height: 24, borderRadius: 100, background: 'rgba(255,255,255,0.07)' }} />
+              <div style={{ width: 72, height: 32, borderRadius: 100, background: 'rgba(255,255,255,0.07)' }} />
+            </div>
+          ))}
         </div>
-        <a
-          href="/domains"
-          style={{ display: 'inline-block', padding: '12px 28px', background: '#1B305B', border: '1.5px solid rgba(91,148,210,0.35)', borderRadius: '100px', fontFamily: "'DM Mono', monospace", fontSize: '10.5px', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'white', textDecoration: 'none' }}
-        >
-          Search domains →
-        </a>
-      </div>
+      ) : domains.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '80px 32px', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: '24px' }}>
+          <div style={{ fontSize: '40px', marginBottom: '18px' }}>🌐</div>
+          <div style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 300, fontSize: '30px', color: '#fff', marginBottom: '10px' }}>No domains yet.</div>
+          <div style={{ fontFamily: "'Libre Baskerville', serif", fontStyle: 'italic', fontSize: '14px', color: 'rgba(255,255,255,0.35)', marginBottom: '28px' }}>
+            Register a domain to give your API a professional home.
+          </div>
+          <a
+            href="/domains"
+            style={{ display: 'inline-block', padding: '12px 28px', background: '#1B305B', border: '1.5px solid rgba(91,148,210,0.35)', borderRadius: '100px', fontFamily: "'DM Mono', monospace", fontSize: '10.5px', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'white', textDecoration: 'none' }}
+          >
+            Search domains →
+          </a>
+        </div>
+      ) : (
+        <>
+          {/* Column headers */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 130px 130px 90px 100px', gap: '16px', padding: '8px 24px 12px', fontFamily: "'DM Mono', monospace", fontSize: '8.5px', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.2)' }}>
+            <span>Domain</span><span>Registered</span><span>Expires</span><span>Status</span><span></span>
+          </div>
+          <div style={{ border: '1px solid rgba(255,255,255,0.07)', borderRadius: '20px', overflow: 'hidden' }}>
+            {domains.map((d, i) => (
+              <div key={d.id} style={{ display: 'grid', gridTemplateColumns: '1fr 130px 130px 90px 100px', gap: '16px', alignItems: 'center', padding: '16px 24px', borderBottom: i < domains.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none', background: 'rgba(255,255,255,0.02)' }}>
+                <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '14px', color: '#fff' }}>{d.domainName}</div>
+                <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>{fmt(d.registeredAt)}</div>
+                <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>{fmt(d.expiresAt)}</div>
+                <div>
+                  <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '9px', letterSpacing: '0.12em', textTransform: 'uppercase', color: statusColor(d.status), background: 'rgba(255,255,255,0.04)', border: `1px solid ${statusColor(d.status).replace('0.85', '0.2').replace('0.8', '0.2')}`, padding: '3px 8px', borderRadius: '100px' }}>
+                    {d.status.replace('_', ' ')}
+                  </span>
+                </div>
+                <div>
+                  <button
+                    disabled={renewingId === d.id}
+                    onClick={() => handleRenew(d.id)}
+                    style={{ padding: '7px 16px', background: 'transparent', border: '1px solid rgba(91,148,210,0.25)', borderRadius: '100px', fontFamily: "'DM Mono', monospace", fontSize: '9px', letterSpacing: '0.1em', textTransform: 'uppercase', color: renewingId === d.id ? 'rgba(255,255,255,0.3)' : 'rgba(91,148,210,0.7)', cursor: renewingId === d.id ? 'default' : 'pointer', transition: 'all .15s' }}
+                    onMouseEnter={e => { if (renewingId !== d.id) { (e.currentTarget.style.borderColor = 'rgba(91,148,210,0.5)'); (e.currentTarget.style.color = 'rgba(91,148,210,1)'); } }}
+                    onMouseLeave={e => { (e.currentTarget.style.borderColor = 'rgba(91,148,210,0.25)'); (e.currentTarget.style.color = 'rgba(91,148,210,0.7)'); }}
+                  >
+                    {renewingId === d.id ? '…' : 'Renew'}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div style={{ marginTop: '20px', textAlign: 'right' }}>
+            <a href="/domains" style={{ fontFamily: "'DM Mono', monospace", fontSize: '9.5px', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(91,148,210,0.6)', textDecoration: 'none' }}>
+              Register another →
+            </a>
+          </div>
+        </>
+      )}
     </div>
   );
 }
