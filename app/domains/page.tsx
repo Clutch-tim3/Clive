@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Nav } from '@/components/layout/Nav';
 import { Footer } from '@/components/layout/Footer';
@@ -31,7 +31,7 @@ function formatZAR(cents: number) {
   return `R${(cents / 100).toFixed(0)}`;
 }
 
-export default function DomainsPage() {
+function DomainsPageContent() {
   const router = useRouter();
   const params = useSearchParams();
 
@@ -293,6 +293,14 @@ export default function DomainsPage() {
       </div>
       <Footer />
     </>
+  );
+}
+
+export default function DomainsPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <DomainsPageContent />
+    </Suspense>
   );
 }
 

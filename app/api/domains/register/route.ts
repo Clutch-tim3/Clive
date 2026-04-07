@@ -1,168 +1,156 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { FieldValue } from 'firebase-admin/firestore';
 import { requireAuth } from '@/lib/firebase/auth';
 import { adminDb } from '@/lib/firebase/admin';
+import { FieldValue } from 'firebase-admin/firestore';
+import { checkRDAP } from '@/lib/domains/rdap';
 import {
-  searchDomains, registerDomain, lockDomain,
-  buildContact, NamecomError,
-} from '@/lib/domains/namecom';
-import { usdToZAR } from '@/lib/domains/tlds';
+  createRCCustomer, getRCCustomerByEmail,
+  createRCContact, registerDomain
+} from '@/lib/domains/resellerclub';
 
 export async function POST(req: NextRequest) {
-  const user = await requireAuth().catch(() => null);
-  if (!user) {
-    return NextResponse.json({ error: 'Sign in to register a domain.' }, { status: 401 });
-  }
-
+  const user = await requireAuth();
   const body = await req.json();
+
   const {
-    domainName,
+    domain,          // e.g. "myapp.co.za"
     years = 1,
-    privacyEnabled = true,
-    firstName, lastName, email,
-    phone,
-    address, city, state, zip,
-    country = 'ZA',
-    company,
+    privacy = true,
+    // Registrant contact details (collected in UI)
+    contactName,
+    contactAddress,
+    contactCity,
+    contactState,
+    contactZipcode,
+    contactPhone,    // "821234567" — no country code
   } = body;
 
-  // ── Validate required fields ─────────────────────────────────────────────
-  const missing = ['domainName', 'firstName', 'lastName', 'phone', 'address', 'city']
-    .filter(f => !body[f]);
-  if (missing.length) {
-    return NextResponse.json({ error: `Missing: ${missing.join(', ')}` }, { status: 400 });
+  if (!domain || !contactName || !contactAddress || !contactCity || !contactPhone) {
+    return NextResponse.json({ error: 'Missing required registration details.' }, { status: 400 });
   }
 
-  // ── Live availability re-check (critical — must run before charging) ──────
-  let liveResults;
-  try {
-    liveResults = await searchDomains([domainName]);
-  } catch {
-    return NextResponse.json({
-      error: 'Could not verify domain availability. Please try again.',
-    }, { status: 503 });
-  }
+  // ── 1. Live RDAP re-check immediately before registration ──────────
+  // This is critical — do not skip. The domain may have been registered
+  // by someone else in the time between the user's search and checkout.
+  const rdapCheck = await checkRDAP(domain);
 
-  const live = liveResults.find(r => r.domainName === domainName);
-  if (!live?.purchasable) {
+  if (!rdapCheck.available) {
     return NextResponse.json({
-      error: 'This domain is no longer available. It was just registered by someone else.',
-      code: 'DOMAIN_TAKEN',
+      error: 'This domain is no longer available. It may have just been registered.',
+      status: rdapCheck.status,
     }, { status: 409 });
   }
 
-  // ── Belt-and-braces Firestore check ──────────────────────────────────────
-  const existing = await adminDb().collection('domains')
-    .where('domainName', '==', domainName)
+  // ── 2. Check if domain is already in our Firestore (belt + braces) ─
+  const existingSnap = await adminDb().collection('domains')
+    .where('domainName', '==', domain)
     .where('status', 'in', ['active', 'pending'])
     .limit(1).get();
 
-  if (!existing.empty) {
+  if (!existingSnap.empty) {
     return NextResponse.json({ error: 'Domain already registered.' }, { status: 409 });
   }
 
-  // ── Build contact ─────────────────────────────────────────────────────────
-  const contact = buildContact(
-    firstName, lastName,
-    email || user.email,
-    phone, address, city, state || 'GP', zip, country, company
-  );
-  const contacts = {
-    registrant: contact,
-    admin:      contact,
-    tech:       contact,
-    billing:    contact,
-  };
+  // ── 3. Get or create ResellerClub customer for this user ───────────
+  let rcCustomerId: string;
+  let rcContactId: string;
 
-  // ── Register with Name.com ────────────────────────────────────────────────
-  let registration;
   try {
-    registration = await registerDomain({
-      domainName,
-      nameservers:   ['ns1.name.com', 'ns2.name.com', 'ns3.name.com', 'ns4.name.com'],
-      contacts,
-      privacyEnabled: privacyEnabled && !domainName.endsWith('.co.za'),
-      purchasePrice:  live.purchasePrice,
-      purchaseType:   'registration',
-      years,
-    });
-  } catch (err: any) {
-    if (err instanceof NamecomError) {
-      // Audit log — not billable, so safe to write even on failure
-      await adminDb().collection('domainAttempts').add({
-        userId:      user.uid,
-        domainName,
-        error:       err.message,
-        statusCode:  err.statusCode,
-        attemptedAt: new Date(),
-      });
-      return NextResponse.json({
-        error: `Registration failed: ${err.message}`,
-        code:  'NAMECOM_ERROR',
-      }, { status: 502 });
-    }
-    throw err;
-  }
-
-  // ── Lock immediately after registration ───────────────────────────────────
-  try {
-    await lockDomain(domainName);
+    // Try to find existing RC customer
+    const existing = await getRCCustomerByEmail(user.email);
+    rcCustomerId = String(existing.customerid);
   } catch {
-    console.warn(`Could not lock ${domainName} immediately after registration.`);
+    // Customer doesn't exist — create them
+    const tempPw = crypto.randomUUID().slice(0, 12) + 'Clv!';
+    const newCustomer = await createRCCustomer({
+      username:  user.email,
+      passwd:    tempPw,
+      name:      contactName,
+      company:   user.displayName || contactName,
+      address:   contactAddress,
+      city:      contactCity,
+      state:     contactState || 'GP',
+      country:   'ZA',
+      zipcode:   contactZipcode || '0000',
+      phone:     contactPhone,
+      langpref:  'en',
+    });
+    rcCustomerId = String(newCustomer.customerid || newCustomer);
   }
 
-  // ── Write to Firestore ────────────────────────────────────────────────────
-  const tld = domainName.endsWith('.co.za')
-    ? 'co.za'
-    : domainName.split('.').pop()!;
+  // Create contact record in ResellerClub
+  const contact = await createRCContact({
+    customerId: rcCustomerId,
+    name:       contactName,
+    company:    user.displayName || contactName,
+    email:      user.email,
+    address:    contactAddress,
+    city:       contactCity,
+    state:      contactState || 'GP',
+    country:    'ZA',
+    zipcode:    contactZipcode || '0000',
+    phoneCC:    '27',
+    phone:      contactPhone,
+    type:       'Contact',
+  });
+  rcContactId = String(contact.contactid || contact);
 
+  // ── 4. Register the domain ────────────────────────────────────────
+  const tld = domain.includes('.co.za') ? 'co.za'
+    : domain.split('.').pop() as string;
+
+  const registration = await registerDomain({
+    domainName:       domain,
+    years,
+    customerId:       rcCustomerId,
+    regContactId:     rcContactId,
+    adminContactId:   rcContactId,
+    techContactId:    rcContactId,
+    billingContactId: rcContactId,
+    nameservers:      ['ns1.clive.dev', 'ns2.clive.dev'],
+    purchasePrivacy:  privacy && tld !== 'co.za',
+    protectPrivacy:   privacy && tld !== 'co.za',
+  });
+
+  // ── 5. Write to Firestore ────────────────────────────────────────
   const expiresAt = new Date();
   expiresAt.setFullYear(expiresAt.getFullYear() + years);
 
-  const priceUSD = live.purchasePrice;
-  const priceZAR = usdToZAR(priceUSD * years);
-
   const docRef = adminDb().collection('domains').doc();
-  await docRef.set({
-    id:             docRef.id,
-    userId:         user.uid,
-    userEmail:      user.email,
-    domainName,
+  const domainDoc = {
+    id:               docRef.id,
+    userId:           user.uid,
+    userEmail:        user.email,
+    domainName:       domain,
     tld,
     years,
-    status:         'active',
-    locked:         true,
-    autoRenew:      true,
-    privacyEnabled: privacyEnabled && !domainName.endsWith('.co.za'),
-    nameservers:    ['ns1.name.com', 'ns2.name.com', 'ns3.name.com', 'ns4.name.com'],
-    priceUSD,
-    priceZAR,
-    ncOrderId:      registration.order,
-    registeredAt:   new Date(),
+    status:           'active',
+    autoRenew:        true,
+    privacyEnabled:   privacy && tld !== 'co.za',
+    rcDomainId:       String(registration.entityid || registration),
+    rcCustomerId,
+    rcContactId,
+    nameservers:      ['ns1.clive.dev', 'ns2.clive.dev'],
+    priceZAR:         19900 * years, // Placeholder pricing
+    registeredAt:     new Date(),
     expiresAt,
-    renewedAt:      null,
-    contact: {
-      firstName, lastName,
-      email: email || user.email,
-      phone, address, city,
-      state: state || 'GP',
-      zip, country,
-    },
-    createdAt: new Date(),
+    renewedAt:        null,
+    createdAt:        new Date(),
+    updatedAt:        new Date(),
+  };
+
+  await docRef.set(domainDoc);
+
+  // ── 6. Update user's domain count ────────────────────────────────
+  await adminDb().collection('users').doc(user.uid).update({
+    domainCount: FieldValue.increment(1),
     updatedAt: new Date(),
   });
 
-  await adminDb().collection('users').doc(user.uid).update({
-    domainCount: FieldValue.increment(1),
-    updatedAt:   new Date(),
-  });
-
   return NextResponse.json({
-    id:        docRef.id,
-    domainName,
-    expiresAt: expiresAt.toISOString(),
-    order:     registration.order,
-    priceUSD,
-    priceZAR,
+    id:          docRef.id,
+    domain,
+    expiresAt:   expiresAt.toISOString(),
+    rcDomainId:  String(registration.entityid || registration),
   }, { status: 201 });
 }

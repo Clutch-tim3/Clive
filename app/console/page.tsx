@@ -1132,6 +1132,16 @@ export default function ConsolePage() {
       .then(r => r.json())
       .then(setDashData)
       .catch(() => {});
+
+    // Load domain count for sidebar badge
+    fetch('/api/domains/list')
+      .then(r => r.json())
+      .then((data: { domains?: any[] }) => {
+        const count = data.domains?.length || 0;
+        const badge = document.getElementById('domain-count-badge');
+        if (badge) badge.textContent = String(count);
+      })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -1211,6 +1221,9 @@ export default function ConsolePage() {
               {item.label}
               {item.id === 'add-product' && (
                 <span style={{ marginLeft: 'auto', fontSize: '10px', padding: '2px 7px', background: 'rgba(91,148,210,0.2)', color: 'rgba(91,148,210,0.8)', borderRadius: '100px' }}>new</span>
+              )}
+              {item.id === 'domains' && (
+                <span id="domain-count-badge" style={{ marginLeft: 'auto', fontSize: '10px', padding: '2px 7px', background: 'rgba(91,148,210,0.2)', color: 'rgba(91,148,210,0.8)', borderRadius: '100px' }}>0</span>
               )}
             </button>
           ))}
