@@ -104,9 +104,17 @@ export function Nav() {
           Console
         </Link>
 
-        {/* Logged-in: avatar initial + sign out */}
+        {/* Logged-in: My APIs link + avatar + sign out */}
         {authed && (
           <>
+            <Link
+              href="/dashboard/apis"
+              style={{ fontFamily:"'DM Mono',monospace", fontSize:'10.5px', letterSpacing:'0.14em', textTransform:'uppercase', color:'rgba(91,148,210,0.7)', textDecoration:'none', whiteSpace:'nowrap', transition:'color .2s' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = 'rgba(91,148,210,1)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = 'rgba(91,148,210,0.7)'; }}
+            >
+              My APIs
+            </Link>
             <div style={{
               width: '32px',
               height: '32px',

@@ -5,6 +5,17 @@ export interface PricingTier {
   highlight: boolean;
 }
 
+// Standardised acquire-flow tier (ZAR, 3-tier)
+export interface AcquireTier {
+  id:             'free' | 'developer' | 'pro';
+  name:           'Free' | 'Developer' | 'Pro';
+  priceZAR:       number;          // monthly, in cents (0 for free)
+  callsPerMonth:  number | 'unlimited';
+  rateLimit:      number;          // req/min
+  features:       string[];
+  isFeatured:     boolean;
+}
+
 export interface Endpoint {
   method: 'POST' | 'GET' | 'DEL';
   path: string;
@@ -17,6 +28,7 @@ export interface Product {
   slug: string;
   name: string;
   category: 'ml' | 'api' | 'ext' | 'app';
+  listingType?: 'own' | 'partner';   // 'partner' = APIlayer, no Acquire button
   tagline: string;
   description: string;
   pricing: {
@@ -39,6 +51,56 @@ export interface Product {
   animateIn?: 'fade' | 'slide-right';
   animateDelay?: 0 | 1 | 2 | 3;
   isDark?: boolean;
+}
+
+// Standard 3-tier structure per product (ZAR cents)
+const FREE_FEATURES  = ['All endpoints', 'Community support', '10 req/min'];
+const DEV_FEATURES   = ['All endpoints', 'Email support', '60 req/min'];
+const PRO_FEATURES   = ['All endpoints', 'Priority support', 'SLA guarantee', '100 req/min'];
+
+function makeTiers(devPrice: number, devCalls: number | 'unlimited', proPrice: number, proCalls: number | 'unlimited'): AcquireTier[] {
+  return [
+    { id:'free',      name:'Free',      priceZAR:0,        callsPerMonth:100,      rateLimit:10,  features:FREE_FEATURES, isFeatured:false },
+    { id:'developer', name:'Developer', priceZAR:devPrice, callsPerMonth:devCalls, rateLimit:60,  features:DEV_FEATURES,  isFeatured:false },
+    { id:'pro',       name:'Pro',       priceZAR:proPrice, callsPerMonth:proCalls, rateLimit:100, features:PRO_FEATURES,  isFeatured:true  },
+  ];
+}
+
+// Default for products not listed in spec
+const DEFAULT_TIERS = makeTiers(19900, 2000, 49900, 10000);
+
+export const PRODUCT_TIERS: Record<string, AcquireTier[]> = {
+  hackkit:               makeTiers(29900,  5000,     79900,  20000),
+  shieldkit:             makeTiers(49900,  10000,    119900, 50000),
+  searchcore:            makeTiers(39900,  8000,     99900,  30000),
+  embedcore:             makeTiers(19900,  2000000,  59900,  10000000),
+  contractiq:            makeTiers(29900,  200,      79900,  1000),
+  meetingiq:             makeTiers(19900,  50,       59900,  200),
+  tenderiq:              makeTiers(29900,  500,      79900,  5000),
+  fxbridge:              makeTiers(9900,   10000,    29900,  100000),
+  wealthmind:            makeTiers(19900,  1000,     49900,  10000),
+  oracleiq:              makeTiers(19900,  1000,     49900,  5000),
+  devkit:                makeTiers(9900,   10000,    29900,  'unlimited'),
+  // defaults for remaining products
+  talentpulse:           DEFAULT_TIERS,
+  creditlens:            DEFAULT_TIERS,
+  finsightiq:            DEFAULT_TIERS,
+  searchkit:             DEFAULT_TIERS,
+  transactiq:            DEFAULT_TIERS,
+  trustiqq:              DEFAULT_TIERS,
+  voicepost:             DEFAULT_TIERS,
+  paygrade:              DEFAULT_TIERS,
+  reviewpal:             DEFAULT_TIERS,
+  briefpal:              DEFAULT_TIERS,
+  designspy:             DEFAULT_TIERS,
+  copypilot:             DEFAULT_TIERS,
+  handoffready:          DEFAULT_TIERS,
+  flowmapper:            DEFAULT_TIERS,
+  'tender-command-center': DEFAULT_TIERS,
+};
+
+export function getAcquireTiers(slug: string): AcquireTier[] {
+  return PRODUCT_TIERS[slug] ?? DEFAULT_TIERS;
 }
 
 export const products: Product[] = [
