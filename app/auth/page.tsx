@@ -282,7 +282,7 @@ function SignInScreen({ onBack, onSignUp, onSuccess }: { onBack: () => void; onS
     
       const { auth: _auth } = await import('@/lib/firebase/client');
       const { signInWithEmailAndPassword } = await import('firebase/auth');
-      const result = await signInWithEmailAndPassword(_auth, email, pw);
+      const result = await signInWithEmailAndPassword(_auth, email.trim(), pw);
       await fetch('/api/auth/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -296,6 +296,8 @@ function SignInScreen({ onBack, onSignUp, onSuccess }: { onBack: () => void; onS
         setPwErr('Incorrect password');
       else if (err.code === 'auth/user-not-found')
         setEmailErr('No account with this email');
+      else if (err.code === 'auth/invalid-email')
+        setEmailErr('Please enter a valid email address');
       else if (err.code === 'auth/network-request-failed')
         showNetworkErr();
       else if (err.code === 'auth/operation-not-allowed')
@@ -420,7 +422,7 @@ function SignUpScreen({ onBack, onSignIn, onSuccess }: { onBack: () => void; onS
     try {
       const { auth: _fauth } = await import('@/lib/firebase/client');
       const { createUserWithEmailAndPassword, updateProfile } = await import('firebase/auth');
-      const result = await createUserWithEmailAndPassword(_fauth, email, pw);
+      const result = await createUserWithEmailAndPassword(_fauth, email.trim(), pw);
       // Save display name to Firebase Auth profile
       await updateProfile(result.user, { displayName: name });
       // Force refresh token so displayName is in the JWT
@@ -439,6 +441,8 @@ function SignUpScreen({ onBack, onSignIn, onSuccess }: { onBack: () => void; onS
       setLoading(false);
       if (err.code === 'auth/email-already-in-use')
         setErrors(e => ({ ...e, email: 'An account with this email already exists' }));
+      else if (err.code === 'auth/invalid-email')
+        setErrors(e => ({ ...e, email: 'Please enter a valid email address' }));
       else if (err.code === 'auth/network-request-failed') {
         setSignupNetworkErr(true);
         setTimeout(() => setSignupNetworkErr(false), 5000);
