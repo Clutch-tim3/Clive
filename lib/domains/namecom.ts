@@ -195,13 +195,12 @@ export async function getTLDs(): Promise<NCTld[]> {
 // ── REGISTRATION ──────────────────────────────────────────────────────────────
 
 export interface RegisterDomainInput {
-  domainName:      string;
-  nameservers:     string[];
-  contacts:        NCContacts;
-  privacyEnabled:  boolean;
-  purchasePrice:   number;
-  purchaseType:    'registration';
-  years?:          number;
+  domainName:     string;
+  nameservers:    string[];
+  contacts:       NCContacts;
+  privacyEnabled: boolean;
+  purchasePrice:  number;
+  years?:         number;
 }
 
 export async function registerDomain(input: RegisterDomainInput): Promise<NCRegistration> {
@@ -214,7 +213,6 @@ export async function registerDomain(input: RegisterDomainInput): Promise<NCRegi
       autorenewEnabled: true,
     },
     purchasePrice: input.purchasePrice,
-    purchaseType:  'registration',
     years:         input.years || 1,
   });
 }
@@ -276,7 +274,8 @@ export function buildContact(
   company?:  string,
 ): NCContact {
   const cc = country === 'ZA' ? '27' : '1';
-  const cleanPhone = phone.replace(/[^0-9]/g, '');
+  // Strip non-digits, then strip leading 0 (SA numbers start 0821… → 821…)
+  const cleanPhone = phone.replace(/[^0-9]/g, '').replace(/^0+/, '');
   return {
     firstName,
     lastName,

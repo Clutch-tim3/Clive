@@ -61,8 +61,14 @@ export async function POST(req: NextRequest) {
     }, { status: 409 });
   }
 
+  // Static fallback prices (USD) in case TLD cache is unavailable
+  const FALLBACK_PRICES: Record<string, number> = {
+    com: 12.99, net: 12.99, org: 12.99, 'co.za': 14.99,
+    io: 39.99, dev: 12.99, app: 12.99, africa: 29.99,
+    store: 19.99, online: 19.99, tech: 29.99, site: 19.99,
+  };
   const tldInfo = await getTLDPrice(tld).catch(() => null);
-  const purchasePrice = tldInfo?.purchasePrice ?? 0;
+  const purchasePrice = tldInfo?.purchasePrice ?? FALLBACK_PRICES[tld] ?? 12.99;
 
   // ── Belt-and-braces Firestore check ──────────────────────────────────────
   const existing = await adminDb().collection('domains')
@@ -96,7 +102,6 @@ export async function POST(req: NextRequest) {
       contacts,
       privacyEnabled: privacyEnabled && !domainName.endsWith('.co.za'),
       purchasePrice,
-      purchaseType:   'registration',
       years,
     });
   } catch (err: any) {

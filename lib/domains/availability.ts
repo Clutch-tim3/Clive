@@ -23,19 +23,21 @@ export type DomainAvailabilityResult = AvailabilityResult;
 // 200 = domain exists (taken), 404 = domain available.
 // No API key or account required.
 
+// RDAP servers per TLD — from IANA bootstrap data.
+// Centralnic operates .store/.online/.site; Identity Digital operates .tech.
 const RDAP_SERVERS: Record<string, string> = {
   com:    'https://rdap.verisign.com/com/v1',
   net:    'https://rdap.verisign.com/net/v1',
-  org:    'https://rdap.publicinterestregistry.org/rdap',
+  org:    'https://rdap.org',
   'co.za':'https://rdap.registry.net.za',
   io:     'https://rdap.nic.io',
   dev:    'https://rdap.registry.google/dev',
   app:    'https://rdap.registry.google/app',
   africa: 'https://rdap.nic.africa',
-  store:  'https://rdap.nic.store',
-  online: 'https://rdap.nic.online',
-  tech:   'https://rdap.nic.tech',
-  site:   'https://rdap.nic.site',
+  store:  'https://rdap.centralnic.com/store',
+  online: 'https://rdap.centralnic.com/online',
+  tech:   'https://rdap.donuts.co',
+  site:   'https://rdap.centralnic.com/site',
 };
 
 async function checkViaRDAP(
@@ -52,8 +54,21 @@ async function checkViaRDAP(
       headers: { Accept: 'application/rdap+json' },
       signal:  ctrl.signal,
     });
-    if (res.status === 200) return 'taken';
+
     if (res.status === 404) return 'available';
+
+    if (res.status === 200) {
+      // Must be a valid RDAP domain object — not a generic 200 page.
+      // All RDAP domain responses include objectClassName:"domain" and/or ldhName.
+      const ct = res.headers.get('content-type') ?? '';
+      if (!ct.includes('json')) return 'error';
+      const json: any = await res.json().catch(() => null);
+      if (json && (json.objectClassName === 'domain' || json.ldhName)) {
+        return 'taken';
+      }
+      return 'error';
+    }
+
     return 'error';
   } catch {
     return 'error';
