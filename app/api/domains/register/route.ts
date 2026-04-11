@@ -3,10 +3,11 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { requireAuth } from '@/lib/firebase/auth';
 import { adminDb } from '@/lib/firebase/admin';
 import {
-  searchDomains, registerDomain, lockDomain,
+  registerDomain, lockDomain,
   buildContact, NamecomError,
 } from '@/lib/domains/namecom';
-import { usdToZAR } from '@/lib/domains/tlds';
+import { checkAllTLDs } from '@/lib/domains/availability';
+import { getTLDPrice, usdToZAR } from '@/lib/domains/tlds';
 
 export async function POST(req: NextRequest) {
   const user = await requireAuth().catch(() => null);
@@ -38,23 +39,30 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `Missing: ${missing.join(', ')}` }, { status: 400 });
   }
 
-  // ── Live availability re-check (must run before registration) ────────────
-  let liveResults;
+  // ── Live availability re-check via RDAP ──────────────────────────────────
+  const tld = domainName.endsWith('.co.za') ? 'co.za' : (domainName.split('.').pop() ?? 'com');
+  const sld = domainName.endsWith('.co.za')
+    ? domainName.replace('.co.za', '')
+    : domainName.split('.').slice(0, -1).join('.');
+
+  let rdapCheck;
   try {
-    liveResults = await searchDomains([domainName]);
+    [rdapCheck] = await checkAllTLDs(sld, [tld]);
   } catch {
     return NextResponse.json({
       error: 'Could not verify domain availability. Please try again.',
     }, { status: 503 });
   }
 
-  const live = liveResults.find(r => r.domainName === domainName);
-  if (!live?.purchasable) {
+  if (!rdapCheck || rdapCheck.status !== 'available') {
     return NextResponse.json({
       error: 'This domain is no longer available. It was just registered by someone else.',
       code: 'DOMAIN_TAKEN',
     }, { status: 409 });
   }
+
+  const tldInfo = await getTLDPrice(tld).catch(() => null);
+  const purchasePrice = tldInfo?.purchasePrice ?? 0;
 
   // ── Belt-and-braces Firestore check ──────────────────────────────────────
   const existing = await adminDb().collection('domains')
@@ -87,7 +95,7 @@ export async function POST(req: NextRequest) {
       nameservers:    ['ns1.name.com', 'ns2.name.com', 'ns3.name.com', 'ns4.name.com'],
       contacts,
       privacyEnabled: privacyEnabled && !domainName.endsWith('.co.za'),
-      purchasePrice:  live.purchasePrice,
+      purchasePrice,
       purchaseType:   'registration',
       years,
     });
@@ -117,15 +125,10 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Write to Firestore ────────────────────────────────────────────────────
-  const tld = domainName.endsWith('.co.za')
-    ? 'co.za'
-    : domainName.split('.').pop()!;
-
   const expiresAt = new Date();
   expiresAt.setFullYear(expiresAt.getFullYear() + years);
 
-  const priceUSD = live.purchasePrice;
-  const priceZAR = usdToZAR(priceUSD * years);
+  const priceZAR = usdToZAR(purchasePrice * years);
 
   const docRef = adminDb().collection('domains').doc();
   await docRef.set({
@@ -140,7 +143,7 @@ export async function POST(req: NextRequest) {
     autoRenew:      true,
     privacyEnabled: privacyEnabled && !domainName.endsWith('.co.za'),
     nameservers:    ['ns1.name.com', 'ns2.name.com', 'ns3.name.com', 'ns4.name.com'],
-    priceUSD,
+    priceUSD:       purchasePrice,
     priceZAR,
     ncOrderId:      registration.order,
     registeredAt:   new Date(),
@@ -165,7 +168,7 @@ export async function POST(req: NextRequest) {
     domainName,
     expiresAt: expiresAt.toISOString(),
     order:     registration.order,
-    priceUSD,
+    priceUSD:  purchasePrice,
     priceZAR,
   }, { status: 201 });
 }

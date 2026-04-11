@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Nav } from '@/components/layout/Nav';
 import { Footer } from '@/components/layout/Footer';
@@ -52,9 +52,9 @@ function fieldStyle(hasError?: boolean): React.CSSProperties {
   };
 }
 
-export default function DomainPurchasePage({ params }: { params: Promise<{ domain: string }> }) {
+export default function DomainPurchasePage({ params }: { params: { domain: string } }) {
   const router = useRouter();
-  const { domain } = use(params);
+  const { domain } = params;
   const domainName = decodeURIComponent(domain);
   const isCoza = domainName.endsWith('.co.za');
   const tld = isCoza ? 'co.za' : (domainName.split('.').pop() ?? 'com');
