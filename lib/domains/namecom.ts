@@ -3,59 +3,108 @@
 // All Name.com calls go through here. Never call fetch() directly from routes.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const ENV      = process.env.NAMECOM_ENV === 'test' ? 'test' : 'production';
-const BASE_URL = ENV === 'test'
+const IS_TEST = process.env.NAMECOM_ENV === 'test' || process.env.NODE_ENV === 'test';
+
+const BASE_URL = IS_TEST
   ? 'https://api.dev.name.com/v4'
   : 'https://api.name.com/v4';
 
-// Test env uses username + "-test"
-const USERNAME = ENV === 'test'
-  ? `${process.env.NAMECOM_USERNAME}-test`
-  : process.env.NAMECOM_USERNAME!;
+// ── ERROR CLASSES ─────────────────────────────────────────────────────────────
 
-const TOKEN = process.env.NAMECOM_API_TOKEN!;
-
-function authHeader(): string {
-  return 'Basic ' + Buffer.from(`${USERNAME}:${TOKEN}`).toString('base64');
-}
-
-async function ncFetch<T>(
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE',
-  path: string,
-  body?: object
-): Promise<T> {
-  const res = await fetch(`${BASE_URL}${path}`, {
-    method,
-    headers: {
-      Authorization:  authHeader(),
-      'Content-Type': 'application/json',
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-
-  const text = await res.text();
-  let data: any;
-  try { data = JSON.parse(text); } catch { data = { rawResponse: text }; }
-
-  if (!res.ok) {
-    throw new NamecomError(
-      data?.message || `Name.com API error ${res.status}`,
-      res.status,
-      data
-    );
+export class NamecomConfigError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'NamecomConfigError';
   }
-  return data as T;
 }
 
 export class NamecomError extends Error {
   constructor(
     message: string,
     public statusCode: number,
+    public code?: string,
     public details?: any
   ) {
     super(message);
     this.name = 'NamecomError';
   }
+}
+
+// ── CREDENTIALS ───────────────────────────────────────────────────────────────
+
+function getCredentials(): { username: string; token: string } {
+  const username = process.env.NAMECOM_USERNAME;
+  const token    = process.env.NAMECOM_API_TOKEN;
+
+  if (!username || !token) {
+    throw new NamecomConfigError(
+      'NAMECOM_USERNAME and NAMECOM_API_TOKEN must be set. ' +
+      'Check apphosting.yaml (App Hosting) or .env.local (local dev).'
+    );
+  }
+
+  return {
+    username: IS_TEST ? `${username}-test` : username,
+    token,
+  };
+}
+
+function authHeader(): string {
+  const { username, token } = getCredentials();
+  return 'Basic ' + Buffer.from(`${username}:${token}`).toString('base64');
+}
+
+// ── CORE FETCH ────────────────────────────────────────────────────────────────
+
+async function ncFetch<T>(
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE',
+  path: string,
+  body?: object,
+  timeoutMs = 10000
+): Promise<T> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  let res: Response;
+  try {
+    res = await fetch(`${BASE_URL}${path}`, {
+      method,
+      headers: {
+        Authorization:  authHeader(),
+        'Content-Type': 'application/json',
+        'Accept':       'application/json',
+        'User-Agent':   'Clive-Platform/1.0',
+      },
+      body:   body ? JSON.stringify(body) : undefined,
+      signal: controller.signal,
+    });
+  } catch (err: any) {
+    clearTimeout(timer);
+    if (err.name === 'AbortError') {
+      throw new NamecomError('Name.com API request timed out.', 504, 'TIMEOUT');
+    }
+    throw new NamecomError(
+      `Network error reaching Name.com API: ${err.message}`,
+      503, 'NETWORK_ERROR'
+    );
+  } finally {
+    clearTimeout(timer);
+  }
+
+  const text = await res.text();
+  let data: any;
+  try { data = text ? JSON.parse(text) : {}; } catch { data = { rawResponse: text }; }
+
+  if (!res.ok) {
+    throw new NamecomError(
+      data?.message || `Name.com API error ${res.status}`,
+      res.status,
+      undefined,
+      data
+    );
+  }
+
+  return data as T;
 }
 
 // ── TYPES ─────────────────────────────────────────────────────────────────────
@@ -75,18 +124,6 @@ export interface NCTld {
   purchasePrice: number;
   renewalPrice:  number;
   transferPrice: number;
-}
-
-export interface NCDomain {
-  domainName:        string;
-  nameservers:       string[];
-  contacts:          NCContacts;
-  privacyEnabled:    boolean;
-  locked:            boolean;
-  autorenewEnabled:  boolean;
-  expireDate:        string;
-  createDate:        string;
-  renewalPrice:      number;
 }
 
 export interface NCContact {
@@ -110,15 +147,28 @@ export interface NCContacts {
   billing:    NCContact;
 }
 
+export interface NCDomain {
+  domainName:        string;
+  nameservers:       string[];
+  contacts:          NCContacts;
+  privacyEnabled:    boolean;
+  locked:            boolean;
+  autorenewEnabled:  boolean;
+  expireDate:        string;
+  createDate:        string;
+  renewalPrice:      number;
+}
+
 export interface NCRegistration {
-  domain:     NCDomain;
-  order:      number;
-  totalPaid:  number;
+  domain:    NCDomain;
+  order:     number;
+  totalPaid: number;
 }
 
 // ── AVAILABILITY ──────────────────────────────────────────────────────────────
 
 export async function searchDomains(domainNames: string[]): Promise<NCSearchResult[]> {
+  if (domainNames.length === 0) return [];
   const qs = domainNames.map(d => `domainNames=${encodeURIComponent(d)}`).join('&');
   const data = await ncFetch<{ results: NCSearchResult[] }>('GET', `/domains:search?${qs}`);
   return data.results || [];
@@ -134,14 +184,13 @@ export async function getTLDs(): Promise<NCTld[]> {
 // ── REGISTRATION ──────────────────────────────────────────────────────────────
 
 export interface RegisterDomainInput {
-  domainName:       string;
-  nameservers:      string[];
-  contacts:         NCContacts;
-  privacyEnabled:   boolean;
-  purchasePrice:    number;
-  purchaseType:     'registration';
-  years?:           number;
-  tldRequirements?: Record<string, string>;
+  domainName:      string;
+  nameservers:     string[];
+  contacts:        NCContacts;
+  privacyEnabled:  boolean;
+  purchasePrice:   number;
+  purchaseType:    'registration';
+  years?:          number;
 }
 
 export async function registerDomain(input: RegisterDomainInput): Promise<NCRegistration> {
@@ -156,7 +205,6 @@ export async function registerDomain(input: RegisterDomainInput): Promise<NCRegi
     purchasePrice: input.purchasePrice,
     purchaseType:  'registration',
     years:         input.years || 1,
-    ...(input.tldRequirements && { tldRequirements: input.tldRequirements }),
   });
 }
 
@@ -170,7 +218,7 @@ export async function listDomains(page = 1, perPage = 1000): Promise<NCDomain[]>
 }
 
 export async function getDomain(domainName: string): Promise<NCDomain> {
-  return ncFetch<NCDomain>('GET', `/domains/${domainName}`);
+  return ncFetch<NCDomain>('GET', `/domains/${encodeURIComponent(domainName)}`);
 }
 
 export async function renewDomain(
@@ -178,7 +226,7 @@ export async function renewDomain(
   purchasePrice: number,
   years = 1
 ): Promise<{ order: number; totalPaid: number }> {
-  return ncFetch('POST', `/domains/${domainName}:renew`, { purchasePrice, years });
+  return ncFetch('POST', `/domains/${encodeURIComponent(domainName)}:renew`, { purchasePrice, years });
 }
 
 export async function updateDomain(
@@ -190,24 +238,25 @@ export async function updateDomain(
     autorenewEnabled: boolean;
   }>
 ): Promise<NCDomain> {
-  return ncFetch<NCDomain>('PUT', `/domains/${domainName}`, updates);
+  return ncFetch<NCDomain>('PUT', `/domains/${encodeURIComponent(domainName)}`, updates);
 }
 
 export async function lockDomain(domainName: string): Promise<void> {
-  await ncFetch('POST', `/domains/${domainName}:lock`, {});
+  await ncFetch('POST', `/domains/${encodeURIComponent(domainName)}:lock`, {});
 }
 
 export async function unlockDomain(domainName: string): Promise<void> {
-  await ncFetch('POST', `/domains/${domainName}:unlock`, {});
+  await ncFetch('POST', `/domains/${encodeURIComponent(domainName)}:unlock`, {});
 }
 
-// ── HELPER — build NC contact from Clive user data ────────────────────────────
+// ── CONTACT BUILDER ───────────────────────────────────────────────────────────
 
+/** Build a single NCContact from Clive form data (positional args) */
 export function buildContact(
   firstName: string,
   lastName:  string,
   email:     string,
-  phone:     string,   // raw digits: "821234567"
+  phone:     string,
   address:   string,
   city:      string,
   state:     string,
@@ -220,13 +269,54 @@ export function buildContact(
   return {
     firstName,
     lastName,
-    companyName: company,
-    address1:    address,
+    ...(company ? { companyName: company } : {}),
+    address1: address,
     city,
     state,
-    zip:         zip || '0000',
+    zip:      zip || '0000',
     country,
-    phone:       `+${cc}.${cleanPhone}`,
+    phone:    `+${cc}.${cleanPhone}`,
     email,
   };
+}
+
+/** Build identical contacts for all 4 roles using object params */
+export function buildAllContacts(params: {
+  firstName: string;
+  lastName:  string;
+  email:     string;
+  phone:     string;
+  address:   string;
+  city:      string;
+  state:     string;
+  zip?:      string;
+  country?:  string;
+  company?:  string;
+}): NCContacts {
+  const contact = buildContact(
+    params.firstName,
+    params.lastName,
+    params.email,
+    params.phone,
+    params.address,
+    params.city,
+    params.state,
+    params.zip ?? '0000',
+    params.country ?? 'ZA',
+    params.company,
+  );
+  return { registrant: contact, admin: contact, tech: contact, billing: contact };
+}
+
+// ── HEALTH CHECK ──────────────────────────────────────────────────────────────
+
+/** Verify Name.com API credentials are working */
+export async function verifyNamecomCredentials(): Promise<boolean> {
+  try {
+    await ncFetch('GET', '/domains?perPage=1');
+    return true;
+  } catch (err) {
+    if (err instanceof NamecomConfigError) throw err;
+    return false;
+  }
 }

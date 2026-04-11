@@ -3,6 +3,11 @@ import { Cormorant_Garamond, DM_Mono, Libre_Baskerville } from 'next/font/google
 import '@/styles/globals.css';
 import { Nav } from '@/components/layout/Nav';
 import { Footer } from '@/components/layout/Footer';
+import { verifyDomainServiceOnStartup } from '@/lib/domains/startup';
+
+if (process.env.NODE_ENV !== 'test') {
+  verifyDomainServiceOnStartup().catch(console.error);
+}
 
 const cormorantGaramond = Cormorant_Garamond({
   subsets: ['latin'],
