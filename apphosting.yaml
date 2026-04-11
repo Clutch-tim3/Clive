@@ -23,6 +23,25 @@ env:
     availability:
       - RUNTIME
 
+  # ── Name.com Domain Registrar ────────────────────────────────────────────────
+  # Username is not sensitive — stored inline
+  - variable: NAMECOM_USERNAME
+    value: thabangmolwantwa0@gmail.com
+    availability:
+      - RUNTIME
+
+  # Token is sensitive — stored in Secret Manager
+  # Run once: firebase apphosting:secrets:set NAMECOM_API_TOKEN
+  - variable: NAMECOM_API_TOKEN
+    secret: NAMECOM_API_TOKEN
+    availability:
+      - RUNTIME
+
+  - variable: NAMECOM_ENV
+    value: production
+    availability:
+      - RUNTIME
+
   # ── Public app URL ────────────────────────────────────────────────────────────
   - variable: NEXT_PUBLIC_APP_URL
     value: https://clive--clive-6d22e.us-east4.hosted.app

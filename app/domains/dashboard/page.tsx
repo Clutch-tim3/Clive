@@ -1,5 +1,6 @@
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { Nav } from '@/components/layout/Nav';
 import { Footer } from '@/components/layout/Footer';
 
@@ -28,12 +29,29 @@ function fmtDate(iso: string | null): string {
 }
 
 export default function DomainsDashboard() {
+  const router = useRouter();
   const [domains,    setDomains]    = useState<DomainRecord[]>([]);
   const [loading,    setLoading]    = useState(true);
+  const [authed,     setAuthed]     = useState<boolean | null>(null);
   const [renewModal, setRenewModal] = useState<DomainRecord | null>(null);
   const [renewYears, setRenewYears] = useState(1);
   const [renewing,   setRenewing]   = useState(false);
   const [renewError, setRenewError] = useState('');
+
+  // Auth guard
+  useEffect(() => {
+    import('firebase/auth').then(({ onAuthStateChanged }) =>
+      import('@/lib/firebase/client').then(({ auth }) => {
+        onAuthStateChanged(auth, user => {
+          if (!user) {
+            router.replace('/auth?screen=signin&redirect=/domains/dashboard');
+          } else {
+            setAuthed(true);
+          }
+        });
+      })
+    );
+  }, [router]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -45,7 +63,7 @@ export default function DomainsDashboard() {
     finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { if (authed) load(); }, [authed, load]);
 
   const toggleAutoRenew = async (d: DomainRecord) => {
     const next = !d.autoRenew;
@@ -113,6 +131,8 @@ export default function DomainsDashboard() {
     }
     return { dot: 'rgba(80,200,120,0.85)', label: 'Active' };
   };
+
+  if (!authed) return null; // redirect in progress
 
   return (
     <>
