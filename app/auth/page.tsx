@@ -291,14 +291,17 @@ function SignInScreen({ onBack, onSignUp, onSuccess }: { onBack: () => void; onS
       onSuccess();
     } catch (err: any) {
       setLoading(false);
+      console.error('Sign-in error:', err);
       if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential')
         setPwErr('Incorrect password');
       else if (err.code === 'auth/user-not-found')
         setEmailErr('No account with this email');
       else if (err.code === 'auth/network-request-failed')
         showNetworkErr();
+      else if (err.code === 'auth/operation-not-allowed')
+        setPwErr('Email/password sign-in is not enabled. Please contact support.');
       else
-        setPwErr('Sign-in failed — please try again');
+        setPwErr(`Sign-in failed: ${err.code || err.message || 'Unknown error'}`);
     }
   };
 
