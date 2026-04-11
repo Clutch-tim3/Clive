@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const PROTECTED_PREFIXES = ['/console', '/api/provider', '/api/keys', '/api/admin', '/api/domains'];
+const PROTECTED_PREFIXES = ['/console', '/api/provider', '/api/keys', '/api/admin', '/api/domains/list', '/api/domains/register'];
 const AUTH_ROUTES        = ['/auth'];
 
 export function middleware(req: NextRequest) {
@@ -35,7 +35,8 @@ export const config = {
     '/api/provider/:path*',
     '/api/keys/:path*',
     '/api/admin/:path*',
-    '/api/domains/:path*',
+    '/api/domains/list',
+    '/api/domains/register',
     '/auth',
   ],
 };

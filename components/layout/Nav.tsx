@@ -13,41 +13,30 @@ export function Nav() {
       zIndex: 200,
       height: '64px',
       display: 'grid',
-      gridTemplateColumns: '1fr auto 1fr',
+      gridTemplateColumns: 'auto 1fr auto',
       alignItems: 'center',
+      gap: '24px',
       padding: '0 48px',
       background: 'rgba(7,7,10,0.88)',
       backdropFilter: 'blur(24px) saturate(180%)',
       WebkitBackdropFilter: 'blur(24px) saturate(180%)',
       borderBottom: '1px solid rgba(255,255,255,0.07)',
-      transition: 'all .3s',
     }}>
-      <Link href="/" style={{
-        fontFamily: "'Cormorant Garamond', serif",
-        fontSize: '22px',
-        fontWeight: 500,
-        letterSpacing: '0.1em',
-        textTransform: 'uppercase',
-        color: 'white',
-        textDecoration: 'none',
-        justifySelf: 'start',
-      }}>
-        <img src="/logo.png" alt="Clive" style={{ height: '32px', width: 'auto' }} />
+      {/* Left — logo */}
+      <Link href="/" style={{ textDecoration: 'none', flexShrink: 0 }}>
+        <img src="/logo.png" alt="Clive" style={{ height: '32px', width: 'auto', display: 'block' }} />
       </Link>
 
-      <div style={{
-        display: 'flex',
-        gap: '28px',
-      }}>
+      {/* Center — nav links, truly centered in remaining space */}
+      <div style={{ display: 'flex', gap: '28px', justifyContent: 'center', alignItems: 'center' }}>
         {[
-          { href: '/products', label: 'Products', accent: false },
-          { href: '/domains', label: 'Domains', accent: false },
-          { href: '/', label: 'Platform', accent: false },
-          { href: '/pricing', label: 'Pricing', accent: false },
-          { href: '/sell', label: 'Sell', accent: false },
-          { href: '/docs', label: 'Docs', accent: false },
-          { href: '/console', label: 'Console', accent: true },
-        ].map(({ href, label, accent }) => (
+          { href: '/products', label: 'Products' },
+          { href: '/domains',  label: 'Domains'  },
+          { href: '/',         label: 'Platform' },
+          { href: '/pricing',  label: 'Pricing'  },
+          { href: '/sell',     label: 'Sell'      },
+          { href: '/docs',     label: 'Docs'      },
+        ].map(({ href, label }) => (
           <Link
             key={label}
             href={href}
@@ -56,24 +45,39 @@ export function Nav() {
               fontSize: '10.5px',
               letterSpacing: '0.14em',
               textTransform: 'uppercase',
-              color: accent ? 'rgba(91,148,210,0.7)' : 'rgba(255,255,255,0.45)',
+              color: 'rgba(255,255,255,0.45)',
               textDecoration: 'none',
+              whiteSpace: 'nowrap',
               transition: 'color .2s',
             }}
-            onMouseEnter={e => {
-              (e.currentTarget as HTMLAnchorElement).style.color = accent ? 'rgba(91,148,210,1)' : 'white';
-            }}
-            onMouseLeave={e => {
-              (e.currentTarget as HTMLAnchorElement).style.color = accent ? 'rgba(91,148,210,0.7)' : 'rgba(255,255,255,0.45)';
-            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = 'white'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = 'rgba(255,255,255,0.45)'; }}
           >
             {label}
           </Link>
         ))}
       </div>
 
-      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', justifySelf: 'end' }}>
+      {/* Right — search + Console + auth buttons */}
+      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexShrink: 0 }}>
         <SearchBar navMode />
+        <Link
+          href="/console"
+          style={{
+            fontFamily: "'DM Mono', monospace",
+            fontSize: '10.5px',
+            letterSpacing: '0.14em',
+            textTransform: 'uppercase',
+            color: 'rgba(91,148,210,0.7)',
+            textDecoration: 'none',
+            whiteSpace: 'nowrap',
+            transition: 'color .2s',
+          }}
+          onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = 'rgba(91,148,210,1)'; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = 'rgba(91,148,210,0.7)'; }}
+        >
+          Console
+        </Link>
         <Link
           href="/auth?screen=signin"
           style={{
@@ -87,6 +91,7 @@ export function Nav() {
             background: 'rgba(255,255,255,0.06)',
             color: 'rgba(255,255,255,0.6)',
             textDecoration: 'none',
+            whiteSpace: 'nowrap',
             transition: 'all .2s',
             backdropFilter: 'blur(12px)',
           }}
@@ -118,6 +123,7 @@ export function Nav() {
             background: 'var(--navy)',
             color: 'white',
             textDecoration: 'none',
+            whiteSpace: 'nowrap',
             transition: 'all .2s',
             boxShadow: '0 4px 16px rgba(27,48,91,0.35)',
           }}

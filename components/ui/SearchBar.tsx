@@ -104,17 +104,15 @@ export function SearchBar({ navMode = false, onQueryChange, placeholder = 'Searc
             fontSize: '11px',
             letterSpacing: '0.06em',
             color: 'rgba(255,255,255,0.75)',
-            width: navMode ? '220px' : '100%',
+            width: navMode ? '190px' : '100%',
             outline: 'none',
-            transition: 'all 0.2s',
+            transition: 'border-color 0.2s, background 0.2s',
           }}
           onFocusCapture={e => {
-            if (navMode) (e.currentTarget as HTMLInputElement).style.width = '320px';
             (e.currentTarget as HTMLInputElement).style.borderColor = 'rgba(91,148,210,0.45)';
             (e.currentTarget as HTMLInputElement).style.background = 'rgba(255,255,255,0.07)';
           }}
           onBlur={e => {
-            if (navMode) (e.currentTarget as HTMLInputElement).style.width = '220px';
             (e.currentTarget as HTMLInputElement).style.borderColor = 'rgba(255,255,255,0.1)';
             (e.currentTarget as HTMLInputElement).style.background = 'rgba(255,255,255,0.05)';
           }}
