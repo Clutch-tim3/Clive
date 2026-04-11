@@ -12,9 +12,9 @@ export function Nav() {
       right: 0,
       zIndex: 200,
       height: '64px',
-      display: 'flex',
+      display: 'grid',
+      gridTemplateColumns: '1fr auto 1fr',
       alignItems: 'center',
-      justifyContent: 'space-between',
       padding: '0 48px',
       background: 'rgba(7,7,10,0.88)',
       backdropFilter: 'blur(24px) saturate(180%)',
@@ -30,6 +30,7 @@ export function Nav() {
         textTransform: 'uppercase',
         color: 'white',
         textDecoration: 'none',
+        justifySelf: 'start',
       }}>
         <img src="/logo.png" alt="Clive" style={{ height: '32px', width: 'auto' }} />
       </Link>
@@ -37,9 +38,6 @@ export function Nav() {
       <div style={{
         display: 'flex',
         gap: '28px',
-        position: 'absolute',
-        left: '50%',
-        transform: 'translateX(-20%)',
       }}>
         {[
           { href: '/products', label: 'Products', accent: false },
@@ -74,7 +72,7 @@ export function Nav() {
         ))}
       </div>
 
-      <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', justifySelf: 'end' }}>
         <SearchBar navMode />
         <Link
           href="/auth?screen=signin"
