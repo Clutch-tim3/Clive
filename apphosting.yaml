@@ -42,6 +42,43 @@ env:
     availability:
       - RUNTIME
 
+  # ── Firebase client SDK (public — required at BUILD for Next.js bundling) ─────
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    value: AIzaSyCGcS2ul2a3lYXk_4lryQVt-5mfUdB3sJY
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: clive-6d22e.firebaseapp.com
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: clive-6d22e
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: clive-6d22e.firebasestorage.app
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    value: 969322320874
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: 1:969322320874:web:03c2412cc87e6a2c035893
+    availability:
+      - BUILD
+      - RUNTIME
+
   # ── Public app URL ────────────────────────────────────────────────────────────
   - variable: NEXT_PUBLIC_APP_URL
     value: https://clive--clive-6d22e.us-east4.hosted.app
