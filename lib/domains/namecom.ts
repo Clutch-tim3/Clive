@@ -169,16 +169,27 @@ export interface NCRegistration {
 
 export async function searchDomains(domainNames: string[]): Promise<NCSearchResult[]> {
   if (domainNames.length === 0) return [];
-  const qs = domainNames.map(d => `domainNames=${encodeURIComponent(d)}`).join('&');
-  const data = await ncFetch<{ results: NCSearchResult[] }>('GET', `/domains:search?${qs}`);
+  const data = await ncFetch<{ results: NCSearchResult[] }>(
+    'POST', '/domains:search', { domainNames }
+  );
   return data.results || [];
 }
 
 // ── TLD PRICING ───────────────────────────────────────────────────────────────
 
 export async function getTLDs(): Promise<NCTld[]> {
-  const data = await ncFetch<{ tlds: NCTld[] }>('GET', '/tlds');
-  return data.tlds || [];
+  const all: NCTld[] = [];
+  let page = 1;
+  while (true) {
+    const data = await ncFetch<{ tlds: NCTld[]; nextPage?: number }>(
+      'GET', `/tlds?page=${page}&perPage=1000`
+    );
+    const batch = data.tlds || [];
+    all.push(...batch);
+    if (!data.nextPage || batch.length === 0) break;
+    page = data.nextPage;
+  }
+  return all;
 }
 
 // ── REGISTRATION ──────────────────────────────────────────────────────────────

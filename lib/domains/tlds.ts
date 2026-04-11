@@ -42,8 +42,8 @@ export async function getCachedTLDPrices(): Promise<Record<string, NCTld>> {
 
     return prices;
   } catch (err) {
-    console.error('getCachedTLDPrices error:', err);
-    return {};
+    console.error('[TLDs] getCachedTLDPrices error:', err);
+    throw err;
   }
 }
 
