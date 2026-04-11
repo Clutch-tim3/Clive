@@ -36,10 +36,10 @@ export function Nav() {
 
       <div style={{
         display: 'flex',
-        gap: '32px',
+        gap: '28px',
         position: 'absolute',
         left: '50%',
-        transform: 'translateX(-50%)',
+        transform: 'translateX(-20%)',
       }}>
         {[
           { href: '/products', label: 'Products', accent: false },

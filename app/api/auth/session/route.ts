@@ -1,19 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminAuth } from '@/lib/firebase/admin';
+import { adminAuth, adminDb } from '@/lib/firebase/admin';
+import { FieldValue } from 'firebase-admin/firestore';
 
 export async function POST(req: NextRequest) {
   try {
-    const { idToken } = await req.json();
+    const body = await req.json();
+    const { idToken, name } = body;
 
     if (!idToken) {
       return NextResponse.json({ error: 'Missing idToken' }, { status: 400 });
     }
 
-    // Create session cookie
-    const expiresIn = 60 * 60 * 24 * 7 * 1000; // 7 days
+    // Verify the ID token to get user info
+    const decoded = await adminAuth().verifyIdToken(idToken);
+    const { uid, email, name: tokenName } = decoded;
+
+    // Upsert Firestore user document — creates on signup, no-ops on subsequent logins
+    const userRef = adminDb().collection('users').doc(uid);
+    const userDoc = await userRef.get();
+
+    if (!userDoc.exists) {
+      // First time: create the document
+      await userRef.set({
+        uid,
+        email: email ?? '',
+        displayName: name ?? tokenName ?? email?.split('@')[0] ?? 'User',
+        role: 'consumer',
+        domainCount: 0,
+        createdAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+    } else {
+      // Existing user: just update the timestamp
+      await userRef.update({ updatedAt: FieldValue.serverTimestamp() });
+    }
+
+    // Create 7-day session cookie
+    const expiresIn = 60 * 60 * 24 * 7 * 1000;
     const sessionCookie = await adminAuth().createSessionCookie(idToken, { expiresIn });
 
-    // Set the session cookie
     const response = NextResponse.json({ success: true });
     response.cookies.set('__session', sessionCookie, {
       maxAge: expiresIn / 1000,
@@ -25,7 +50,10 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch (error: any) {
-    console.error('Session creation error:', error);
-    return NextResponse.json({ error: 'Session creation failed' }, { status: 500 });
+    console.error('Session creation error:', error.message);
+    return NextResponse.json(
+      { error: `Session creation failed: ${error.message ?? error.code ?? 'Unknown error'}` },
+      { status: 500 }
+    );
   }
 }
