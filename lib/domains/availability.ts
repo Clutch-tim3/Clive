@@ -1,23 +1,68 @@
-import { searchDomains, NCSearchResult } from './namecom';
 import { getCachedTLDPrices, usdToZAR, NO_PRIVACY_TLDS } from './tlds';
 
 export interface AvailabilityResult {
-  domainName:    string;
-  tld:           string;
-  sld:           string;
-  status:        'available' | 'taken' | 'premium' | 'unsupported' | 'error';
-  purchasable:   boolean;
-  priceUSD?:     number;
-  priceZAR?:     number;
-  renewalUSD?:   number;
-  renewalZAR?:   number;
-  isPremium:     boolean;
+  domainName:       string;
+  tld:              string;
+  sld:              string;
+  status:           'available' | 'taken' | 'premium' | 'unsupported' | 'error';
+  purchasable:      boolean;
+  priceUSD?:        number;
+  priceZAR?:        number;
+  renewalUSD?:      number;
+  renewalZAR?:      number;
+  isPremium:        boolean;
   privacyAvailable: boolean;
-  errorMessage?: string;
+  errorMessage?:    string;
 }
 
 // Spec alias
 export type DomainAvailabilityResult = AvailabilityResult;
+
+// ── RDAP servers ─────────────────────────────────────────────────────────────
+// RDAP is the IETF standard for domain availability checking.
+// 200 = domain exists (taken), 404 = domain available.
+// No API key or account required.
+
+const RDAP_SERVERS: Record<string, string> = {
+  com:    'https://rdap.verisign.com/com/v1',
+  net:    'https://rdap.verisign.com/net/v1',
+  org:    'https://rdap.publicinterestregistry.org/rdap',
+  'co.za':'https://rdap.registry.net.za',
+  io:     'https://rdap.nic.io',
+  dev:    'https://rdap.registry.google/dev',
+  app:    'https://rdap.registry.google/app',
+  africa: 'https://rdap.nic.africa',
+  store:  'https://rdap.nic.store',
+  online: 'https://rdap.nic.online',
+  tech:   'https://rdap.nic.tech',
+  site:   'https://rdap.nic.site',
+};
+
+async function checkViaRDAP(
+  domainName: string,
+  tld: string
+): Promise<'available' | 'taken' | 'error'> {
+  const base = RDAP_SERVERS[tld];
+  if (!base) return 'error';
+
+  const ctrl  = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 8000);
+  try {
+    const res = await fetch(`${base}/domain/${encodeURIComponent(domainName)}`, {
+      headers: { Accept: 'application/rdap+json' },
+      signal:  ctrl.signal,
+    });
+    if (res.status === 200) return 'taken';
+    if (res.status === 404) return 'available';
+    return 'error';
+  } catch {
+    return 'error';
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// ── Parsing ───────────────────────────────────────────────────────────────────
 
 export function parseDomainInput(query: string): {
   sld: string;
@@ -34,13 +79,9 @@ export function parseDomainInput(query: string): {
   }
 
   const parts = q.split('.');
-  if (parts.length === 1) {
-    return { sld: q, tld: null, fullDomain: null };
-  }
-  if (parts.length === 2) {
-    return { sld: parts[0], tld: parts[1], fullDomain: q };
-  }
-  // 3+ parts — use last segment as TLD
+  if (parts.length === 1) return { sld: q, tld: null, fullDomain: null };
+  if (parts.length === 2) return { sld: parts[0], tld: parts[1], fullDomain: q };
+
   const tld = parts[parts.length - 1];
   const sld = parts.slice(0, -1).join('.');
   return { sld, tld, fullDomain: q };
@@ -49,7 +90,7 @@ export function parseDomainInput(query: string): {
 // Spec alias
 export const parseDomainQuery = parseDomainInput;
 
-/** Validate SLD format — returns error message or null if valid */
+/** Returns an error message string if invalid, null if valid */
 export function validateSLD(sld: string): string | null {
   if (!sld) return 'Please enter a domain name.';
   if (sld.length < 2) return 'Domain name must be at least 2 characters.';
@@ -59,17 +100,19 @@ export function validateSLD(sld: string): string | null {
   return null;
 }
 
+// ── Availability check ────────────────────────────────────────────────────────
+
 export async function checkAllTLDs(
-  sld: string,
+  sld:  string,
   tlds: string[] = ['com', 'co.za', 'net', 'org', 'io', 'dev', 'app']
 ): Promise<AvailabilityResult[]> {
   const validationError = validateSLD(sld);
   if (validationError) {
     return tlds.map(tld => ({
-      domainName: tld === 'co.za' ? `${sld}.co.za` : `${sld}.${tld}`,
+      domainName:       tld === 'co.za' ? `${sld}.co.za` : `${sld}.${tld}`,
       tld, sld, status: 'error' as const, purchasable: false, isPremium: false,
       privacyAvailable: !NO_PRIVACY_TLDS.includes(tld),
-      errorMessage: validationError,
+      errorMessage:     validationError,
     }));
   }
 
@@ -77,32 +120,20 @@ export async function checkAllTLDs(
     tld === 'co.za' ? `${sld}.co.za` : `${sld}.${tld}`
   );
 
-  const [priceMap, ncResults] = await Promise.allSettled([
+  // Fetch TLD prices and run all RDAP checks in parallel
+  const [priceMap, ...rdapSettled] = await Promise.allSettled([
     getCachedTLDPrices(),
-    searchDomains(domainNames),
+    ...tlds.map((tld, i) => checkViaRDAP(domainNames[i], tld)),
   ]);
 
   const prices = priceMap.status === 'fulfilled' ? priceMap.value : {};
-  const results: NCSearchResult[] =
-    ncResults.status === 'fulfilled' ? ncResults.value : [];
 
-  if (ncResults.status === 'rejected') {
-    return tlds.map(tld => ({
-      domainName:   tld === 'co.za' ? `${sld}.co.za` : `${sld}.${tld}`,
-      tld, sld, status: 'error' as const, purchasable: false, isPremium: false,
-      privacyAvailable: !NO_PRIVACY_TLDS.includes(tld),
-      errorMessage: 'Registry unreachable. Try again in a moment.',
-    }));
-  }
-
-  const resultMap = new Map(results.map(r => [r.domainName, r]));
-
-  return tlds.map(tld => {
-    const domainName = tld === 'co.za' ? `${sld}.co.za` : `${sld}.${tld}`;
-    const r = resultMap.get(domainName);
+  return tlds.map((tld, i) => {
+    const domainName       = domainNames[i];
     const privacyAvailable = !NO_PRIVACY_TLDS.includes(tld);
+    const tldInfo          = prices[tld];
 
-    if (!r) {
+    if (!RDAP_SERVERS[tld]) {
       return {
         domainName, tld, sld, status: 'unsupported' as const,
         purchasable: false, isPremium: false, privacyAvailable,
@@ -110,22 +141,32 @@ export async function checkAllTLDs(
       };
     }
 
-    if (!r.purchasable) {
+    const rdapResult   = rdapSettled[i];
+    const availability = rdapResult.status === 'fulfilled' ? rdapResult.value : 'error';
+
+    if (availability === 'error') {
       return {
-        domainName, tld, sld, status: 'taken' as const,
-        purchasable: false, isPremium: r.premium, privacyAvailable,
+        domainName, tld, sld, status: 'error' as const,
+        purchasable: false, isPremium: false, privacyAvailable,
+        errorMessage: 'Registry unreachable. Try again in a moment.',
       };
     }
 
-    const tldInfo = prices[tld];
-    const priceUSD   = r.purchasePrice || tldInfo?.purchasePrice || 0;
-    const renewalUSD = r.renewalPrice  || tldInfo?.renewalPrice  || 0;
+    if (availability === 'taken') {
+      return {
+        domainName, tld, sld, status: 'taken' as const,
+        purchasable: false, isPremium: false, privacyAvailable,
+      };
+    }
 
+    // Available
+    const priceUSD   = tldInfo?.purchasePrice ?? 0;
+    const renewalUSD = tldInfo?.renewalPrice  ?? 0;
     return {
       domainName, tld, sld,
-      status:      r.premium ? 'premium' as const : 'available' as const,
+      status:      'available' as const,
       purchasable: true,
-      isPremium:   r.premium,
+      isPremium:   false,
       privacyAvailable,
       priceUSD,
       priceZAR:    usdToZAR(priceUSD),
