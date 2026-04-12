@@ -6,7 +6,7 @@ import Link from 'next/link';
 // Firebase imported dynamically inside effects to avoid SSR initialisation errors
 
 /* ─── types ─────────────────────────────────────────────── */
-type Tab = 'dashboard' | 'add-product' | 'my-products' | 'testing' | 'analytics' | 'earnings' | 'domains';
+type Tab = 'dashboard' | 'add-product' | 'my-products' | 'testing' | 'analytics' | 'earnings' | 'domains' | 'my-apis' | 'acquired';
 
 interface Endpoint {
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
@@ -1109,10 +1109,124 @@ function MyDomains() {
   );
 }
 
+/* ─── My Acquired APIs (consumer) ───────────────────────── */
+
+interface AcquiredSub {
+  id: string; productId: string; productName: string; productSlug: string;
+  tierName: string; priceZAR: number; apiKey: string;
+  callsUsed: number; callsLimit: number; acquiredAt: string | null;
+}
+
+function MyAcquiredAPIs() {
+  const [subs, setSubs] = useState<AcquiredSub[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('/api/subscriptions')
+      .then(r => r.ok ? r.json() : { subscriptions: [] })
+      .then(d => setSubs(d.subscriptions ?? []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const copyKey = (key: string, id: string) => {
+    navigator.clipboard.writeText(key).then(() => {
+      setCopied(id);
+      setTimeout(() => setCopied(null), 1500);
+    });
+  };
+
+  if (loading) return <div style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'DM Mono, monospace', fontSize: '12px' }}>Loading…</div>;
+
+  return (
+    <div>
+      <div style={{ marginBottom: '28px' }}>
+        <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 300, fontSize: '32px', color: '#fff', margin: '0 0 4px' }}>My APIs</h2>
+        <p style={{ fontFamily: "'DM Mono', monospace", fontSize: '10px', color: 'rgba(255,255,255,0.25)', margin: 0 }}>
+          APIs you've acquired — keys and usage at a glance.{' '}
+          <Link href="/dashboard/apis" style={{ color: 'rgba(91,148,210,0.7)', textDecoration: 'none' }}>Full dashboard →</Link>
+        </p>
+      </div>
+
+      {subs.length === 0 ? (
+        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '16px', padding: '48px 32px', textAlign: 'center' }}>
+          <div style={{ fontSize: '36px', marginBottom: '16px' }}>⚡</div>
+          <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '11px', color: 'rgba(255,255,255,0.3)', marginBottom: '16px' }}>No APIs acquired yet</div>
+          <Link href="/products" style={{ fontFamily: "'DM Mono', monospace", fontSize: '10.5px', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '10px 24px', borderRadius: '100px', border: '1.5px solid rgba(91,148,210,0.3)', background: 'rgba(91,148,210,0.08)', color: 'rgba(91,148,210,0.8)', textDecoration: 'none' }}>Browse APIs →</Link>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {subs.map(s => {
+            const pct = s.callsLimit > 0 ? Math.min(100, (s.callsUsed / s.callsLimit) * 100) : 0;
+            const barColor = pct > 80 ? 'rgba(220,80,80,0.7)' : pct > 50 ? 'rgba(210,150,50,0.7)' : 'rgba(80,200,120,0.7)';
+            const maskedKey = s.apiKey ? s.apiKey.slice(0, 14) + '••••••••••••••••' : '—';
+            return (
+              <div key={s.id} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '16px', padding: '24px 28px' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '16px', gap: '12px', flexWrap: 'wrap' }}>
+                  <div>
+                    <div style={{ fontFamily: "'Libre Baskerville', serif", fontSize: '16px', color: '#fff', marginBottom: '4px' }}>{s.productName}</div>
+                    <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '9px', letterSpacing: '0.12em', textTransform: 'uppercase', padding: '3px 10px', borderRadius: '100px', background: 'rgba(91,148,210,0.12)', color: 'rgba(91,148,210,0.7)' }}>{s.tierName}</span>
+                  </div>
+                  <Link href="/dashboard/apis" style={{ fontFamily: "'DM Mono', monospace", fontSize: '9.5px', color: 'rgba(91,148,210,0.6)', textDecoration: 'none', whiteSpace: 'nowrap' }}>Manage →</Link>
+                </div>
+
+                {/* API Key */}
+                <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '10px', padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '16px' }}>
+                  <code style={{ fontFamily: 'DM Mono, monospace', fontSize: '11px', color: 'rgba(255,255,255,0.45)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{maskedKey}</code>
+                  <button
+                    onClick={() => copyKey(s.apiKey, s.id)}
+                    style={{ fontFamily: "'DM Mono', monospace", fontSize: '9px', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.12)', background: 'transparent', color: copied === s.id ? 'rgba(80,200,120,0.8)' : 'rgba(255,255,255,0.4)', cursor: 'pointer', flexShrink: 0, transition: 'color .15s' }}
+                  >
+                    {copied === s.id ? '✓ Copied' : 'Copy key'}
+                  </button>
+                </div>
+
+                {/* Usage bar */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ flex: 1, height: '4px', background: 'rgba(255,255,255,0.06)', borderRadius: '2px', overflow: 'hidden' }}>
+                    <div style={{ width: `${pct}%`, height: '100%', background: barColor, borderRadius: '2px', transition: 'width .3s' }} />
+                  </div>
+                  <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '9px', color: 'rgba(255,255,255,0.3)', whiteSpace: 'nowrap' }}>
+                    {s.callsUsed.toLocaleString()} / {s.callsLimit.toLocaleString()} calls
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── My Acquired Products (consumer, non-API) ───────────── */
+
+function MyAcquiredProducts() {
+  return (
+    <div>
+      <div style={{ marginBottom: '28px' }}>
+        <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 300, fontSize: '32px', color: '#fff', margin: '0 0 4px' }}>Acquired Products</h2>
+        <p style={{ fontFamily: "'DM Mono', monospace", fontSize: '10px', color: 'rgba(255,255,255,0.25)', margin: 0 }}>
+          Non-API products you've acquired — tools, datasets, templates, and more.
+        </p>
+      </div>
+      <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '16px', padding: '56px 32px', textAlign: 'center' }}>
+        <div style={{ fontSize: '36px', marginBottom: '16px' }}>◈</div>
+        <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '11px', color: 'rgba(255,255,255,0.3)', marginBottom: '6px' }}>No products yet</div>
+        <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '9.5px', color: 'rgba(255,255,255,0.18)', marginBottom: '24px' }}>Non-API products you acquire will appear here.</div>
+        <Link href="/products" style={{ fontFamily: "'DM Mono', monospace", fontSize: '10.5px', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '10px 24px', borderRadius: '100px', border: '1.5px solid rgba(255,255,255,0.12)', background: 'transparent', color: 'rgba(255,255,255,0.35)', textDecoration: 'none' }}>Browse Products →</Link>
+      </div>
+    </div>
+  );
+}
+
 /* ─── main console layout ────────────────────────────────── */
 
 const NAV_ITEMS: { id: Tab; label: string; icon: string }[] = [
   { id: 'dashboard',   label: 'Dashboard',   icon: '⊞' },
+  { id: 'my-apis',     label: 'My APIs',     icon: '⚡' },
+  { id: 'acquired',    label: 'Acquired',    icon: '◈' },
   { id: 'my-products', label: 'My Products', icon: '◈' },
   { id: 'add-product', label: 'Add Product', icon: '+' },
   { id: 'domains',     label: 'My Domains',  icon: '🌐' },
@@ -1253,6 +1367,8 @@ export default function ConsolePage() {
       {/* Main content */}
       <div style={{ flex: 1, padding: '40px 48px', overflowY: 'auto', maxWidth: '1100px' }}>
         {activeTab === 'dashboard' && <Dashboard data={dashData} />}
+        {activeTab === 'my-apis'   && <MyAcquiredAPIs />}
+        {activeTab === 'acquired'  && <MyAcquiredProducts />}
         {activeTab === 'add-product' && <AddProduct />}
         {activeTab === 'my-products' && <MyProducts onAddProduct={() => navigateTo('add-product')} />}
         {activeTab === 'domains' && <MyDomains />}

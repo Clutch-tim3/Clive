@@ -5,7 +5,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { idToken, name } = body;
+    const { idToken, name, remember } = body as { idToken?: string; name?: string; remember?: boolean };
 
     if (!idToken) {
       return NextResponse.json({ error: 'Missing idToken' }, { status: 400 });
@@ -35,13 +35,15 @@ export async function POST(req: NextRequest) {
       await userRef.update({ updatedAt: FieldValue.serverTimestamp() });
     }
 
-    // Create 7-day session cookie
-    const expiresIn = 60 * 60 * 24 * 7 * 1000;
+    // Cookie lifetime: 7 days when "Remember this device" is checked, 1 hour otherwise
+    const expiresIn = remember ? 60 * 60 * 24 * 7 * 1000 : 60 * 60 * 1000;
     const sessionCookie = await adminAuth().createSessionCookie(idToken, { expiresIn });
 
     const response = NextResponse.json({ success: true });
     response.cookies.set('__session', sessionCookie, {
-      maxAge: expiresIn / 1000,
+      // Only set maxAge when remember=true; without it the cookie is a session cookie
+      // (expires when the browser is closed)
+      ...(remember ? { maxAge: expiresIn / 1000 } : {}),
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',

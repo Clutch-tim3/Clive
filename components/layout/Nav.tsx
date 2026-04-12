@@ -1,20 +1,18 @@
 'use client';
 import Link from 'next/link';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { SearchBar } from '../ui/SearchBar';
 
-export function Nav() {
-  const [user, setUser] = useState<{ displayName?: string | null; email?: string | null } | null | undefined>(undefined);
+interface NavProps {
+  initialUser?: { displayName?: string | null; email?: string | null } | null;
+}
 
-  useEffect(() => {
-    // Use the session-cookie-based endpoint so auth state matches the middleware
-    fetch('/api/auth/user')
-      .then(r => r.ok ? r.json() : null)
-      .then(data => setUser(data ? { displayName: data.displayName, email: data.email } : null))
-      .catch(() => setUser(null));
-  }, []);
+export function Nav({ initialUser = undefined }: NavProps) {
+  // initialUser is set server-side by the root layout (reads __session cookie).
+  // Using server-side state avoids a client fetch and removes any timing gap.
+  const [user] = useState<{ displayName?: string | null; email?: string | null } | null | undefined>(initialUser);
 
-  // undefined = still loading (avoid flash of wrong buttons)
+  // undefined = layout didn't provide a value (shouldn't happen), null = logged out, object = logged in
   const authed = user !== undefined && user !== null;
 
   return (

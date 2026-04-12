@@ -223,6 +223,7 @@ function SignInScreen({ onBack, onSignUp, onSuccess }: { onBack: () => void; onS
   const [shakePw, setShakePw] = useState(false);
   const [pwResetMsg, setPwResetMsg] = useState('');
   const [networkErr, setNetworkErr] = useState(false);
+  const [remember, setRemember] = useState(false);
 
   const showNetworkErr = () => { setNetworkErr(true); setTimeout(() => setNetworkErr(false), 5000); };
 
@@ -286,7 +287,7 @@ function SignInScreen({ onBack, onSignUp, onSuccess }: { onBack: () => void; onS
       await fetch('/api/auth/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken: await result.user.getIdToken() }),
+        body: JSON.stringify({ idToken: await result.user.getIdToken(), remember }),
       });
       onSuccess();
     } catch (err: any) {
@@ -345,6 +346,13 @@ function SignInScreen({ onBack, onSignUp, onSuccess }: { onBack: () => void; onS
       {pwResetMsg === 'sent' && <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '9px', color: 'rgba(80,200,120,0.9)', marginTop: '-8px', marginBottom: '14px' }}>✓ Reset link sent — check your inbox.</div>}
       {pwResetMsg === 'error' && <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '9px', color: 'rgba(220,80,80,0.9)', marginTop: '-8px', marginBottom: '14px' }}>↳ Enter your email address first.</div>}
 
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', cursor: 'pointer' }} onClick={() => setRemember(r => !r)}>
+        <div style={{ width: '16px', height: '16px', borderRadius: '4px', border: remember ? '1.5px solid rgba(91,148,210,0.8)' : '1.5px solid rgba(255,255,255,0.2)', background: remember ? 'rgba(91,148,210,0.2)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all .15s', flexShrink: 0 }}>
+          {remember && <span style={{ color: 'rgba(91,148,210,1)', fontSize: '10px', lineHeight: 1 }}>✓</span>}
+        </div>
+        <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '10px', color: 'rgba(255,255,255,0.4)', userSelect: 'none' }}>Remember this device</span>
+      </div>
+
       <PrimaryBtn onClick={submit} loading={loading}>Sign in</PrimaryBtn>
 
       <div style={{ fontFamily: "'Libre Baskerville', serif", fontStyle: 'italic', fontSize: '13px', color: 'rgba(255,255,255,0.3)', textAlign: 'center' }}>
@@ -362,6 +370,7 @@ function SignUpScreen({ onBack, onSignIn, onSuccess }: { onBack: () => void; onS
   const [pw, setPw] = useState('');
   const [confirm, setConfirm] = useState('');
   const [terms, setTerms] = useState(false);
+  const [remember, setRemember] = useState(false);
   const [showPw, setShowPw] = useState(false);
   const [strength, setStrength] = useState(0);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -430,7 +439,7 @@ function SignUpScreen({ onBack, onSignIn, onSuccess }: { onBack: () => void; onS
       const res = await fetch('/api/auth/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken, name }),
+        body: JSON.stringify({ idToken, name, remember }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -531,7 +540,7 @@ function SignUpScreen({ onBack, onSignIn, onSuccess }: { onBack: () => void; onS
       </div>
 
       {/* Terms */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '22px' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '14px' }}>
         <div
           onClick={() => setTerms(t => !t)}
           style={{ width: '18px', height: '18px', minWidth: '18px', border: `1.5px solid ${terms ? '#1B305B' : 'rgba(255,255,255,0.2)'}`, borderRadius: '5px', background: terms ? '#1B305B' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', marginTop: '2px', transition: 'all 0.2s' }}
@@ -541,6 +550,14 @@ function SignUpScreen({ onBack, onSignIn, onSuccess }: { onBack: () => void; onS
         <div style={{ fontFamily: "'Libre Baskerville', serif", fontSize: '13px', color: 'rgba(255,255,255,0.4)', lineHeight: 1.55 }}>
           I agree to the <a href="/terms" className="auth-sl">Terms of Service</a> and <a href="/privacy" className="auth-sl">Privacy Policy</a>
         </div>
+      </div>
+
+      {/* Remember this device */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '22px', cursor: 'pointer' }} onClick={() => setRemember(r => !r)}>
+        <div style={{ width: '16px', height: '16px', borderRadius: '4px', border: remember ? '1.5px solid rgba(91,148,210,0.8)' : '1.5px solid rgba(255,255,255,0.2)', background: remember ? 'rgba(91,148,210,0.2)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all .15s', flexShrink: 0 }}>
+          {remember && <span style={{ color: 'rgba(91,148,210,1)', fontSize: '10px', lineHeight: 1 }}>✓</span>}
+        </div>
+        <span style={{ fontFamily: "'DM Mono', monospace", fontSize: '10px', color: 'rgba(255,255,255,0.4)', userSelect: 'none' }}>Remember this device</span>
       </div>
 
       <PrimaryBtn onClick={submit} disabled={!isValid} loading={loading}>Create account</PrimaryBtn>

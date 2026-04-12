@@ -15,7 +15,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
     const sessionCookie = cookieStore.get('__session')?.value;
     if (!sessionCookie) return null;
 
-    const decoded = await adminAuth().verifySessionCookie(sessionCookie, true);
+    const decoded = await adminAuth().verifySessionCookie(sessionCookie, false);
     const userDoc  = await adminDb().collection('users').doc(decoded.uid).get();
 
     if (!userDoc.exists) return null;
