@@ -1229,10 +1229,24 @@ export default function ConsolePage() {
           ))}
         </div>
 
-        <div style={{ position: 'absolute', bottom: '24px', left: '12px', right: '12px' }}>
+        <div style={{ position: 'absolute', bottom: '24px', left: '12px', right: '12px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', color: 'rgba(255,255,255,0.25)', fontSize: '12px', textDecoration: 'none', borderRadius: '10px', transition: 'color 0.15s' }}>
             ← Back to Clive
           </Link>
+          <button
+            onClick={async () => {
+              const { auth } = await import('@/lib/firebase/client');
+              const { signOut } = await import('firebase/auth');
+              await signOut(auth);
+              await fetch('/api/auth/signout', { method: 'POST' }).catch(() => {});
+              window.location.href = '/';
+            }}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', color: 'rgba(255,100,100,0.5)', fontSize: '12px', background: 'none', border: 'none', borderRadius: '10px', cursor: 'pointer', fontFamily: 'DM Mono, monospace', width: '100%', textAlign: 'left', transition: 'color 0.15s' }}
+            onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,100,100,0.8)')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,100,100,0.5)')}
+          >
+            ↪ Sign out
+          </button>
         </div>
       </div>
 
