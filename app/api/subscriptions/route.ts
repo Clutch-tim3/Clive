@@ -15,30 +15,31 @@ export async function GET() {
       .collection('subscriptions')
       .where('userId', '==', user.uid)
       .where('status', '==', 'active')
-      .orderBy('acquiredAt', 'desc')
       .get();
 
-    const subs = snap.docs.map(d => {
-      const s = d.data();
-      return {
-        id:               d.id,
-        productId:        s.productId,
-        productName:      s.productName,
-        productSlug:      s.productSlug,
-        tierId:           s.tierId,
-        tierName:         s.tierName,
-        priceZAR:         s.priceZAR,
-        status:           s.status,
-        apiKey:           s.apiKey,
-        callsUsed:        s.callsUsed ?? 0,
-        callsLimit:       s.callsLimit,
-        rateLimit:        s.rateLimit ?? 10,
-        paymentMethod:    s.paymentMethod,
-        acquiredAt:       s.acquiredAt?.toDate()?.toISOString() ?? null,
-        currentPeriodEnd: s.currentPeriodEnd?.toDate()?.toISOString() ?? null,
-        createdAt:        s.createdAt?.toDate()?.toISOString() ?? null,
-      };
-    });
+    const subs = snap.docs
+      .map(d => {
+        const s = d.data();
+        return {
+          id:               d.id,
+          productId:        s.productId,
+          productName:      s.productName,
+          productSlug:      s.productSlug,
+          tierId:           s.tierId,
+          tierName:         s.tierName,
+          priceZAR:         s.priceZAR,
+          status:           s.status,
+          apiKey:           s.apiKey,
+          callsUsed:        s.callsUsed ?? 0,
+          callsLimit:       s.callsLimit,
+          rateLimit:        s.rateLimit ?? 10,
+          paymentMethod:    s.paymentMethod,
+          acquiredAt:       s.acquiredAt?.toDate()?.toISOString() ?? null,
+          currentPeriodEnd: s.currentPeriodEnd?.toDate()?.toISOString() ?? null,
+          createdAt:        s.createdAt?.toDate()?.toISOString() ?? null,
+        };
+      })
+      .sort((a, b) => (b.acquiredAt ?? '').localeCompare(a.acquiredAt ?? ''));
 
     return NextResponse.json({ subscriptions: subs });
   } catch (err) {

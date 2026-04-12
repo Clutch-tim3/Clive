@@ -9,11 +9,13 @@ export async function GET() {
   try {
     await requireAdmin();
 
-    const [usersSnap, productsSnap, subsSnap, txSnap] = await Promise.all([
+    const [usersSnap, productsSnap, subsSnap, txSnap, ordersSnap, pendingOrdersSnap] = await Promise.all([
       adminDb().collection('users').count().get(),
       adminDb().collection('products').where('status', '==', 'live').count().get(),
       adminDb().collection('subscriptions').where('status', '==', 'active').count().get(),
       adminDb().collection('transactions').where('status', '==', 'completed').get(),
+      adminDb().collection('domainOrders').count().get(),
+      adminDb().collection('domainOrders').where('status', '==', 'pending').count().get(),
     ]);
 
     const totalRevenue = txSnap.docs.reduce(
@@ -24,11 +26,13 @@ export async function GET() {
     );
 
     return NextResponse.json({
-      totalUsers:       usersSnap.data().count,
-      liveProducts:     productsSnap.data().count,
+      totalUsers:          usersSnap.data().count,
+      liveProducts:        productsSnap.data().count,
       activeSubscriptions: subsSnap.data().count,
-      totalRevenue,     // cents ZAR
-      totalCommission,  // Clive's 12%
+      totalRevenue,
+      totalCommission,
+      totalDomainOrders:   ordersSnap.data().count,
+      pendingDomainOrders: pendingOrdersSnap.data().count,
     });
   } catch (err) {
     return handleRouteError(err);

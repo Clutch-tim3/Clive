@@ -84,6 +84,7 @@ export default function DomainPurchasePage({ params }: { params: { domain: strin
   const [submitting, setSubmitting] = useState(false);
   const [error,      setError]      = useState('');
   const [errors,     setErrors]     = useState<Record<string, string>>({});
+  const [confirmed,  setConfirmed]  = useState<{ id: string; priceZAR: number } | null>(null);
 
   useEffect(() => {
     // Check availability
@@ -162,17 +163,17 @@ export default function DomainPurchasePage({ params }: { params: { domain: strin
         }),
       });
 
-      const data = await res.json() as { id?: string; error?: string; code?: string };
+      const data = await res.json() as { id?: string; priceZAR?: number; error?: string; code?: string };
       if (!res.ok) {
         if (data.code === 'DOMAIN_TAKEN') {
-          setError('This domain was just registered by someone else. Choose a different name.');
+          setError('This domain was just taken. Choose a different name.');
         } else {
-          setError(data.error ?? 'Registration failed. Please try again.');
+          setError(data.error ?? 'Order failed. Please try again.');
         }
         return;
       }
 
-      router.push('/domains/dashboard');
+      setConfirmed({ id: data.id!, priceZAR: data.priceZAR ?? 0 });
     } catch {
       setError('Network error. Please try again.');
     } finally {
@@ -186,6 +187,49 @@ export default function DomainPurchasePage({ params }: { params: { domain: strin
   const onBlur = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
     e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
   };
+
+  // ── Confirmation state ────────────────────────────────────────────────────
+  if (confirmed) {
+    return (
+      <>
+        <Nav />
+        <div style={{ minHeight: '100vh', background: '#07070A', paddingTop: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ textAlign: 'center', maxWidth: '520px', padding: '0 32px' }}>
+            <div style={{ width: '72px', height: '72px', borderRadius: '50%', background: 'rgba(80,200,120,0.12)', border: '2px solid rgba(80,200,120,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', fontSize: '32px' }}>
+              ✓
+            </div>
+            <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '9px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(80,200,120,0.7)', marginBottom: '12px' }}>
+              Order placed
+            </div>
+            <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 300, fontSize: 'clamp(32px,5vw,52px)', color: '#fff', margin: '0 0 16px', lineHeight: 1.05 }}>
+              {domainName}
+            </h1>
+            <p style={{ fontFamily: "'Libre Baskerville', serif", fontStyle: 'italic', fontSize: '14px', color: 'rgba(255,255,255,0.35)', lineHeight: 1.7, marginBottom: '8px' }}>
+              Your domain order has been received and is being processed. We&apos;ll send a confirmation to {email || userEmail} once it&apos;s live.
+            </p>
+            <p style={{ fontFamily: "'DM Mono', monospace", fontSize: '9.5px', color: 'rgba(255,255,255,0.18)', marginBottom: '36px' }}>
+              Order ID: {confirmed.id}
+            </p>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <a
+                href="/domains/dashboard"
+                style={{ padding: '12px 28px', background: '#1B305B', border: '1.5px solid rgba(91,148,210,0.35)', borderRadius: '100px', fontFamily: "'DM Mono', monospace", fontSize: '10.5px', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'white', textDecoration: 'none' }}
+              >
+                View My Domains →
+              </a>
+              <a
+                href="/domains"
+                style={{ padding: '12px 28px', background: 'transparent', border: '1.5px solid rgba(255,255,255,0.12)', borderRadius: '100px', fontFamily: "'DM Mono', monospace", fontSize: '10.5px', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)', textDecoration: 'none' }}
+              >
+                Register another
+              </a>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </>
+    );
+  }
 
   // ── Loading state ──────────────────────────────────────────────────────────
   if (checkLoading) {
@@ -470,13 +514,11 @@ export default function DomainPurchasePage({ params }: { params: { domain: strin
                   onMouseEnter={e => { if (!submitting) (e.currentTarget.style.background = '#243d6e'); }}
                   onMouseLeave={e => (e.currentTarget.style.background = submitting ? 'rgba(27,48,91,0.5)' : '#1B305B')}
                 >
-                  {submitting ? 'Registering…' : loggedIn ? `Register ${domainName} →` : 'Sign in to register →'}
+                  {submitting ? 'Placing order…' : loggedIn ? `Order ${domainName} →` : 'Sign in to order →'}
                 </button>
 
                 <div style={{ marginTop: '14px', fontFamily: "'DM Mono', monospace", fontSize: '7.5px', color: 'rgba(255,255,255,0.16)', lineHeight: 1.8, textAlign: 'center' }}>
-                  By registering you agree to the{' '}
-                  <a href="https://www.name.com/registration-agreement" target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(91,148,210,0.4)', textDecoration: 'none' }}>Name.com Registration Agreement</a>
-                  {' '}and Clive&apos;s Terms of Service.
+                  By placing this order you agree to Clive&apos;s Terms of Service.
                 </div>
               </div>
             </div>

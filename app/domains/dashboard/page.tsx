@@ -18,6 +18,20 @@ interface DomainRecord {
   registeredAt: string | null;
 }
 
+interface DomainOrder {
+  id:         string;
+  domainName: string;
+  tld:        string;
+  status:     'pending' | 'processing' | 'fulfilled' | 'failed';
+  priceZAR:   number;
+  years:      number;
+  orderedAt:  string | null;
+}
+
+function fmtZAR(cents: number): string {
+  return `R${(cents / 100).toFixed(0)}`;
+}
+
 function daysUntil(iso: string | null): number | null {
   if (!iso) return null;
   return Math.ceil((new Date(iso).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
@@ -31,6 +45,7 @@ function fmtDate(iso: string | null): string {
 export default function DomainsDashboard() {
   const router = useRouter();
   const [domains,    setDomains]    = useState<DomainRecord[]>([]);
+  const [orders,     setOrders]     = useState<DomainOrder[]>([]);
   const [loading,    setLoading]    = useState(true);
   const [authed,     setAuthed]     = useState<boolean | null>(null);
   const [renewModal, setRenewModal] = useState<DomainRecord | null>(null);
@@ -56,9 +71,15 @@ export default function DomainsDashboard() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res  = await fetch('/api/domains/list');
-      const data = await res.json() as { domains?: DomainRecord[] };
-      setDomains(data.domains ?? []);
+      const [domainsRes, ordersRes] = await Promise.all([
+        fetch('/api/domains/list'),
+        fetch('/api/domains/orders'),
+      ]);
+      const domainsData = await domainsRes.json() as { domains?: DomainRecord[] };
+      const ordersData  = await ordersRes.json() as { orders?: DomainOrder[] };
+      setDomains(domainsData.domains ?? []);
+      // Only show non-fulfilled orders in the pending section
+      setOrders((ordersData.orders ?? []).filter(o => o.status !== 'fulfilled'));
     } catch { /* ignore */ }
     finally { setLoading(false); }
   }, []);
@@ -180,6 +201,43 @@ export default function DomainsDashboard() {
               >
                 Renew →
               </button>
+            </div>
+          )}
+
+          {/* Pending orders */}
+          {!loading && orders.length > 0 && (
+            <div style={{ marginBottom: '28px' }}>
+              <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '9px', letterSpacing: '0.16em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginBottom: '12px' }}>
+                Pending Orders
+              </div>
+              <div style={{ border: '1px solid rgba(255,255,255,0.07)', borderRadius: '16px', overflow: 'hidden' }}>
+                {orders.map((o, i) => {
+                  const statusMap: Record<string, { dot: string; label: string }> = {
+                    pending:    { dot: 'rgba(255,180,0,0.85)',   label: 'Ordered — awaiting processing' },
+                    processing: { dot: 'rgba(91,148,210,0.9)',   label: 'Being processed' },
+                    failed:     { dot: 'rgba(255,100,100,0.8)',  label: 'Failed — contact support' },
+                  };
+                  const { dot, label } = statusMap[o.status] ?? { dot: 'rgba(255,255,255,0.3)', label: o.status };
+                  return (
+                    <div key={o.id} style={{
+                      display: 'flex', alignItems: 'center', gap: '16px', padding: '14px 20px',
+                      borderBottom: i < orders.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                      background: 'rgba(255,255,255,0.02)',
+                    }}>
+                      <div style={{ flex: 1, fontFamily: "'DM Mono', monospace", fontSize: '13px', color: '#fff' }}>{o.domainName}</div>
+                      <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '10px', color: 'rgba(255,255,255,0.3)' }}>{o.years}yr · {fmtZAR(o.priceZAR)}</div>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontFamily: "'DM Mono', monospace", fontSize: '9px', color: dot }}>
+                        <span style={{
+                          width: 7, height: 7, borderRadius: '50%', background: dot, display: 'inline-block',
+                          ...(o.status === 'processing' ? { animation: 'pulse 1.5s ease-in-out infinite' } : {}),
+                        }} />
+                        {label}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <style>{`@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }`}</style>
             </div>
           )}
 
