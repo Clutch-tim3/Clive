@@ -104,63 +104,60 @@ export function Nav() {
           Console
         </Link>
 
-        {/* Logged-in: My APIs link + avatar + sign out */}
+        {/* Logged-in: Profile button with avatar initial */}
         {authed && (
-          <>
-            <Link
-              href="/dashboard/apis"
-              style={{ fontFamily:"'DM Mono',monospace", fontSize:'10.5px', letterSpacing:'0.14em', textTransform:'uppercase', color:'rgba(91,148,210,0.7)', textDecoration:'none', whiteSpace:'nowrap', transition:'color .2s' }}
-              onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = 'rgba(91,148,210,1)'; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = 'rgba(91,148,210,0.7)'; }}
-            >
-              My APIs
-            </Link>
+          <Link
+            href="/profile"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '5px 16px 5px 6px',
+              borderRadius: '100px',
+              border: '1.5px solid rgba(91,148,210,0.3)',
+              background: 'rgba(27,48,91,0.25)',
+              textDecoration: 'none',
+              transition: 'all .2s',
+              flexShrink: 0,
+            }}
+            onMouseEnter={e => {
+              const el = e.currentTarget as HTMLAnchorElement;
+              el.style.borderColor = 'rgba(91,148,210,0.6)';
+              el.style.background = 'rgba(27,48,91,0.45)';
+            }}
+            onMouseLeave={e => {
+              const el = e.currentTarget as HTMLAnchorElement;
+              el.style.borderColor = 'rgba(91,148,210,0.3)';
+              el.style.background = 'rgba(27,48,91,0.25)';
+            }}
+          >
             <div style={{
-              width: '32px',
-              height: '32px',
+              width: '24px',
+              height: '24px',
               borderRadius: '50%',
               background: 'var(--navy)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               fontFamily: "'DM Mono', monospace",
-              fontSize: '12px',
+              fontSize: '10px',
               color: 'white',
               flexShrink: 0,
-              border: '1.5px solid rgba(91,148,210,0.35)',
+              border: '1px solid rgba(91,148,210,0.4)',
             }}>
               {(user?.displayName?.[0] ?? user?.email?.[0] ?? '?').toUpperCase()}
             </div>
-            <button
-              onClick={handleSignOut}
-              style={{
-                fontFamily: "'DM Mono', monospace",
-                fontSize: '10.5px',
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
-                padding: '9px 22px',
-                borderRadius: '100px',
-                border: '1.5px solid rgba(255,255,255,0.14)',
-                background: 'transparent',
-                color: 'rgba(255,255,255,0.5)',
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-                transition: 'all .2s',
-              }}
-              onMouseEnter={e => {
-                const el = e.currentTarget as HTMLButtonElement;
-                el.style.borderColor = 'rgba(255,255,255,0.28)';
-                el.style.color = 'white';
-              }}
-              onMouseLeave={e => {
-                const el = e.currentTarget as HTMLButtonElement;
-                el.style.borderColor = 'rgba(255,255,255,0.14)';
-                el.style.color = 'rgba(255,255,255,0.5)';
-              }}
-            >
-              Sign out
-            </button>
-          </>
+            <span style={{
+              fontFamily: "'DM Mono', monospace",
+              fontSize: '10.5px',
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+              color: 'rgba(255,255,255,0.65)',
+              whiteSpace: 'nowrap',
+            }}>
+              Profile
+            </span>
+          </Link>
         )}
 
         {/* Logged-out: sign in + get started */}
