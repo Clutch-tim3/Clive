@@ -7,22 +7,12 @@ export function Nav() {
   const [user, setUser] = useState<{ displayName?: string | null; email?: string | null } | null | undefined>(undefined);
 
   useEffect(() => {
-    let unsub: (() => void) | undefined;
-    import('@/lib/firebase/client').then(({ auth }) =>
-      import('firebase/auth').then(({ onAuthStateChanged }) => {
-        unsub = onAuthStateChanged(auth, u => setUser(u ? { displayName: u.displayName, email: u.email } : null));
-      })
-    );
-    return () => unsub?.();
+    // Use the session-cookie-based endpoint so auth state matches the middleware
+    fetch('/api/auth/user')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => setUser(data ? { displayName: data.displayName, email: data.email } : null))
+      .catch(() => setUser(null));
   }, []);
-
-  const handleSignOut = async () => {
-    const { auth } = await import('@/lib/firebase/client');
-    const { signOut } = await import('firebase/auth');
-    await signOut(auth);
-    await fetch('/api/auth/signout', { method: 'POST' }).catch(() => {});
-    window.location.href = '/';
-  };
 
   // undefined = still loading (avoid flash of wrong buttons)
   const authed = user !== undefined && user !== null;
