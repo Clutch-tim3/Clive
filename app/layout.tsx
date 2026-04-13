@@ -5,7 +5,6 @@ import '@/styles/globals.css';
 import { Nav } from '@/components/layout/Nav';
 import { Footer } from '@/components/layout/Footer';
 import { verifyDomainServiceOnStartup } from '@/lib/domains/startup';
-import { getSessionUser } from '@/lib/firebase/auth';
 
 if (process.env.NODE_ENV !== 'test') {
   verifyDomainServiceOnStartup().catch(console.error);
@@ -46,23 +45,19 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Detect auth state server-side so Nav renders correctly on first paint.
-  // Using cookies() here opts this layout into dynamic rendering automatically.
-  let initialUser: { displayName: string | null; email: string | null } | null = null;
-  try {
-    const cookieStore = cookies();
-    if (cookieStore.get('__session')?.value) {
-      const u = await getSessionUser();
-      if (u) initialUser = { displayName: u.displayName ?? null, email: u.email ?? null };
-    }
-  } catch { /* leave initialUser as null */ }
+  // Check session cookie existence server-side — no Firebase SDK needed.
+  // This is the single source of truth: if the cookie is present the user is
+  // authenticated (the middleware uses the same check). Using cookies() here
+  // automatically opts this layout into dynamic (per-request) rendering.
+  const cookieStore = cookies();
+  const initialAuthed = !!cookieStore.get('__session')?.value;
 
   return (
     <html lang="en">
       <body
         className={`${cormorantGaramond.variable} ${libreBaskerville.variable} ${dmMono.variable} antialiased`}
       >
-        <Nav initialUser={initialUser} />
+        <Nav initialAuthed={initialAuthed} />
         <main className="pt-16">
           {children}
         </main>

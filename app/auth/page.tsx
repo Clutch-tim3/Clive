@@ -284,11 +284,15 @@ function SignInScreen({ onBack, onSignUp, onSuccess }: { onBack: () => void; onS
       const { auth: _auth } = await import('@/lib/firebase/client');
       const { signInWithEmailAndPassword } = await import('firebase/auth');
       const result = await signInWithEmailAndPassword(_auth, email.trim(), pw);
-      await fetch('/api/auth/session', {
+      const sessionRes = await fetch('/api/auth/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idToken: await result.user.getIdToken(), remember }),
       });
+      if (!sessionRes.ok) {
+        const d = await sessionRes.json().catch(() => ({}));
+        throw new Error(d.error ?? 'Session creation failed. Please try again.');
+      }
       onSuccess();
     } catch (err: any) {
       setLoading(false);

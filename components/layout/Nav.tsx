@@ -1,19 +1,43 @@
 'use client';
 import Link from 'next/link';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { SearchBar } from '../ui/SearchBar';
 
 interface NavProps {
-  initialUser?: { displayName?: string | null; email?: string | null } | null;
+  /** True when the server detected a __session cookie on this page load. */
+  initialAuthed?: boolean;
 }
 
-export function Nav({ initialUser = undefined }: NavProps) {
-  // initialUser is set server-side by the root layout (reads __session cookie).
-  // Using server-side state avoids a client fetch and removes any timing gap.
-  const [user] = useState<{ displayName?: string | null; email?: string | null } | null | undefined>(initialUser);
+export function Nav({ initialAuthed = false }: NavProps) {
+  const [authed, setAuthed] = useState(initialAuthed);
+  const [initial, setInitial] = useState('?');
+  const [signingOut, setSigningOut] = useState(false);
 
-  // undefined = layout didn't provide a value (shouldn't happen), null = logged out, object = logged in
-  const authed = user !== undefined && user !== null;
+  // Fetch display name lazily (only needed for avatar letter — not auth gating)
+  useEffect(() => {
+    if (!initialAuthed) return;
+    fetch('/api/auth/user')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        if (d) {
+          setAuthed(true);
+          setInitial((d.displayName?.[0] ?? d.email?.[0] ?? '?').toUpperCase());
+        }
+      })
+      .catch(() => {});
+  }, [initialAuthed]);
+
+  const handleSignOut = async () => {
+    setSigningOut(true);
+    try {
+      const { auth } = await import('@/lib/firebase/client');
+      const { signOut } = await import('firebase/auth');
+      await signOut(auth).catch(() => {});
+      await fetch('/api/auth/signout', { method: 'POST' }).catch(() => {});
+    } finally {
+      window.location.href = '/';
+    }
+  };
 
   return (
     <nav style={{
@@ -73,7 +97,7 @@ export function Nav({ initialUser = undefined }: NavProps) {
       <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexShrink: 0 }}>
         <SearchBar navMode />
 
-        {/* Console link always visible */}
+        {/* Console link — always visible */}
         <Link
           href="/console"
           style={{
@@ -92,64 +116,99 @@ export function Nav({ initialUser = undefined }: NavProps) {
           Console
         </Link>
 
-        {/* Logged-in: Profile button with avatar initial */}
+        {/* ── Logged in: Profile pill + Sign out ────────────────────── */}
         {authed && (
-          <Link
-            href="/profile"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '5px 16px 5px 6px',
-              borderRadius: '100px',
-              border: '1.5px solid rgba(91,148,210,0.3)',
-              background: 'rgba(27,48,91,0.25)',
-              textDecoration: 'none',
-              transition: 'all .2s',
-              flexShrink: 0,
-            }}
-            onMouseEnter={e => {
-              const el = e.currentTarget as HTMLAnchorElement;
-              el.style.borderColor = 'rgba(91,148,210,0.6)';
-              el.style.background = 'rgba(27,48,91,0.45)';
-            }}
-            onMouseLeave={e => {
-              const el = e.currentTarget as HTMLAnchorElement;
-              el.style.borderColor = 'rgba(91,148,210,0.3)';
-              el.style.background = 'rgba(27,48,91,0.25)';
-            }}
-          >
-            <div style={{
-              width: '24px',
-              height: '24px',
-              borderRadius: '50%',
-              background: 'var(--navy)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontFamily: "'DM Mono', monospace",
-              fontSize: '10px',
-              color: 'white',
-              flexShrink: 0,
-              border: '1px solid rgba(91,148,210,0.4)',
-            }}>
-              {(user?.displayName?.[0] ?? user?.email?.[0] ?? '?').toUpperCase()}
-            </div>
-            <span style={{
-              fontFamily: "'DM Mono', monospace",
-              fontSize: '10.5px',
-              letterSpacing: '0.12em',
-              textTransform: 'uppercase',
-              color: 'rgba(255,255,255,0.65)',
-              whiteSpace: 'nowrap',
-            }}>
-              Profile
-            </span>
-          </Link>
+          <>
+            <Link
+              href="/profile"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '5px 16px 5px 6px',
+                borderRadius: '100px',
+                border: '1.5px solid rgba(91,148,210,0.3)',
+                background: 'rgba(27,48,91,0.25)',
+                textDecoration: 'none',
+                transition: 'all .2s',
+                flexShrink: 0,
+              }}
+              onMouseEnter={e => {
+                const el = e.currentTarget as HTMLAnchorElement;
+                el.style.borderColor = 'rgba(91,148,210,0.6)';
+                el.style.background = 'rgba(27,48,91,0.45)';
+              }}
+              onMouseLeave={e => {
+                const el = e.currentTarget as HTMLAnchorElement;
+                el.style.borderColor = 'rgba(91,148,210,0.3)';
+                el.style.background = 'rgba(27,48,91,0.25)';
+              }}
+            >
+              <div style={{
+                width: '24px',
+                height: '24px',
+                borderRadius: '50%',
+                background: 'rgba(27,48,91,0.9)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontFamily: "'DM Mono', monospace",
+                fontSize: '10px',
+                color: 'white',
+                flexShrink: 0,
+                border: '1px solid rgba(91,148,210,0.4)',
+              }}>
+                {initial}
+              </div>
+              <span style={{
+                fontFamily: "'DM Mono', monospace",
+                fontSize: '10.5px',
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                color: 'rgba(255,255,255,0.65)',
+                whiteSpace: 'nowrap',
+              }}>
+                Profile
+              </span>
+            </Link>
+
+            <button
+              onClick={handleSignOut}
+              disabled={signingOut}
+              style={{
+                fontFamily: "'DM Mono', monospace",
+                fontSize: '10.5px',
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                padding: '9px 20px',
+                borderRadius: '100px',
+                border: '1.5px solid rgba(255,255,255,0.12)',
+                background: 'transparent',
+                color: signingOut ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.45)',
+                cursor: signingOut ? 'default' : 'pointer',
+                whiteSpace: 'nowrap',
+                transition: 'all .2s',
+              }}
+              onMouseEnter={e => {
+                if (!signingOut) {
+                  const el = e.currentTarget as HTMLButtonElement;
+                  el.style.borderColor = 'rgba(255,255,255,0.28)';
+                  el.style.color = 'white';
+                }
+              }}
+              onMouseLeave={e => {
+                const el = e.currentTarget as HTMLButtonElement;
+                el.style.borderColor = 'rgba(255,255,255,0.12)';
+                el.style.color = signingOut ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.45)';
+              }}
+            >
+              {signingOut ? 'Signing out…' : 'Sign out'}
+            </button>
+          </>
         )}
 
-        {/* Logged-out: sign in + get started */}
-        {user === null && (
+        {/* ── Logged out: Sign in + Get started ─────────────────────── */}
+        {!authed && (
           <>
             <Link
               href="/auth?screen=signin"
