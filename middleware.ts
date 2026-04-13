@@ -18,10 +18,12 @@ export function middleware(req: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Redirect already-authenticated users away from auth page to console
+  // Redirect already-authenticated users away from auth page
+  // Admins (__auth=admin) go to /founder, everyone else goes to /console
   if (isAuthRoute && session) {
     const url = req.nextUrl.clone();
-    url.pathname = '/console';
+    const authValue = req.cookies.get('__auth')?.value;
+    url.pathname = authValue === 'admin' ? '/founder' : '/console';
     url.searchParams.delete('screen');
     return NextResponse.redirect(url);
   }

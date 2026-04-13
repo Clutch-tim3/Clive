@@ -212,7 +212,7 @@ function GateScreen({ onSignIn, onSignUp }: { onSignIn: () => void; onSignUp: ()
 }
 
 /* ─── sign in screen ─────────────────────────────────────── */
-function SignInScreen({ onBack, onSignUp, onSuccess }: { onBack: () => void; onSignUp: () => void; onSuccess: () => void }) {
+function SignInScreen({ onBack, onSignUp, onSuccess }: { onBack: () => void; onSignUp: () => void; onSuccess: (role?: string) => void }) {
   const [email, setEmail] = useState('');
   const [pw, setPw] = useState('');
   const [showPw, setShowPw] = useState(false);
@@ -234,14 +234,15 @@ function SignInScreen({ onBack, onSignUp, onSuccess }: { onBack: () => void; onS
       const { signInWithPopup } = await import('firebase/auth');
       const p = provider === 'google' ? googleProvider : provider === 'github' ? githubProvider : facebookProvider;
       const result = await signInWithPopup(auth, p);
-      await fetch('/api/auth/session', {
+      const sessionRes = await fetch('/api/auth/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idToken: await result.user.getIdToken() }),
       });
-      // Write auth cookie client-side — belt-and-suspenders in case server Set-Cookie is delayed
-      document.cookie = '__auth=1; path=/; samesite=lax';
-      onSuccess();
+      const sessionData = sessionRes.ok ? await sessionRes.json().catch(() => ({})) : {};
+      const role: string = sessionData.role ?? 'consumer';
+      document.cookie = `__auth=${role === 'admin' ? 'admin' : '1'}; path=/; samesite=lax`;
+      onSuccess(role);
     } catch (err: any) {
       if (err?.code === 'auth/popup-blocked') {
         try {
@@ -291,13 +292,13 @@ function SignInScreen({ onBack, onSignUp, onSuccess }: { onBack: () => void; onS
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idToken: await result.user.getIdToken(), remember }),
       });
+      const sessionData = await sessionRes.json().catch(() => ({}));
       if (!sessionRes.ok) {
-        const d = await sessionRes.json().catch(() => ({}));
-        throw new Error(d.error ?? 'Session creation failed. Please try again.');
+        throw new Error(sessionData.error ?? 'Session creation failed. Please try again.');
       }
-      // Write auth cookie client-side — belt-and-suspenders in case server Set-Cookie is delayed
-      document.cookie = `__auth=1; path=/; samesite=lax${remember ? `; max-age=${7 * 24 * 60 * 60}` : ''}`;
-      onSuccess();
+      const role: string = sessionData.role ?? 'consumer';
+      document.cookie = `__auth=${role === 'admin' ? 'admin' : '1'}; path=/; samesite=lax${remember ? `; max-age=${7 * 24 * 60 * 60}` : ''}`;
+      onSuccess(role);
     } catch (err: any) {
       setLoading(false);
       console.error('Sign-in error:', err);
@@ -372,7 +373,7 @@ function SignInScreen({ onBack, onSignUp, onSuccess }: { onBack: () => void; onS
 }
 
 /* ─── sign up screen ─────────────────────────────────────── */
-function SignUpScreen({ onBack, onSignIn, onSuccess }: { onBack: () => void; onSignIn: () => void; onSuccess: () => void }) {
+function SignUpScreen({ onBack, onSignIn, onSuccess }: { onBack: () => void; onSignIn: () => void; onSuccess: (role?: string) => void }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [pw, setPw] = useState('');
@@ -406,9 +407,11 @@ function SignUpScreen({ onBack, onSignIn, onSuccess }: { onBack: () => void; onS
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idToken: await result.user.getIdToken() }),
       });
+      const resData = res.ok ? await res.json().catch(() => ({})) : {};
       if (!res.ok) throw new Error('Session creation failed');
-      document.cookie = '__auth=1; path=/; samesite=lax';
-      onSuccess();
+      const role: string = resData.role ?? 'consumer';
+      document.cookie = `__auth=${role === 'admin' ? 'admin' : '1'}; path=/; samesite=lax`;
+      onSuccess(role);
     } catch (err: any) {
       if (err?.code === 'auth/popup-blocked') {
         try {
@@ -450,13 +453,13 @@ function SignUpScreen({ onBack, onSignIn, onSuccess }: { onBack: () => void; onS
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idToken, name, remember }),
       });
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
         throw new Error(data.error ?? 'Session creation failed');
       }
-      // Write auth cookie client-side — belt-and-suspenders in case server Set-Cookie is delayed
-      document.cookie = `__auth=1; path=/; samesite=lax${remember ? `; max-age=${7 * 24 * 60 * 60}` : ''}`;
-      onSuccess();
+      const role: string = data.role ?? 'consumer';
+      document.cookie = `__auth=${role === 'admin' ? 'admin' : '1'}; path=/; samesite=lax${remember ? `; max-age=${7 * 24 * 60 * 60}` : ''}`;
+      onSuccess(role);
     } catch (err: any) {
       setLoading(false);
       if (err.code === 'auth/email-already-in-use')
@@ -815,7 +818,10 @@ function AuthContent() {
 
   // Hard redirect so the __session cookie from the fetch response is
   // guaranteed to be present when the middleware checks the next request.
-  const handleSuccess = () => { window.location.href = '/console'; };
+  // Admin users go to /founder, everyone else goes to /console.
+  const handleSuccess = (role = 'consumer') => {
+    window.location.href = role === 'admin' ? '/founder' : '/console';
+  };
 
   const handleDone = () => { window.location.href = '/console'; };
 

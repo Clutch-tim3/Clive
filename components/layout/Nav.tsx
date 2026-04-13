@@ -13,10 +13,10 @@ export function Nav() {
 
   useEffect(() => {
     // Fast path: read the JS-readable __auth cookie set by /api/auth/session.
-    // This is instant and works regardless of CDN caching or server state.
+    // Value is 'admin' for admins, '1' for regular users — both mean authenticated.
     const hasAuthCookie = document.cookie
       .split(';')
-      .some(c => c.trim().startsWith('__auth=1'));
+      .some(c => { const v = c.trim(); return v === '__auth=1' || v === '__auth=admin'; });
 
     if (hasAuthCookie) {
       setAuthed(true);
