@@ -40,11 +40,21 @@ export async function POST(req: NextRequest) {
     const sessionCookie = await adminAuth().createSessionCookie(idToken, { expiresIn });
 
     const response = NextResponse.json({ success: true });
+
+    // __session: httpOnly (secure, JS cannot read)
     response.cookies.set('__session', sessionCookie, {
-      // Only set maxAge when remember=true; without it the cookie is a session cookie
-      // (expires when the browser is closed)
       ...(remember ? { maxAge: expiresIn / 1000 } : {}),
       httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+    });
+
+    // __auth: NOT httpOnly — lets client-side JS detect auth state instantly
+    // without any server call or CDN-cached HTML dependency.
+    response.cookies.set('__auth', '1', {
+      ...(remember ? { maxAge: expiresIn / 1000 } : {}),
+      httpOnly: false,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',

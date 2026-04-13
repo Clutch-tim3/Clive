@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { Cormorant_Garamond, DM_Mono, Libre_Baskerville } from 'next/font/google';
-import { cookies } from 'next/headers';
 import '@/styles/globals.css';
 import { Nav } from '@/components/layout/Nav';
 import { Footer } from '@/components/layout/Footer';
@@ -40,24 +39,18 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // Check session cookie existence server-side — no Firebase SDK needed.
-  // This is the single source of truth: if the cookie is present the user is
-  // authenticated (the middleware uses the same check). Using cookies() here
-  // automatically opts this layout into dynamic (per-request) rendering.
-  const cookieStore = cookies();
-  const initialAuthed = !!cookieStore.get('__session')?.value;
-
   return (
     <html lang="en">
       <body
         className={`${cormorantGaramond.variable} ${libreBaskerville.variable} ${dmMono.variable} antialiased`}
       >
-        <Nav initialAuthed={initialAuthed} />
+        {/* Nav detects auth state itself via __auth cookie (client-side) */}
+        <Nav />
         <main className="pt-16">
           {children}
         </main>

@@ -3,29 +3,46 @@ import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 import { SearchBar } from '../ui/SearchBar';
 
-interface NavProps {
-  /** True when the server detected a __session cookie on this page load. */
-  initialAuthed?: boolean;
-}
-
-export function Nav({ initialAuthed = false }: NavProps) {
-  const [authed, setAuthed] = useState(initialAuthed);
-  const [initial, setInitial] = useState('?');
+export function Nav() {
+  // null  = still detecting (hide auth buttons to avoid flash)
+  // false = logged out  → show Sign in + Get started
+  // true  = logged in   → show Profile + Sign out
+  const [authed, setAuthed] = useState<boolean | null>(null);
+  const [userInitial, setUserInitial] = useState('?');
   const [signingOut, setSigningOut] = useState(false);
 
-  // Fetch display name lazily (only needed for avatar letter — not auth gating)
   useEffect(() => {
-    if (!initialAuthed) return;
-    fetch('/api/auth/user')
-      .then(r => r.ok ? r.json() : null)
-      .then(d => {
-        if (d) {
-          setAuthed(true);
-          setInitial((d.displayName?.[0] ?? d.email?.[0] ?? '?').toUpperCase());
-        }
-      })
-      .catch(() => {});
-  }, [initialAuthed]);
+    // Fast path: read the JS-readable __auth cookie set by /api/auth/session.
+    // This is instant and works regardless of CDN caching or server state.
+    const hasAuthCookie = document.cookie
+      .split(';')
+      .some(c => c.trim().startsWith('__auth=1'));
+
+    if (hasAuthCookie) {
+      setAuthed(true);
+      // Fetch display name for avatar — non-critical, doesn't affect auth display
+      fetch('/api/auth/user')
+        .then(r => r.ok ? r.json() : null)
+        .then(d => { if (d) setUserInitial((d.displayName?.[0] ?? d.email?.[0] ?? '?').toUpperCase()); })
+        .catch(() => {});
+    } else {
+      // Fallback for sessions created before __auth cookie was added:
+      // ask the lightweight /api/auth/check endpoint (no Firebase Admin needed).
+      fetch('/api/auth/check')
+        .then(r => r.json())
+        .then(d => {
+          const isAuthed = !!d.authed;
+          setAuthed(isAuthed);
+          if (isAuthed) {
+            fetch('/api/auth/user')
+              .then(r => r.ok ? r.json() : null)
+              .then(d2 => { if (d2) setUserInitial((d2.displayName?.[0] ?? d2.email?.[0] ?? '?').toUpperCase()); })
+              .catch(() => {});
+          }
+        })
+        .catch(() => setAuthed(false));
+    }
+  }, []);
 
   const handleSignOut = async () => {
     setSigningOut(true);
@@ -93,7 +110,7 @@ export function Nav({ initialAuthed = false }: NavProps) {
         ))}
       </div>
 
-      {/* Right — search + auth-aware buttons */}
+      {/* Right — search + auth buttons */}
       <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexShrink: 0 }}>
         <SearchBar navMode />
 
@@ -116,8 +133,8 @@ export function Nav({ initialAuthed = false }: NavProps) {
           Console
         </Link>
 
-        {/* ── Logged in: Profile pill + Sign out ────────────────────── */}
-        {authed && (
+        {/* ── Logged in: Profile + Sign out ────────────────────────── */}
+        {authed === true && (
           <>
             <Link
               href="/profile"
@@ -158,7 +175,7 @@ export function Nav({ initialAuthed = false }: NavProps) {
                 flexShrink: 0,
                 border: '1px solid rgba(91,148,210,0.4)',
               }}>
-                {initial}
+                {userInitial}
               </div>
               <span style={{
                 fontFamily: "'DM Mono', monospace",
@@ -207,8 +224,8 @@ export function Nav({ initialAuthed = false }: NavProps) {
           </>
         )}
 
-        {/* ── Logged out: Sign in + Get started ─────────────────────── */}
-        {!authed && (
+        {/* ── Logged out: Sign in + Get started ────────────────────── */}
+        {authed === false && (
           <>
             <Link
               href="/auth?screen=signin"
@@ -274,6 +291,8 @@ export function Nav({ initialAuthed = false }: NavProps) {
             </Link>
           </>
         )}
+
+        {/* authed === null: still detecting — render nothing to avoid flash */}
       </div>
     </nav>
   );
