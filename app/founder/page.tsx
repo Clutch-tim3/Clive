@@ -270,12 +270,36 @@ export default function FounderPage() {
     setTimeout(() => setToast(null), 3500);
   };
 
+  // Poll for new domain orders every 60s while on domain-orders tab
+  useEffect(() => {
+    if (activeTab !== 'domain-orders') return;
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch('/api/admin/domain-orders');
+        const data = await res.json() as { orders?: Order[] };
+        const fresh = data.orders ?? [];
+        setOrders(prev => {
+          const prevPending = prev.filter(o => o.status === 'pending').length;
+          const newPending = fresh.filter(o => o.status === 'pending').length;
+          if (newPending > prevPending) {
+            setToast({ msg: `${newPending - prevPending} new domain order(s) arrived!` });
+            setTimeout(() => setToast(null), 3500);
+          }
+          return fresh;
+        });
+      } catch { /* ignore */ }
+    }, 60_000);
+    return () => clearInterval(interval);
+  }, [activeTab]);
+
   const handleSignOut = async () => {
-    const { auth } = await import('@/lib/firebase/client');
-    const { signOut } = await import('firebase/auth');
-    await signOut(auth);
-    await fetch('/api/auth/signout', { method: 'POST' }).catch(() => {});
-    window.location.href = '/';
+    try {
+      const { auth } = await import('@/lib/firebase/client');
+      const { signOut } = await import('firebase/auth');
+      await signOut(auth).catch(() => {});
+    } catch { /* ignore */ }
+    document.cookie = '__auth=; max-age=0; path=/; samesite=lax';
+    window.location.href = '/api/auth/signout';
   };
 
   const updateStatus = async (orderId: string, status: string) => {

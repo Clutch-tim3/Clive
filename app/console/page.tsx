@@ -1349,11 +1349,13 @@ export default function ConsolePage() {
           </Link>
           <button
             onClick={async () => {
-              const { auth } = await import('@/lib/firebase/client');
-              const { signOut } = await import('firebase/auth');
-              await signOut(auth);
-              await fetch('/api/auth/signout', { method: 'POST' }).catch(() => {});
-              window.location.href = '/';
+              try {
+                const { auth } = await import('@/lib/firebase/client');
+                const { signOut } = await import('firebase/auth');
+                await signOut(auth).catch(() => {});
+              } catch { /* ignore */ }
+              document.cookie = '__auth=; max-age=0; path=/; samesite=lax';
+              window.location.href = '/api/auth/signout';
             }}
             style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', color: 'rgba(255,100,100,0.5)', fontSize: '12px', background: 'none', border: 'none', borderRadius: '10px', cursor: 'pointer', fontFamily: 'DM Mono, monospace', width: '100%', textAlign: 'left', transition: 'color 0.15s' }}
             onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,100,100,0.8)')}

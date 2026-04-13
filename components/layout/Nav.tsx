@@ -46,14 +46,16 @@ export function Nav() {
 
   const handleSignOut = async () => {
     setSigningOut(true);
+    // Clear Firebase client SDK auth state
     try {
       const { auth } = await import('@/lib/firebase/client');
       const { signOut } = await import('firebase/auth');
       await signOut(auth).catch(() => {});
-      await fetch('/api/auth/signout', { method: 'POST' }).catch(() => {});
-    } finally {
-      window.location.href = '/';
-    }
+    } catch { /* ignore */ }
+    // Clear auth cookie client-side immediately
+    document.cookie = '__auth=; max-age=0; path=/; samesite=lax';
+    // Navigate to GET /api/auth/signout — server clears __session and redirects to /
+    window.location.href = '/api/auth/signout';
   };
 
   return (

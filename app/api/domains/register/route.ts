@@ -109,6 +109,17 @@ export async function POST(req: NextRequest) {
       updatedAt:  new Date(),
     });
 
+    // ── Admin notification (fire-and-forget) ─────────────────────────────────
+    adminDb().collection('adminNotifications').doc().set({
+      type:       'domainOrder',
+      orderId:    orderRef.id,
+      domainName,
+      userEmail:  user.email,
+      userId:     user.uid,
+      read:       false,
+      createdAt:  new Date(),
+    }).catch(console.error);
+
     return NextResponse.json({
       id:         orderRef.id,
       domainName,

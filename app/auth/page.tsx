@@ -239,6 +239,8 @@ function SignInScreen({ onBack, onSignUp, onSuccess }: { onBack: () => void; onS
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idToken: await result.user.getIdToken() }),
       });
+      // Write auth cookie client-side — belt-and-suspenders in case server Set-Cookie is delayed
+      document.cookie = '__auth=1; path=/; samesite=lax';
       onSuccess();
     } catch (err: any) {
       if (err?.code === 'auth/popup-blocked') {
@@ -293,6 +295,8 @@ function SignInScreen({ onBack, onSignUp, onSuccess }: { onBack: () => void; onS
         const d = await sessionRes.json().catch(() => ({}));
         throw new Error(d.error ?? 'Session creation failed. Please try again.');
       }
+      // Write auth cookie client-side — belt-and-suspenders in case server Set-Cookie is delayed
+      document.cookie = `__auth=1; path=/; samesite=lax${remember ? `; max-age=${7 * 24 * 60 * 60}` : ''}`;
       onSuccess();
     } catch (err: any) {
       setLoading(false);
@@ -403,6 +407,7 @@ function SignUpScreen({ onBack, onSignIn, onSuccess }: { onBack: () => void; onS
         body: JSON.stringify({ idToken: await result.user.getIdToken() }),
       });
       if (!res.ok) throw new Error('Session creation failed');
+      document.cookie = '__auth=1; path=/; samesite=lax';
       onSuccess();
     } catch (err: any) {
       if (err?.code === 'auth/popup-blocked') {
@@ -449,6 +454,8 @@ function SignUpScreen({ onBack, onSignIn, onSuccess }: { onBack: () => void; onS
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error ?? 'Session creation failed');
       }
+      // Write auth cookie client-side — belt-and-suspenders in case server Set-Cookie is delayed
+      document.cookie = `__auth=1; path=/; samesite=lax${remember ? `; max-age=${7 * 24 * 60 * 60}` : ''}`;
       onSuccess();
     } catch (err: any) {
       setLoading(false);

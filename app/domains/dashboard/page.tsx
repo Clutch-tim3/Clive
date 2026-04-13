@@ -256,7 +256,7 @@ export default function DomainsDashboard() {
           )}
 
           {/* Empty state */}
-          {!loading && domains.length === 0 && (
+          {!loading && domains.length === 0 && orders.length === 0 && (
             <div style={{ textAlign: 'center', padding: '100px 32px', border: '1px dashed rgba(255,255,255,0.08)', borderRadius: '24px' }}>
               <div style={{ fontSize: '48px', marginBottom: '20px' }}>🌐</div>
               <div style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 300, fontSize: '32px', color: '#fff', marginBottom: '12px' }}>No domains yet.</div>

@@ -43,12 +43,10 @@ export default function ProfilePage() {
     try {
       const { auth } = await import('@/lib/firebase/client');
       const { signOut } = await import('firebase/auth');
-      await signOut(auth);
-      await fetch('/api/auth/signout', { method: 'POST' }).catch(() => {});
-      window.location.href = '/';
-    } catch {
-      setSigningOut(false);
-    }
+      await signOut(auth).catch(() => {});
+    } catch { /* ignore */ }
+    document.cookie = '__auth=; max-age=0; path=/; samesite=lax';
+    window.location.href = '/api/auth/signout';
   };
 
   const initial = (user?.displayName?.[0] ?? user?.email?.[0] ?? '?').toUpperCase();
