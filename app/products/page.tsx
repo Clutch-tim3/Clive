@@ -10,7 +10,7 @@ export default function ProductsPage({
   const initialCategory = searchParams.cat || 'all';
 
   return (
-    <section className="pt-24 pb-18 px-14">
+    <section className="pt-24 pb-18 px-4 sm:px-8 lg:px-14">
       <div className="max-w-7xl mx-auto">
         <ScrollReveal>
           <div className="mb-16">

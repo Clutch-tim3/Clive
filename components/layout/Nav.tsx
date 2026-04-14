@@ -10,6 +10,7 @@ export function Nav() {
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [userInitial, setUserInitial] = useState('?');
   const [signingOut, setSigningOut] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     // Fast path: read the JS-readable __auth cookie set by /api/auth/session.
@@ -59,7 +60,7 @@ export function Nav() {
   };
 
   return (
-    <nav style={{
+    <nav className="main-nav" style={{
       position: 'fixed',
       top: 0,
       left: 0,
@@ -67,7 +68,7 @@ export function Nav() {
       zIndex: 200,
       height: '64px',
       display: 'grid',
-      gridTemplateColumns: 'auto 1fr auto',
+      gridTemplateColumns: 'auto 1fr auto auto',
       alignItems: 'center',
       gap: '24px',
       padding: '0 48px',
@@ -81,8 +82,8 @@ export function Nav() {
         <img src="/logo.png" alt="Clive" style={{ height: '32px', width: 'auto', display: 'block' }} />
       </Link>
 
-      {/* Center — nav links */}
-      <div style={{ display: 'flex', gap: '28px', justifyContent: 'center', alignItems: 'center' }}>
+      {/* Center — nav links (hidden on mobile) */}
+      <div className="nav-links" style={{ display: 'flex', gap: '28px', justifyContent: 'center', alignItems: 'center' }}>
         {[
           { href: '/products', label: 'Products' },
           { href: '/domains',  label: 'Domains'  },
@@ -112,8 +113,8 @@ export function Nav() {
         ))}
       </div>
 
-      {/* Right — search + auth buttons */}
-      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexShrink: 0 }}>
+      {/* Right — search + auth buttons (hidden on mobile) */}
+      <div className="nav-auth-desktop" style={{ display: 'flex', gap: '10px', alignItems: 'center', flexShrink: 0 }}>
         <SearchBar navMode />
 
         {/* Console link — always visible */}
@@ -296,6 +297,145 @@ export function Nav() {
 
         {/* authed === null: still detecting — render nothing to avoid flash */}
       </div>
+
+      {/* Hamburger button — visible only on mobile */}
+      <button
+        className="nav-hamburger"
+        onClick={() => setMenuOpen(o => !o)}
+        aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+        style={{
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          color: 'rgba(255,255,255,0.7)',
+          fontSize: '22px',
+          lineHeight: 1,
+          padding: '4px 8px',
+          display: 'none', // shown via CSS media query
+        }}
+      >
+        {menuOpen ? '✕' : '☰'}
+      </button>
+
+      {/* Mobile drawer */}
+      {menuOpen && (
+        <div className="nav-mobile-menu">
+          {[
+            { href: '/products', label: 'Products' },
+            { href: '/domains',  label: 'Domains'  },
+            { href: '/',         label: 'Platform' },
+            { href: '/pricing',  label: 'Pricing'  },
+            { href: '/sell',     label: 'Sell'      },
+            { href: '/docs',     label: 'Docs'      },
+            { href: '/console',  label: 'Console'   },
+          ].map(({ href, label }) => (
+            <Link
+              key={label}
+              href={href}
+              onClick={() => setMenuOpen(false)}
+              style={{
+                fontFamily: "'DM Mono', monospace",
+                fontSize: '13px',
+                letterSpacing: '0.14em',
+                textTransform: 'uppercase',
+                color: 'rgba(255,255,255,0.6)',
+                textDecoration: 'none',
+                padding: '10px 0',
+                borderBottom: '1px solid rgba(255,255,255,0.06)',
+              }}
+            >
+              {label}
+            </Link>
+          ))}
+
+          {/* Auth buttons in drawer */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '8px' }}>
+            {authed === true && (
+              <>
+                <Link
+                  href="/profile"
+                  onClick={() => setMenuOpen(false)}
+                  style={{
+                    fontFamily: "'DM Mono', monospace",
+                    fontSize: '11px',
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    padding: '12px 20px',
+                    borderRadius: '100px',
+                    border: '1.5px solid rgba(91,148,210,0.3)',
+                    background: 'rgba(27,48,91,0.25)',
+                    color: 'rgba(255,255,255,0.65)',
+                    textDecoration: 'none',
+                    textAlign: 'center',
+                  }}
+                >
+                  Profile
+                </Link>
+                <button
+                  onClick={handleSignOut}
+                  disabled={signingOut}
+                  style={{
+                    fontFamily: "'DM Mono', monospace",
+                    fontSize: '11px',
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    padding: '12px 20px',
+                    borderRadius: '100px',
+                    border: '1.5px solid rgba(255,255,255,0.12)',
+                    background: 'transparent',
+                    color: signingOut ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.45)',
+                    cursor: signingOut ? 'default' : 'pointer',
+                  }}
+                >
+                  {signingOut ? 'Signing out…' : 'Sign out'}
+                </button>
+              </>
+            )}
+            {authed === false && (
+              <>
+                <Link
+                  href="/auth?screen=signin"
+                  onClick={() => setMenuOpen(false)}
+                  style={{
+                    fontFamily: "'DM Mono', monospace",
+                    fontSize: '11px',
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    padding: '12px 20px',
+                    borderRadius: '100px',
+                    border: '1.5px solid rgba(255,255,255,0.14)',
+                    background: 'rgba(255,255,255,0.06)',
+                    color: 'rgba(255,255,255,0.6)',
+                    textDecoration: 'none',
+                    textAlign: 'center',
+                  }}
+                >
+                  Sign in
+                </Link>
+                <Link
+                  href="/auth?screen=signup"
+                  onClick={() => setMenuOpen(false)}
+                  style={{
+                    fontFamily: "'DM Mono', monospace",
+                    fontSize: '11px',
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    padding: '12px 20px',
+                    borderRadius: '100px',
+                    border: '1.5px solid var(--navy)',
+                    background: 'var(--navy)',
+                    color: 'white',
+                    textDecoration: 'none',
+                    textAlign: 'center',
+                  }}
+                >
+                  Get started
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </nav>
   );
 }

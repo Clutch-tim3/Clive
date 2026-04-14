@@ -3,8 +3,8 @@ import React from 'react';
 
 export function Footer() {
   return (
-    <footer className="text-white px-14">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3" style={{gap: '72px'}}>
+    <footer className="text-white px-4 md:px-14">
+      <div className="footer-grid max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3" style={{gap: '72px'}}>
         <div className="col-span-1 md:col-span-2">
           <div className="flex items-center gap-2 mb-6">
             <span className="f-brand text-[26px] font-display tracking-[0.08em] uppercase">

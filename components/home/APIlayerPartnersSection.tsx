@@ -161,7 +161,7 @@ export function APIlayerPartnersSection() {
     : partnerAPIs.filter(api => api.category === activeFilter);
 
   return (
-    <section id="partner-apis" className="py-24 px-14 bg-black2 border-t border-white/05">
+    <section id="partner-apis" className="py-24 px-4 sm:px-8 lg:px-14 bg-black2 border-t border-white/05">
       <div className="max-w-7xl mx-auto">
         <ScrollReveal>
           <div className="mb-16">

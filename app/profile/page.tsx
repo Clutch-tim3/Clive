@@ -62,7 +62,7 @@ export default function ProfilePage() {
         <div style={{
           maxWidth: '640px',
           margin: '0 auto',
-          padding: '64px 32px 96px',
+          padding: 'clamp(32px, 8vw, 64px) clamp(16px, 5vw, 32px) clamp(48px, 10vw, 96px)',
         }}>
 
           {/* Header */}
