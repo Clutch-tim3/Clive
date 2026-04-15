@@ -1,5 +1,15 @@
+import type { Metadata } from 'next';
 import { SectionKicker } from '@/components/ui/SectionKicker';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
+
+export const metadata: Metadata = {
+  title: 'Documentation — API Reference, SDK & Guides',
+  description:
+    'Complete documentation for the Clive developer platform. ' +
+    'API reference, SDK guide, authentication, webhooks, and tutorials ' +
+    'for all Clive APIs.',
+  alternates: { canonical: '/docs' },
+};
 
 export default function DocsPage() {
   return (

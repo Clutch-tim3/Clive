@@ -1,4 +1,13 @@
-export const metadata = { title: 'About — Clive', description: 'Clive is an API marketplace built by Donington Vale.' };
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'About Clive — A Donington Vale Product',
+  description:
+    'Clive is a developer API marketplace built by Donington Vale, ' +
+    'a South African technology company based in Centurion, Gauteng. ' +
+    'We build developer infrastructure for African builders.',
+  alternates: { canonical: '/about' },
+};
 
 const s = {
   kicker: { fontFamily: 'DM Mono, monospace', fontSize: '10px', letterSpacing: '0.2em', color: 'rgba(91,148,210,0.7)', textTransform: 'uppercase' as const, marginBottom: '16px' },

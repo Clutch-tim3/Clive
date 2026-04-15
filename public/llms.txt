@@ -1,0 +1,55 @@
+# Clive Developer API Marketplace
+> South African developer API marketplace offering production-ready REST APIs
+
+Clive is built by Donington Vale, based in Centurion, Gauteng, South Africa.
+Contact: support@clive.dev
+Documentation: https://clive.dev/docs
+
+## APIs
+
+- HackKit: Penetration testing and domain recon API. Ten capabilities, one credential. https://clive.dev/products/hackkit
+- ShieldKit: Unified cybersecurity API — IP, domain, URL, payload, email, batch. https://clive.dev/products/shieldkit
+- SearchCore: Full-text, semantic, and hybrid search in one deployable API. https://clive.dev/products/searchcore
+- EmbedCore: General-purpose text embeddings. OpenAI-compatible. https://clive.dev/products/embedcore
+- TenderIQ: South African government tender intelligence from CC BY 4.0 licensed procurement data. https://clive.dev/products/tenderiq
+- ContractIQ: Contract analysis and risk scoring API. https://clive.dev/products/contractiq
+- MeetingIQ: Meeting transcription and intelligence API. https://clive.dev/products/meetingiq
+- FXBridge: Real-time and historical FX rates API. https://clive.dev/products/fxbridge
+- WealthMind: Personal finance intelligence API. https://clive.dev/products/wealthmind
+- CreditLens: Alternative credit risk scoring API. https://clive.dev/products/creditlens
+- TalentPulse: Job market intelligence and salary benchmarks. https://clive.dev/products/talentpulse
+- DevKit: Developer utility API — UUID, hash, cron, and more. https://clive.dev/products/devkit
+- OracleIQ: Prediction market intelligence API. https://clive.dev/products/oracleiq
+- TransactIQ: Transaction enrichment and categorisation API. https://clive.dev/products/transactiq
+- TrustIQ: Identity and trust verification API. https://clive.dev/products/trustiqq
+- FinSightIQ: Financial data intelligence API. https://clive.dev/products/finsightiq
+
+## Chrome Extensions
+
+- VoicePost: AI LinkedIn writing assistant. https://clive.dev/products/voicepost
+- PayGrade: Salary intelligence overlay on job listings. https://clive.dev/products/paygrade
+- ReviewPal: GitHub PR visual design reviewer. https://clive.dev/products/reviewpal
+- BriefPal: Meeting intelligence for Google Calendar and Meet. https://clive.dev/products/briefpal
+- DesignSpy: Design token extractor from any live website. https://clive.dev/products/designspy
+- CopyPilot: AI writing assistant for every text field. https://clive.dev/products/copypilot
+- HandoffReady: Live webpage design QA auditor. https://clive.dev/products/handoffready
+- FlowMapper: Website sitemap and user flow visualiser. https://clive.dev/products/flowmapper
+
+## Domains
+
+Clive offers domain registration for .com, .co.za, .net, .org, .io, .dev, and more.
+Real-time availability check against global domain registry.
+https://clive.dev/domains
+
+## For Providers
+
+Developers can list their own APIs on the Clive marketplace via the Provider Console.
+Clive takes a 12% platform fee — providers keep 88% of every transaction.
+24-hour review process. Free to list.
+https://clive.dev/sell
+
+## Pricing
+
+Every API on Clive includes a permanent free tier. No credit card required.
+Paid plans available monthly, billed in ZAR.
+https://clive.dev/products

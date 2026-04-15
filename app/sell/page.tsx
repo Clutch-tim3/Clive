@@ -1,8 +1,22 @@
 import Link from 'next/link';
 
-export const metadata = {
-  title: 'Sell on Clive — List your API',
-  description: 'Turn your API into a revenue stream. List on Clive and reach thousands of developers.',
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Sell Your API — Become a Clive Provider',
+  description:
+    'List and monetise your API on the Clive marketplace. ' +
+    'Reach South African and global developers. ' +
+    'Keep 88% of every transaction. Free listing. 24-hour review.',
+  keywords: [
+    'sell API',
+    'API monetisation',
+    'list API marketplace',
+    'developer API business',
+    'API revenue South Africa',
+    'become API provider',
+  ],
+  alternates: { canonical: '/sell' },
 };
 
 export default function SellPage() {
