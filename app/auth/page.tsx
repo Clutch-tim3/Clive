@@ -900,25 +900,29 @@ function AuthContent() {
         .auth-help-link{color:rgba(91,148,210,0.55);text-decoration:none;}
         .auth-help-link:hover{color:rgba(91,148,210,0.9);}
         @media(max-width:767px){
-          .auth-lp{position:relative;width:100%;height:64px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-          .auth-o1,.auth-o2,.auth-o3,.auth-scan,.auth-lp-stats,.auth-lp-testi{display:none;}
-          .auth-lp-mid{position:static;transform:none;display:flex;flex-direction:row;align-items:center;gap:12px;}
-          .auth-cletter{font-size:36px;}
-          .auth-cbrand,.auth-crule{display:none;}
-          .auth-rp{margin-left:0!important;width:100%!important;}
+          .auth-shell{flex-direction:column!important;height:auto!important;min-height:100vh!important;overflow:auto!important;}
+          .auth-lp{position:relative!important;width:100%!important;height:64px!important;display:flex!important;align-items:center!important;justify-content:center!important;flex-shrink:0!important;}
+          .auth-o1,.auth-o2,.auth-o3,.auth-scan,.auth-lp-stats,.auth-lp-testi{display:none!important;}
+          .auth-lp-mid{position:static!important;transform:none!important;display:flex!important;flex-direction:row!important;align-items:center!important;gap:12px!important;}
+          .auth-cletter{font-size:36px!important;}
+          .auth-cbrand,.auth-crule{display:none!important;}
+          .auth-rp{margin-left:0!important;width:100%!important;height:auto!important;}
+          .auth-rp-inner{padding:32px 24px!important;min-height:auto!important;justify-content:flex-start!important;}
           .auth-ob-grid{grid-template-columns:1fr!important;}
+          .auth-ob{grid-template-columns:1fr!important;}
         }
         *{cursor:none!important;}
       `}</style>
 
       <Cursor />
 
-      <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: '#07070A' }}>
+      <div className="auth-shell" style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: '#07070A' }}>
         <LeftPanel />
 
         {/* Right panel */}
         <div style={{ marginLeft: '50vw', width: '50vw', height: '100vh', background: '#0C0C10', overflowY: 'auto', overflowX: 'hidden', position: 'relative', zIndex: 2, scrollbarWidth: 'thin', scrollbarColor: 'rgba(91,148,210,0.2) transparent' }} className="auth-rp">
           <div
+            className="auth-rp-inner"
             style={{
               display: 'flex', flexDirection: 'column', justifyContent: 'center',
               minHeight: '100vh', padding: '60px 72px',

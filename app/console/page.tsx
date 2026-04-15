@@ -102,14 +102,14 @@ function Dashboard({ data }: { data?: any }) {
         <p style={{ color: 'rgba(255,255,255,0.4)', marginTop: '6px', fontSize: '14px' }}>Your provider overview for April 2026</p>
       </div>
 
-      <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+      <div className="console-stat-row" style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
         <StatCard label="Total Earnings" value={earnings} sub="+18% from last month" accent="rgba(91,148,210,1)" />
         <StatCard label="API Calls" value={calls} sub="This month" />
         <StatCard label="Active Products" value={String(productCount)} sub="Live products" />
         <StatCard label="Subscribers" value={String(subscriberCount)} sub="Active subscribers" />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+      <div className="console-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
         <EarningsChart />
 
         <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '16px', padding: '28px' }}>
@@ -1282,6 +1282,9 @@ export default function ConsolePage() {
           .console-sidebar.open { transform: translateX(0); }
           .console-hamburger { display: flex; align-items: center; justify-content: center; }
           .console-overlay { display: block !important; }
+          .console-main { padding: 24px 16px !important; }
+          .console-2col { grid-template-columns: 1fr !important; }
+          .console-stat-row > div { min-width: 140px !important; }
         }
       `}</style>
 
@@ -1367,7 +1370,7 @@ export default function ConsolePage() {
       </div>
 
       {/* Main content */}
-      <div style={{ flex: 1, padding: '40px 48px', overflowY: 'auto', maxWidth: '1100px' }}>
+      <div className="console-main" style={{ flex: 1, padding: '40px 48px', overflowY: 'auto', maxWidth: '1100px' }}>
         {activeTab === 'dashboard' && <Dashboard data={dashData} />}
         {activeTab === 'my-apis'   && <MyAcquiredAPIs />}
         {activeTab === 'acquired'  && <MyAcquiredProducts />}
