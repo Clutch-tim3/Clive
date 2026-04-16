@@ -45,7 +45,7 @@ const features = [
 
 export function WhyClive() {
   return (
-    <section className="py-24 px-12 lg:px-14 bg-black2 relative overflow-hidden border-t border-white/05">
+    <section aria-label="Why choose Clive" className="py-24 px-12 lg:px-14 bg-black2 relative overflow-hidden border-t border-white/05">
       <div className="absolute inset-0 pointer-events-none bg-radial-gradient"></div>
       <div className="max-w-7xl mx-auto relative z-1">
         <ScrollReveal>

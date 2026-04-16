@@ -1720,3 +1720,14 @@ Import trace for requested module:
    - Environments: .env.local
 
  ✓ Ready in 6.7s
+ ○ Compiling / ...
+ ✓ Compiled / in 13.3s (1162 modules)
+
+ ⚠ metadata.metadataBase is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+ ✓ Compiled in 1331ms (567 modules)
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 1628ms (64 modules)
+ ○ Compiling /auth ...
+ ✓ Compiled /auth in 22.8s (1298 modules)
+
+ ⚠ metadata.metadataBase is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase

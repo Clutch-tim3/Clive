@@ -3,7 +3,7 @@ import React from 'react';
 
 export function ReadyToBuildCTA() {
   return (
-    <section className="rtb-sect">
+    <section aria-label="Get started with Clive" className="rtb-sect">
       <div className="rtb-orb rtb-orb-1" />
       <div className="rtb-orb rtb-orb-2" />
       <div className="rtb-grid" />

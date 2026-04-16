@@ -65,7 +65,7 @@ export default function SellPage() {
             { value: '$124K+', label: 'Total provider payouts' },
             { value: '38', label: 'Active providers' },
             { value: '10K+', label: 'Developer subscribers' },
-            { value: '80%', label: 'Revenue share to you' },
+            { value: '88%', label: 'Revenue share to you' },
           ].map(({ value, label }) => (
             <div key={label} style={{ textAlign: 'center' }}>
               <div style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 300, fontSize: '42px', color: 'white', lineHeight: 1 }}>{value}</div>

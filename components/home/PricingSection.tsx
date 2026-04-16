@@ -46,7 +46,7 @@ const pricingTiers = [
 
 export function PricingSection() {
   return (
-    <section id="pricing" className="bg-black2 py-24 px-12 lg:px-14 border-t border-white/05">
+    <section id="pricing" aria-label="Clive pricing plans" className="bg-black2 py-24 px-12 lg:px-14 border-t border-white/05">
       <div className="max-w-7xl mx-auto">
         <ScrollReveal>
           <div className="mb-16">

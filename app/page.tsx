@@ -9,6 +9,7 @@ import { ChannelsSection } from '@/components/home/ChannelsSection';
 import { PricingSection } from '@/components/home/PricingSection';
 import { APIlayerPartnersSection } from '@/components/home/APIlayerPartnersSection';
 import { ReadyToBuildCTA } from '@/components/home/ReadyToBuildCTA';
+import { FAQSection } from '@/components/home/FAQSection';
 
 export const metadata: Metadata = {
   title: 'Developer API Marketplace — Free Tier on Every API',
@@ -121,6 +122,7 @@ export default function Home() {
       <ChannelsSection />
       <PricingSection />
       <APIlayerPartnersSection />
+      <FAQSection />
       <ReadyToBuildCTA />
     </>
   );

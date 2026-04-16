@@ -73,7 +73,7 @@ export function HackKitSpotlight() {
   }, []);
 
   return (
-    <section className="hackkit-section">
+    <section aria-label="HackKit penetration testing API spotlight" className="hackkit-section">
       {/* Grid overlay */}
       <div style={{
         position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none',

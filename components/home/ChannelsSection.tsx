@@ -27,7 +27,7 @@ const channels = [
 
 export function ChannelsSection() {
   return (
-    <section className="channels-sect">
+    <section aria-label="Where to buy Clive products" className="channels-sect">
       <div className="channels-inner">
         <div style={{ marginBottom: '56px' }}>
           <div className="sect-kicker">Channels</div>

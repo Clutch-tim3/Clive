@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Product, AcquireTier, getAcquireTiers } from '@/lib/products';
+import { Product, AcquireTier, getAcquireTiers, products } from '@/lib/products';
 import { ShimmerBlock } from '../ui/ShimmerBlock';
 import { EndpointList } from '../ui/EndpointList';
 import { PricingTiers } from '../ui/PricingTiers';
@@ -261,6 +261,35 @@ export function ProductDetail({ product }: ProductDetailProps) {
             <PricingTiers tiers={product.pricing.tiers} />
           </div>
         </div>
+
+        {/* Related APIs */}
+        {(() => {
+          const related = products
+            .filter(p => p.slug !== product.slug && p.category === product.category && p.listingType !== 'partner')
+            .slice(0, 3);
+          if (related.length === 0) return null;
+          return (
+            <section aria-label="Related APIs" style={{ marginTop: '80px', paddingTop: '64px', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+              <div style={{ fontFamily:'DM Mono,monospace', fontSize:'9.5px', letterSpacing:'0.22em', textTransform:'uppercase', color:'rgba(91,148,210,0.65)', marginBottom:'24px', display:'flex', alignItems:'center', gap:'12px' }}>
+                <span style={{ width:'18px', height:'1px', background:'rgba(91,148,210,0.5)', flexShrink:0 }} />Related APIs
+              </div>
+              <h2 style={{ fontFamily:'Cormorant Garamond,serif', fontSize:'32px', fontWeight:300, color:'white', marginBottom:'24px', letterSpacing:'-0.02em' }}>
+                You might also like
+              </h2>
+              <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+                {related.map(r => (
+                  <Link key={r.slug} href={`/products/${r.slug}`} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'20px 24px', background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)', borderRadius:'12px', textDecoration:'none', transition:'border-color 0.2s' }}>
+                    <div>
+                      <div style={{ fontFamily:'Cormorant Garamond,serif', fontSize:'20px', fontWeight:300, color:'white', marginBottom:'4px' }}>{r.name}</div>
+                      <div style={{ fontFamily:'Libre Baskerville,serif', fontStyle:'italic', fontSize:'12px', color:'rgba(255,255,255,0.35)', lineHeight:1.5, maxWidth:'420px' }}>{r.tagline}</div>
+                    </div>
+                    <span style={{ fontFamily:'DM Mono,monospace', fontSize:'10px', color:'rgba(91,148,210,0.65)', flexShrink:0, marginLeft:'16px' }}>→</span>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          );
+        })()}
 
         {/* Sidebar */}
         <div style={{ display:'flex', flexDirection:'column', gap:'12px', position:'sticky', top:'88px' }}>

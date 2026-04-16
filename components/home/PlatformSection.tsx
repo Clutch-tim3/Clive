@@ -6,7 +6,7 @@ import { ScrollReveal } from '../ui/ScrollReveal';
 
 export function PlatformSection() {
   return (
-    <section id="platform" className="bg-black py-25 px-4 sm:px-8 lg:px-14">
+    <section id="platform" aria-label="Clive developer platform features" className="bg-black py-25 px-4 sm:px-8 lg:px-14">
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-25 items-center">
         <ScrollReveal>
           <div className="text-white">

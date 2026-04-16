@@ -1,5 +1,35 @@
 import type { Metadata } from 'next';
 
+const localBusinessSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'LocalBusiness',
+  name: 'Donington Vale',
+  alternateName: 'Clive',
+  url: 'https://clive.dev',
+  email: 'support@clive.dev',
+  description:
+    'South African technology company building developer infrastructure, API marketplaces, and financial tooling for African builders.',
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: 'Centurion',
+    addressRegion: 'Gauteng',
+    addressCountry: 'ZA',
+  },
+  areaServed: [
+    { '@type': 'Country', name: 'South Africa' },
+    { '@type': 'Country', name: 'Africa' },
+  ],
+  knowsAbout: [
+    'REST APIs',
+    'Developer tools',
+    'API marketplace',
+    'Government procurement intelligence',
+    'Financial technology',
+    'Cybersecurity APIs',
+  ],
+  foundingDate: '2026',
+};
+
 export const metadata: Metadata = {
   title: 'About Clive — A Donington Vale Product',
   description:
@@ -20,6 +50,10 @@ const s = {
 export default function AboutPage() {
   return (
     <main style={{ background: '#07070A', minHeight: '100vh' }}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
+      />
       <div style={{ maxWidth: '800px', margin: '0 auto', padding: '140px 32px 100px' }}>
         <p style={s.kicker}>About</p>
         <h1 style={s.h1}>Built for those<br />who build.</h1>

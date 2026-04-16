@@ -5,7 +5,7 @@ import { ScrollReveal } from '../ui/ScrollReveal';
 
 export function ProductsSection() {
   return (
-    <section id="products" className="py-24 px-14" style={{ background: 'var(--paper)' }}>
+    <section id="products" aria-label="Clive product catalogue" className="py-24 px-14" style={{ background: 'var(--paper)' }}>
       <div className="max-w-7xl mx-auto">
         <ScrollReveal>
           <div className="mb-16">
