@@ -26,6 +26,7 @@ interface TLDPrice {
 }
 
 const PILL_TLDS = ['com', 'co.za', 'net', 'org', 'io', 'dev', 'app'];
+const SKELETON_COUNT = 30;
 
 function formatZAR(cents: number) {
   return `R${(cents / 100).toFixed(0)}`;
@@ -47,7 +48,7 @@ function DomainsPageContent() {
     fetch('/api/domains/tlds')
       .then(r => r.json())
       .then((d: { tlds?: TLDPrice[] }) => {
-        if (d.tlds) setTldPrices(d.tlds.slice(0, 8));
+        if (d.tlds) setTldPrices(d.tlds.slice(0, 12));
         else setPriceError(true);
       })
       .catch(() => setPriceError(true));
@@ -62,7 +63,11 @@ function DomainsPageContent() {
     try {
       const res  = await fetch(`/api/domains/check?q=${encodeURIComponent(trimmed)}`);
       const data = await res.json() as { results?: AvailabilityResult[]; error?: string };
-      if (data.results) setResults(data.results);
+      if (data.results) {
+        const STATUS_ORDER: Record<string, number> = { available: 0, premium: 1, taken: 2, unsupported: 3, error: 4 };
+        const sorted = [...data.results].sort((a, b) => (STATUS_ORDER[a.status] ?? 9) - (STATUS_ORDER[b.status] ?? 9));
+        setResults(sorted);
+      }
     } catch {
       // silently keep empty
     } finally {
@@ -251,17 +256,15 @@ function DomainsPageContent() {
                 Checking availability…
               </div>
               <div style={{ border: '1px solid rgba(255,255,255,0.07)', borderRadius: '20px', overflow: 'hidden' }}>
-                {PILL_TLDS.map((tld, i) => (
-                  <div key={tld} style={{
+                {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
+                  <div key={i} style={{
                     display: 'grid', gridTemplateColumns: '18px 1fr auto auto auto',
-                    gap: '16px', alignItems: 'center', padding: '18px 28px',
-                    borderBottom: i < PILL_TLDS.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                    gap: '16px', alignItems: 'center', padding: '16px 28px',
+                    borderBottom: i < SKELETON_COUNT - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
                     background: 'rgba(255,255,255,0.02)',
                   }}>
                     <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', animation: 'pulse 1.4s infinite' }} />
-                    <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '15px', color: 'rgba(255,255,255,0.25)' }}>
-                      {searched.replace(/\.[a-z.]+$/, '')}<span style={{ color: 'rgba(91,148,210,0.4)' }}>.{tld}</span>
-                    </div>
+                    <div style={{ width: `${80 + (i % 5) * 20}px`, height: 14, borderRadius: 4, background: 'rgba(255,255,255,0.07)', animation: 'pulse 1.4s infinite' }} />
                     <div style={{ width: 80, height: 22, borderRadius: 100, background: 'linear-gradient(90deg,rgba(255,255,255,0.05) 25%,rgba(255,255,255,0.12) 50%,rgba(255,255,255,0.05) 75%)', backgroundSize: '400px 100%', animation: 'shimmer 1.5s infinite' }} />
                     <div style={{ width: 60, height: 22, borderRadius: 4, background: 'rgba(255,255,255,0.05)' }} />
                     <div style={{ width: 100, height: 34, borderRadius: 100, background: 'rgba(255,255,255,0.05)' }} />
@@ -272,23 +275,62 @@ function DomainsPageContent() {
           )}
 
           {/* Results */}
-          {!loading && searched && results.length > 0 && (
-            <div>
-              <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '10px', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.3)', marginBottom: '20px' }}>
-                Results for <span style={{ color: 'rgba(91,148,210,0.8)' }}>{searched.replace(/\.[a-z.]+$/, '')}</span>
+          {!loading && searched && results.length > 0 && (() => {
+            const sldBase = searched.replace(/\.[a-z.]+$/, '');
+            const availableCount = results.filter(r => r.status === 'available' || r.status === 'premium').length;
+            const comResult = results.find(r => r.tld === 'com');
+            const comTaken = comResult?.status === 'taken';
+            const variants = comTaken
+              ? [`get${sldBase}`, `${sldBase}hq`, `${sldBase}app`, `my${sldBase}`].filter(v => v.length <= 63)
+              : [];
+            return (
+              <div>
+                {/* Header */}
+                <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '10px', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.3)', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                  <span>Results for <span style={{ color: 'rgba(91,148,210,0.8)' }}>{sldBase}</span></span>
+                  {availableCount > 0 && (
+                    <span style={{ color: 'rgba(80,200,120,0.8)', background: 'rgba(80,200,120,0.07)', border: '1px solid rgba(80,200,120,0.18)', padding: '2px 10px', borderRadius: '100px' }}>
+                      {availableCount} available
+                    </span>
+                  )}
+                </div>
+
+                {/* Variant suggestions when .com is taken */}
+                {variants.length > 0 && (
+                  <div style={{ marginBottom: '20px', padding: '14px 20px', background: 'rgba(91,148,210,0.04)', border: '1px solid rgba(91,148,210,0.12)', borderRadius: '14px' }}>
+                    <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '8.5px', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(91,148,210,0.55)', marginBottom: '10px' }}>
+                      .com is taken — try a variation
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      {variants.map(v => (
+                        <button
+                          key={v}
+                          onClick={() => { setInput(v); doSearch(v); }}
+                          style={{ padding: '6px 14px', background: 'rgba(27,48,91,0.4)', border: '1px solid rgba(91,148,210,0.2)', borderRadius: '100px', fontFamily: "'DM Mono', monospace", fontSize: '10px', color: 'rgba(91,148,210,0.85)', cursor: 'pointer', transition: 'all .15s' }}
+                          onMouseEnter={e => { (e.currentTarget.style.borderColor = 'rgba(91,148,210,0.5)'); (e.currentTarget.style.background = 'rgba(27,48,91,0.65)'); }}
+                          onMouseLeave={e => { (e.currentTarget.style.borderColor = 'rgba(91,148,210,0.2)'); (e.currentTarget.style.background = 'rgba(27,48,91,0.4)'); }}
+                        >
+                          {v}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Result rows */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {results.map(r => (
+                    <ResultRow
+                      key={r.domainName}
+                      result={r}
+                      onRegister={() => router.push(`/domains/${encodeURIComponent(r.domainName)}`)}
+                      onRetry={() => doSearch(searched)}
+                    />
+                  ))}
+                </div>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {results.map(r => (
-                  <ResultRow
-                    key={r.domainName}
-                    result={r}
-                    onRegister={() => router.push(`/domains/${encodeURIComponent(r.domainName)}`)}
-                    onRetry={() => doSearch(searched)}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
+            );
+          })()}
         </div>
       </div>
       <Footer />

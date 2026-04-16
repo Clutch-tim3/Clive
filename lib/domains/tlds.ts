@@ -1,10 +1,12 @@
 import { getTLDs, NCTld } from './namecom';
 import { adminDb } from '@/lib/firebase/admin';
 
-// TLDs surfaced prominently in the Clive UI at launch.
+// TLDs surfaced prominently in the Clive UI.
+// Kept in priority order: mainstream → SA/Africa → developer → business → creative.
 export const FEATURED_TLDS = [
   'com', 'co.za', 'net', 'org', 'io', 'dev', 'app',
   'africa', 'store', 'online', 'tech', 'site',
+  'ai', 'co', 'shop', 'cloud', 'digital', 'me', 'biz', 'info',
 ];
 
 // TLDs where WHOIS privacy is not available due to registry policy

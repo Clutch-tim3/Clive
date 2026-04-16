@@ -24,20 +24,54 @@ export type DomainAvailabilityResult = AvailabilityResult;
 // No API key or account required.
 
 // RDAP servers per TLD — from IANA bootstrap data.
-// Centralnic operates .store/.online/.site; Identity Digital operates .tech.
-const RDAP_SERVERS: Record<string, string> = {
-  com:    'https://rdap.verisign.com/com/v1',
-  net:    'https://rdap.verisign.com/net/v1',
-  org:    'https://rdap.org',
-  'co.za':'https://rdap.registry.net.za',
-  io:     'https://rdap.nic.io',
-  dev:    'https://rdap.registry.google/dev',
-  app:    'https://rdap.registry.google/app',
-  africa: 'https://rdap.nic.africa',
-  store:  'https://rdap.centralnic.com/store',
-  online: 'https://rdap.centralnic.com/online',
-  tech:   'https://rdap.donuts.co',
-  site:   'https://rdap.centralnic.com/site',
+// Verisign:        .com/.net
+// Centralnic:      .store/.online/.site/.cloud/.shop
+// Google:          .dev/.app/.page
+// Identity Digital (formerly Donuts): .tech and all Donuts gTLDs via single server
+// IANA/ccTLD:      .io/.africa/.ai/.co/.me
+// Afilias/Identity Digital: .org/.biz/.info
+export const RDAP_SERVERS: Record<string, string> = {
+  // Core / highest traffic
+  com:        'https://rdap.verisign.com/com/v1',
+  net:        'https://rdap.verisign.com/net/v1',
+  org:        'https://rdap.org',
+  'co.za':    'https://rdap.registry.net.za',
+  io:         'https://rdap.nic.io',
+  // Google registry
+  dev:        'https://rdap.registry.google/dev',
+  app:        'https://rdap.registry.google/app',
+  page:       'https://rdap.registry.google/page',
+  // Centralnic group
+  store:      'https://rdap.centralnic.com/store',
+  online:     'https://rdap.centralnic.com/online',
+  site:       'https://rdap.centralnic.com/site',
+  cloud:      'https://rdap.centralnic.com/cloud',
+  shop:       'https://rdap.centralnic.com/shop',
+  // ccTLDs / specialty
+  africa:     'https://rdap.nic.africa',
+  ai:         'https://rdap.nic.ai',
+  co:         'https://rdap.nic.co',
+  me:         'https://rdap.nic.me',
+  // Afilias / Identity Digital
+  biz:        'https://rdap.nic.biz',
+  info:       'https://rdap.nic.info',
+  // Identity Digital / Donuts (single RDAP server for all their gTLDs)
+  tech:       'https://rdap.donuts.co',
+  digital:    'https://rdap.donuts.co',
+  studio:     'https://rdap.donuts.co',
+  design:     'https://rdap.donuts.co',
+  media:      'https://rdap.donuts.co',
+  agency:     'https://rdap.donuts.co',
+  solutions:  'https://rdap.donuts.co',
+  services:   'https://rdap.donuts.co',
+  consulting: 'https://rdap.donuts.co',
+  systems:    'https://rdap.donuts.co',
+  group:      'https://rdap.donuts.co',
+  global:     'https://rdap.donuts.co',
+  world:      'https://rdap.donuts.co',
+  network:    'https://rdap.donuts.co',
+  works:      'https://rdap.donuts.co',
+  run:        'https://rdap.donuts.co',
 };
 
 async function checkViaRDAP(
