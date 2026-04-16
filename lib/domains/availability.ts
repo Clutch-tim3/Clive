@@ -149,6 +149,46 @@ export function validateSLD(sld: string): string | null {
   return null;
 }
 
+// Hardcoded fallback prices (USD) for TLDs that may not yet be in the
+// Name.com price cache. Keeps results useful even on first-run or cache miss.
+const FALLBACK_PRICES: Record<string, { purchase: number; renewal: number }> = {
+  com:        { purchase: 10.99, renewal: 14.99 },
+  'co.za':    { purchase:  7.99, renewal:  9.99 },
+  net:        { purchase: 11.99, renewal: 14.99 },
+  org:        { purchase: 11.99, renewal: 14.99 },
+  io:         { purchase: 39.99, renewal: 39.99 },
+  dev:        { purchase: 12.99, renewal: 12.99 },
+  app:        { purchase: 14.99, renewal: 14.99 },
+  africa:     { purchase: 24.99, renewal: 24.99 },
+  store:      { purchase: 19.99, renewal: 29.99 },
+  online:     { purchase:  4.99, renewal: 29.99 },
+  tech:       { purchase: 29.99, renewal: 49.99 },
+  site:       { purchase:  4.99, renewal: 29.99 },
+  ai:         { purchase: 79.99, renewal: 79.99 },
+  co:         { purchase: 29.99, renewal: 29.99 },
+  shop:       { purchase: 19.99, renewal: 29.99 },
+  cloud:      { purchase: 19.99, renewal: 29.99 },
+  digital:    { purchase: 34.99, renewal: 49.99 },
+  me:         { purchase: 19.99, renewal: 19.99 },
+  biz:        { purchase: 14.99, renewal: 19.99 },
+  info:       { purchase:  5.99, renewal: 19.99 },
+  page:       { purchase: 10.99, renewal: 10.99 },
+  studio:     { purchase: 34.99, renewal: 49.99 },
+  design:     { purchase: 34.99, renewal: 49.99 },
+  media:      { purchase: 34.99, renewal: 49.99 },
+  agency:     { purchase: 34.99, renewal: 49.99 },
+  solutions:  { purchase: 29.99, renewal: 49.99 },
+  services:   { purchase: 29.99, renewal: 49.99 },
+  consulting: { purchase: 34.99, renewal: 49.99 },
+  systems:    { purchase: 29.99, renewal: 49.99 },
+  group:      { purchase: 29.99, renewal: 49.99 },
+  global:     { purchase: 34.99, renewal: 49.99 },
+  world:      { purchase: 29.99, renewal: 49.99 },
+  network:    { purchase: 29.99, renewal: 49.99 },
+  works:      { purchase: 29.99, renewal: 49.99 },
+  run:        { purchase: 24.99, renewal: 34.99 },
+};
+
 // ── Availability check ────────────────────────────────────────────────────────
 
 export async function checkAllTLDs(
@@ -208,9 +248,10 @@ export async function checkAllTLDs(
       };
     }
 
-    // Available
-    const priceUSD   = tldInfo?.purchasePrice ?? 0;
-    const renewalUSD = tldInfo?.renewalPrice  ?? 0;
+    // Available — use live price if cached, else hardcoded fallback
+    const fb         = FALLBACK_PRICES[tld];
+    const priceUSD   = tldInfo?.purchasePrice ?? fb?.purchase ?? 0;
+    const renewalUSD = tldInfo?.renewalPrice  ?? fb?.renewal  ?? 0;
     return {
       domainName, tld, sld,
       status:      'available' as const,
