@@ -17,7 +17,7 @@ export interface AcquireTier {
 }
 
 export interface Endpoint {
-  method: 'POST' | 'GET' | 'DEL';
+  method: 'POST' | 'GET' | 'DEL' | 'LOCAL';
   path: string;
   description: string;
 }
@@ -29,6 +29,9 @@ export interface Product {
   name: string;
   category: 'ml' | 'api' | 'ext' | 'app';
   listingType?: 'own' | 'partner';   // 'partner' = APIlayer, no Acquire button
+  productType?: 'desktop_app';       // triggers Download flow instead of Acquire
+  accentColor?: 'red';               // swaps navy → red on detail page
+  downloadUrls?: { windows?: string; macos?: string; linux?: string };
   tagline: string;
   description: string;
   pricing: {
@@ -97,6 +100,11 @@ export const PRODUCT_TIERS: Record<string, AcquireTier[]> = {
   handoffready:          DEFAULT_TIERS,
   flowmapper:            DEFAULT_TIERS,
   'tender-command-center': DEFAULT_TIERS,
+  striker: [
+    { id:'free',      name:'Free',      priceZAR:0,     callsPerMonth:'unlimited', rateLimit:0, features:['Real-time threat detection','Process, file & network monitoring','Automatic neutralisation','Local antibody archive (100 entries)','Community support'], isFeatured:false },
+    { id:'developer', name:'Developer', priceZAR:29900, callsPerMonth:'unlimited', rateLimit:0, features:['Everything in Free','Unlimited archive','Adaptation loop (nightly retraining)','MITRE ATT&CK mapping','Remediation reports','Email support'],            isFeatured:true  },
+    { id:'pro',       name:'Pro',       priceZAR:79900, callsPerMonth:'unlimited', rateLimit:0, features:['Everything in Developer','Cloud archive sync','Federated collective intelligence','Priority support','SLA guarantee','Enterprise policy controls'],     isFeatured:false },
+  ] as AcquireTier[],
 };
 
 export function getAcquireTiers(slug: string): AcquireTier[] {
@@ -104,6 +112,60 @@ export function getAcquireTiers(slug: string): AcquireTier[] {
 }
 
 export const products: Product[] = [
+  {
+    slug: 'striker',
+    name: 'Striker',
+    category: 'app',
+    productType: 'desktop_app',
+    accentColor: 'red',
+    isNew: true,
+    downloadUrls: {
+      windows: 'https://storage.googleapis.com/clive-6d22e.appspot.com/striker/striker-win.exe',
+      macos:   'https://storage.googleapis.com/clive-6d22e.appspot.com/striker/striker-mac.dmg',
+      linux:   'https://storage.googleapis.com/clive-6d22e.appspot.com/striker/striker-linux.AppImage',
+    },
+    tagline: 'Adaptive endpoint protection that learns from every attack.',
+    description:
+      'Striker is an adaptive Endpoint Detection and Response (EDR) desktop application ' +
+      'built on the Mahoraga engine. It monitors process activity, network traffic, file system ' +
+      'events, and memory in real time — detecting threats before they cause damage. Unlike ' +
+      'conventional antivirus, Striker archives every neutralised threat as a structured antibody ' +
+      'and retrains its detection models nightly. Every attack makes it permanently smarter.',
+    pricing: {
+      label: 'Free tier available',
+      display: 'Free',
+      unit: 'Developer from R299/mo',
+      tiers: [
+        { name: 'Free',      calls: 'Real-time EDR · 100-entry archive', price: 'R0',    highlight: false },
+        { name: 'Developer', calls: 'Unlimited archive · nightly retraining',  price: 'R299/mo', highlight: true  },
+        { name: 'Pro',       calls: 'Cloud sync · collective intelligence',     price: 'R799/mo', highlight: false },
+      ],
+    },
+    features: [
+      'Real-time process, network & file-system monitoring',
+      'Automatic threat neutralisation on detection',
+      'Antibody archive — every attack stored as structured intelligence',
+      'Nightly local model retraining (adaptation loop)',
+      'MITRE ATT&CK technique mapping on all detections',
+    ],
+    endpoints: [
+      { method: 'LOCAL', path: 'Process Monitor',    description: 'Real-time process activity and anomaly detection' },
+      { method: 'LOCAL', path: 'Network Sniffer',    description: 'Packet capture and C2 beacon detection' },
+      { method: 'LOCAL', path: 'File Watcher',       description: 'Ransomware pattern and sensitive-file monitoring' },
+      { method: 'LOCAL', path: 'Antibody Archive',   description: 'SQLite + FAISS threat intelligence database' },
+      { method: 'LOCAL', path: 'Adaptation Loop',    description: 'Nightly local model retraining on new threats' },
+    ],
+    overview: {
+      title: 'Endpoint protection that grows stronger with every attack.',
+      body: [
+        'Striker is a desktop EDR application inspired by the human immune system. When it encounters a threat it does not merely block it — it dissects the attack, catalogues it, and uses it to improve its own detection models overnight.',
+        'Every detected threat is stored in a local SQLite + FAISS antibody archive, enabling Striker to recognise variants and related techniques across future attacks. Collective intelligence mode (Pro tier) shares anonymised signatures with other Striker nodes, creating a federated threat network.',
+        'Striker maps every detection to MITRE ATT&CK techniques, giving security teams structured intelligence for incident response and compliance reporting. No cloud dependency required — all analysis runs fully local.',
+      ],
+    },
+    channels: ['direct'],
+    freeTier: 'Free — real-time detection, 100-entry archive',
+  },
   {
     slug: 'hackkit',
     name: 'HackKit',

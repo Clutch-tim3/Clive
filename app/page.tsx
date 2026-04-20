@@ -10,6 +10,7 @@ import { PricingSection } from '@/components/home/PricingSection';
 import { APIlayerPartnersSection } from '@/components/home/APIlayerPartnersSection';
 import { ReadyToBuildCTA } from '@/components/home/ReadyToBuildCTA';
 import { FAQSection } from '@/components/home/FAQSection';
+import { StrikerShowcase } from '@/components/home/StrikerShowcase';
 
 export const metadata: Metadata = {
   title: 'Developer API Marketplace — Free Tier on Every API',
@@ -114,6 +115,7 @@ export default function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(cliveAppSchema) }}
       />
       <Hero />
+      <StrikerShowcase />
       <HackKitSpotlight />
       <ProductsSection />
       <WhyClive />

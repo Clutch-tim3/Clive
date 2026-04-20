@@ -11,6 +11,44 @@ interface ProductDetailProps { product: Product; }
 type AcqStatus = 'loading' | 'not_acquired' | 'acquired_free' | 'acquired_paid';
 function fmt(cents: number) { return `R${(cents / 100).toFixed(0)}`; }
 
+// ── Download Modal ────────────────────────────────────────────────────────────
+function DownloadModal({ product, onClose }: { product: Product; onClose: () => void }) {
+  const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+  const detected = /Mac/i.test(ua) ? 'macos' : /Linux/i.test(ua) ? 'linux' : 'windows';
+  const platforms: { key: 'windows' | 'macos' | 'linux'; label: string }[] = [
+    { key: 'windows', label: 'Windows (.exe)' },
+    { key: 'macos',   label: 'macOS (.dmg)'   },
+    { key: 'linux',   label: 'Linux (.AppImage)' },
+  ];
+  return (
+    <div onClick={e => { if (e.target === e.currentTarget) onClose(); }} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.72)', backdropFilter:'blur(4px)', zIndex:500, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}>
+      <div style={{ width:'100%', maxWidth:'480px', background:'#0C0C10', border:'1px solid rgba(255,255,255,0.1)', borderTop:'1.5px solid rgba(220,80,80,0.4)', borderRadius:'24px', padding:'40px 44px', position:'relative', boxShadow:'0 32px 80px rgba(0,0,0,0.7)' }}>
+        <button onClick={onClose} style={{ position:'absolute', top:'18px', right:'22px', background:'none', border:'none', color:'rgba(255,255,255,0.3)', fontFamily:"'DM Mono',monospace", fontSize:'20px', cursor:'pointer', lineHeight:1 }}>×</button>
+        <div style={{ fontFamily:"'DM Mono',monospace", fontSize:'9px', letterSpacing:'0.2em', textTransform:'uppercase', color:'rgba(220,80,80,0.7)', marginBottom:'16px' }}>Download Striker</div>
+        <div style={{ fontFamily:"'Cormorant Garamond',serif", fontWeight:300, fontSize:'32px', color:'white', marginBottom:'20px' }}>Choose your platform</div>
+        <div style={{ display:'flex', flexDirection:'column', gap:'10px', marginBottom:'28px' }}>
+          {platforms.map(({ key, label }) => (
+            <a key={key} href={product.downloadUrls?.[key] ?? '#'} style={{
+              display:'flex', alignItems:'center', justifyContent:'space-between',
+              padding:'14px 20px', borderRadius:'100px', textDecoration:'none', transition:'all .2s',
+              background: key === detected ? 'rgba(180,20,20,0.2)' : 'rgba(255,255,255,0.04)',
+              border: `1px solid ${key === detected ? 'rgba(220,80,80,0.4)' : 'rgba(255,255,255,0.1)'}`,
+              color: key === detected ? 'rgba(220,80,80,0.9)' : 'rgba(255,255,255,0.5)',
+              fontFamily:"'DM Mono',monospace", fontSize:'10px', letterSpacing:'0.1em', textTransform:'uppercase',
+            }}>
+              <span>{label}</span><span>↓</span>
+            </a>
+          ))}
+        </div>
+        <p style={{ fontFamily:"'Libre Baskerville',serif", fontStyle:'italic', fontSize:'12px', color:'rgba(255,255,255,0.25)', lineHeight:1.7, marginBottom:'20px' }}>
+          After downloading, enter your Clive API key on first launch to activate your tier. Get your key from My APIs dashboard.
+        </p>
+        <button onClick={onClose} style={{ width:'100%', padding:'12px', borderRadius:'100px', background:'transparent', border:'1px solid rgba(255,255,255,0.1)', color:'rgba(255,255,255,0.4)', fontFamily:"'DM Mono',monospace", fontSize:'10px', letterSpacing:'0.12em', textTransform:'uppercase', cursor:'pointer' }}>Close</button>
+      </div>
+    </div>
+  );
+}
+
 // ── Acquire Modal ─────────────────────────────────────────────────────────────
 function AcquireModal({ product, onClose, onAcquired, initialTier }: {
   product: Product; onClose: () => void; onAcquired: (k: string) => void; initialTier?: AcquireTier;
@@ -109,10 +147,16 @@ function AcquireModal({ product, onClose, onAcquired, initialTier }: {
 // ── Main component ────────────────────────────────────────────────────────────
 export function ProductDetail({ product }: ProductDetailProps) {
   const router    = useRouter();
-  const isPartner = product.listingType === 'partner';
-  const [acqStatus, setAcqStatus] = useState<AcqStatus>('loading');
-  const [showModal, setShowModal] = useState(false);
-  const [modalTier, setModalTier] = useState<AcquireTier|undefined>(undefined);
+  const isPartner    = product.listingType === 'partner';
+  const isDesktopApp = product.productType === 'desktop_app';
+  const isRed        = product.accentColor === 'red';
+  const accent       = isRed ? 'rgba(220,80,80,0.9)'  : 'rgba(91,148,210,0.9)';
+  const accentBg     = isRed ? 'rgba(180,20,20,0.8)'  : '#1B305B';
+  const accentBorder = isRed ? 'rgba(220,50,50,0.4)'  : 'rgba(91,148,210,0.35)';
+  const [acqStatus,    setAcqStatus]    = useState<AcqStatus>('loading');
+  const [showModal,    setShowModal]    = useState(false);
+  const [showDownload, setShowDownload] = useState(false);
+  const [modalTier,    setModalTier]    = useState<AcquireTier|undefined>(undefined);
 
   const catLabels = { ml:'ML Model', api:'Developer API', ext:'Chrome Extension', app:'Web Application' };
   const chanLabels: Record<string,string> = { direct:'Clive Direct', rapidapi:'RapidAPI', aws:'AWS Marketplace', gumroad:'Gumroad', 'chrome-store':'Chrome Web Store' };
@@ -135,6 +179,11 @@ export function ProductDetail({ product }: ProductDetailProps) {
 
   const AcqBtn = () => {
     if (isPartner) return null;
+    if (isDesktopApp) return (
+      <button onClick={() => setShowDownload(true)} style={{ display:'inline-flex', alignItems:'center', gap:'8px', padding:'12px 28px', background:accentBg, border:`1.5px solid ${accentBorder}`, borderRadius:'100px', fontFamily:"'DM Mono',monospace", fontSize:'10px', letterSpacing:'0.1em', textTransform:'uppercase', color:'white', cursor:'pointer' }}>
+        ↓ Download
+      </button>
+    );
     if (acqStatus === 'loading') return <div style={{ width:'140px', height:'44px', borderRadius:'100px', background:'rgba(255,255,255,0.05)' }} />;
     if (acqStatus === 'acquired_paid') return (
       <button onClick={() => router.push('/dashboard/apis')} style={{ display:'inline-flex', alignItems:'center', gap:'8px', padding:'12px 24px', background:'rgba(80,200,120,0.12)', border:'1.5px solid rgba(80,200,120,0.4)', borderRadius:'100px', fontFamily:"'DM Mono',monospace", fontSize:'10px', letterSpacing:'0.1em', color:'rgba(80,200,120,0.9)', cursor:'pointer' }}>
@@ -162,7 +211,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
         <div className="max-w-7xl mx-auto" style={{ display:'grid', gridTemplateColumns:'1fr 420px', gap:'80px', alignItems:'start' }}>
           <div>
             <Link href="/#products" className="detail-back">← All products</Link>
-            <div className="detail-cat">{catLabels[product.category]}</div>
+            <div className="detail-cat" style={isRed ? { color: accent } : undefined}>{catLabels[product.category]}</div>
             <h1 style={{ fontFamily:'Cormorant Garamond,serif', fontSize:'clamp(54px,7vw,92px)', fontWeight:300, color:'white', marginBottom:'18px', letterSpacing:'-0.03em', lineHeight:1 }}>{product.name}</h1>
             <p style={{ fontSize:'17px', fontStyle:'italic', color:'rgba(255,255,255,0.45)', lineHeight:1.75, maxWidth:'500px', marginBottom:'36px', fontFamily:'Libre Baskerville,serif' }}>{product.tagline}</p>
             <div style={{ display:'flex', alignItems:'center', gap:'12px', flexWrap:'wrap' }}>
@@ -190,9 +239,11 @@ export function ProductDetail({ product }: ProductDetailProps) {
                 <div style={{ display:'flex', flexDirection:'column', gap:'10px' }}>
                   {isPartner
                     ? <a href={`https://apilayer.com/marketplace/${product.slug}`} target="_blank" rel="noopener noreferrer" className="side-cta">Get on APIlayer →</a>
-                    : <button onClick={() => acqStatus === 'acquired_free' || acqStatus === 'acquired_paid' ? router.push('/dashboard/apis') : openModal()} className="side-cta" style={{ cursor:'pointer', textAlign:'center' }}>
-                        {acqStatus === 'acquired_free' || acqStatus === 'acquired_paid' ? '✓ View in My APIs' : 'Acquire'}
-                      </button>
+                    : isDesktopApp
+                      ? <button onClick={() => setShowDownload(true)} className="side-cta" style={{ cursor:'pointer', textAlign:'center', background:accentBg, borderColor:accentBorder }}>↓ Download</button>
+                      : <button onClick={() => acqStatus === 'acquired_free' || acqStatus === 'acquired_paid' ? router.push('/dashboard/apis') : openModal()} className="side-cta" style={{ cursor:'pointer', textAlign:'center' }}>
+                          {acqStatus === 'acquired_free' || acqStatus === 'acquired_paid' ? '✓ View in My APIs' : 'Acquire'}
+                        </button>
                   }
                   <Link href="/docs" className="side-cta-ghost">View documentation</Link>
                 </div>
@@ -309,6 +360,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
           onAcquired={() => { setShowModal(false); setAcqStatus('acquired_free'); }}
         />
       )}
+      {showDownload && <DownloadModal product={product} onClose={() => setShowDownload(false)} />}
     </div>
   );
 }
