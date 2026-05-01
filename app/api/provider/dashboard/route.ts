@@ -38,7 +38,7 @@ export async function GET() {
       totalCalls += analyticsSnap.docs.reduce((s, d) => s + (d.data().calls ?? 0), 0);
     }
 
-    // Recent transactions
+    // Recent transactions (last 10)
     const txSnap = await adminDb()
       .collection('transactions')
       .where('providerId', '==', user.uid)
@@ -58,6 +58,23 @@ export async function GET() {
       };
     });
 
+    // Recent subscriptions (last 10) for activity feed
+    const subSnap = await adminDb()
+      .collection('subscriptions')
+      .where('providerId', '==', user.uid)
+      .orderBy('acquiredAt', 'desc')
+      .limit(10)
+      .get();
+    const recentSubs = subSnap.docs.map(d => {
+      const s = d.data();
+      return {
+        id:         d.id,
+        productName: s.productName,
+        tierName:   s.tierName,
+        acquiredAt: s.acquiredAt?.toDate()?.toISOString() ?? null,
+      };
+    });
+
     // Monthly chart (current calendar year)
     const monthlyChart = await getMonthlyRevenue(user.uid);
 
@@ -73,6 +90,7 @@ export async function GET() {
         category: p.category, iconEmoji: p.iconEmoji, stats: p.stats,
       })),
       transactions,
+      recentSubs,
       monthlyChart,
     });
   } catch (err) {

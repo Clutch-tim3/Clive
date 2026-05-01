@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { products, getProductsByCategory } from '@/lib/products';
+import { Product, getProductsByCategory } from '@/lib/products';
 import { FilterBar } from './FilterBar';
 import { ProductCard } from './ProductCard';
 import { ScrollReveal } from '../ui/ScrollReveal';
@@ -8,9 +8,10 @@ import { SearchBar } from '../ui/SearchBar';
 
 interface ProductGridProps {
   initialCategory?: string;
+  initialProducts?: Product[];
 }
 
-export function ProductGrid({ initialCategory = 'all' }: ProductGridProps) {
+export function ProductGrid({ initialCategory = 'all', initialProducts = [] }: ProductGridProps) {
   const [activeCategory, setActiveCategory] = useState(initialCategory);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -18,9 +19,12 @@ export function ProductGrid({ initialCategory = 'all' }: ProductGridProps) {
     if (initialCategory) setActiveCategory(initialCategory);
   }, [initialCategory]);
 
-  const byCategory = getProductsByCategory(activeCategory);
+  const byCategory = activeCategory === 'all'
+    ? initialProducts
+    : initialProducts.filter(p => p.category === activeCategory);
+
   const filteredProducts = searchQuery.trim().length >= 2
-    ? products.filter(p =>
+    ? initialProducts.filter(p =>
         p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         p.tagline.toLowerCase().includes(searchQuery.toLowerCase()) ||
         p.category.toLowerCase().includes(searchQuery.toLowerCase())

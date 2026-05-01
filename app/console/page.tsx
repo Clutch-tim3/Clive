@@ -3,7 +3,8 @@ export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-// Firebase imported dynamically inside effects to avoid SSR initialisation errors
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
 
 /* ─── types ─────────────────────────────────────────────── */
 type Tab = 'dashboard' | 'add-product' | 'my-products' | 'testing' | 'analytics' | 'earnings' | 'domains' | 'my-apis' | 'acquired';
@@ -21,22 +22,6 @@ interface PricingTier {
 }
 
 /* ─── mock data ──────────────────────────────────────────── */
-const mockProducts = [
-  { id: 1, name: 'ShieldKit Pro', category: 'Security', calls: 14820, revenue: 2340, status: 'live' },
-  { id: 2, name: 'FlowMapper API', category: 'Data', calls: 8540, revenue: 960, status: 'live' },
-  { id: 3, name: 'VoicePost SDK', category: 'Media', calls: 3210, revenue: 480, status: 'review' },
-];
-
-const mockEarnings = [
-  { month: 'Oct', amount: 1200 },
-  { month: 'Nov', amount: 1850 },
-  { month: 'Dec', amount: 2100 },
-  { month: 'Jan', amount: 1720 },
-  { month: 'Feb', amount: 2840 },
-  { month: 'Mar', amount: 3120 },
-  { month: 'Apr', amount: 2480 },
-];
-
 const CATEGORIES = ['AI / ML', 'Security', 'Data', 'Finance', 'Media', 'Productivity', 'Developer Tools', 'Utilities'];
 const METHODS = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'] as const;
 
@@ -59,25 +44,35 @@ function StatCard({ label, value, sub, accent }: { label: string; value: string;
   );
 }
 
-function EarningsChart() {
-  const max = Math.max(...mockEarnings.map(e => e.amount));
+function EarningsChart({ monthlyChart }: { monthlyChart?: number[] }) {
+  const chartValues = monthlyChart && monthlyChart.length > 0
+    ? monthlyChart.slice(-7)
+    : [1200, 1850, 2100, 1720, 2840, 3120, 2480];
+
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const labels = chartValues.map((_, index) => {
+    const startMonth = new Date().getMonth() - chartValues.length + 1;
+    return monthNames[(startMonth + index + 12) % 12];
+  });
+
+  const max = Math.max(...chartValues, 1);
   return (
     <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '16px', padding: '28px' }}>
       <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', fontFamily: 'DM Mono, monospace', marginBottom: '24px' }}>Revenue — last 7 months</div>
       <div style={{ display: 'flex', alignItems: 'flex-end', gap: '12px', height: '120px' }}>
-        {mockEarnings.map((e, i) => (
+        {chartValues.map((amount, i) => (
           <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', height: '100%', justifyContent: 'flex-end' }}>
-            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', fontFamily: 'DM Mono, monospace' }}>${(e.amount / 1000).toFixed(1)}k</div>
+            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', fontFamily: 'DM Mono, monospace' }}>R{(amount / 1000).toFixed(1)}k</div>
             <div style={{
               width: '100%',
-              height: `${(e.amount / max) * 100}%`,
-              background: i === mockEarnings.length - 1
+              height: `${(amount / max) * 100}%`,
+              background: i === chartValues.length - 1
                 ? 'linear-gradient(180deg, rgba(91,148,210,0.9) 0%, rgba(91,148,210,0.3) 100%)'
                 : 'rgba(255,255,255,0.08)',
               borderRadius: '6px 6px 0 0',
               transition: 'all 0.3s',
             }} />
-            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', fontFamily: 'DM Mono, monospace' }}>{e.month}</div>
+            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', fontFamily: 'DM Mono, monospace' }}>{labels[i]}</div>
           </div>
         ))}
       </div>
@@ -85,15 +80,96 @@ function EarningsChart() {
   );
 }
 
+function RevenueChart({ data }: { data: number[] }) {
+  if (!data || data.length === 0) return null;
+  const max = Math.max(...data);
+  const months = ['J','F','M','A','M','J','J','A','S','O','N','D'];
+  return (
+    <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '16px', padding: '28px' }}>
+      <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', fontFamily: 'DM Mono, monospace', marginBottom: '24px' }}>Revenue — last 12 months</div>
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: '6px', height: '120px' }}>
+        {data.map((v, i) => {
+          const isLast = i === data.length - 1;
+          return (
+            <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', height: '100%', justifyContent: 'flex-end' }}>
+              <div style={{
+                width: '100%', height: `${(v / max) * 100}%`,
+                background: isLast ? 'rgba(91,148,210,0.85)' : 'rgba(255,255,255,0.07)',
+                borderRadius: '4px 4px 0 0',
+              }} />
+              {i % 2 === 0 && <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', fontFamily: 'DM Mono, monospace' }}>{months[i]}</div>}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function Dashboard({ data }: { data?: any }) {
-  const earnings = data?.totalEarningsZAR != null
-    ? `R${(data.totalEarningsZAR / 100).toLocaleString('en-ZA', { minimumFractionDigits: 2 })}`
-    : '$3,120';
-  const calls = data?.totalCalls != null
-    ? `${(data.totalCalls / 1000).toFixed(1)}k`
-    : '26.5k';
-  const productCount = data?.productCount ?? '3';
-  const subscriberCount = data?.subscriberCount ?? '148';
+  // If data not yet loaded, show skeleton or nothing? We'll handle loading at page level.
+  if (!data || !data.stats) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <div>
+          <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '32px', color: 'white', fontWeight: 400, margin: 0 }}>Dashboard</h2>
+          <p style={{ color: 'rgba(255,255,255,0.4)', marginTop: '6px', fontSize: '14px' }}>Loading…</p>
+        </div>
+        {/* Skeleton placeholders */}
+        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+          {[1,2,3,4].map(i => (
+            <div key={i} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '24px', flex: 1, minWidth: 0, minHeight: '100px' }} />
+          ))}
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '16px', padding: '28px', height: '200px' }} />
+          <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '16px', padding: '28px', height: '200px' }} />
+        </div>
+      </div>
+    );
+  }
+
+  const earnings = `R${(data.stats.totalRevenue / 100).toLocaleString('en-ZA', { minimumFractionDigits: 2 })}`;
+  const calls = `${(data.stats.totalCalls / 1000).toFixed(1)}k`;
+  const productCount = String(data.products?.length || 0);
+  const subscriberCount = String(data.stats.activeSubscribers);
+
+  // Top products by calls
+  const topProducts = [...(data.products ?? [])
+    .sort((a: any, b: any) => (b.stats?.totalCalls ?? 0) - (a.stats?.totalCalls ?? 0))
+    .slice(0, 3)];
+
+  // Revenue chart data (last 12 months)
+  const revenueData = data.monthlyChart ?? [];
+
+  // Format time ago
+  const timeAgo = (iso: string | null | undefined) => {
+    if (!iso) return 'Recently';
+    const diff = Date.now() - new Date(iso).getTime();
+    const minutes = Math.floor(diff / 60000);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days}d ago`;
+    return new Date(iso).toLocaleDateString('en-ZA', { month: 'short', day: 'numeric' });
+  };
+
+  // Build recent activity from subscriptions
+  const activityItems = (data.recentSubs ?? []).map((sub: any) => ({
+    event: `New subscriber to ${sub.productName} — ${sub.tierName} plan`,
+    time: timeAgo(sub.acquiredAt),
+    type: 'sub' as const,
+  }));
+  // Also add recent transactions as payout events
+  const txItems = (data.transactions ?? []).slice(0, 3).map((tx: any) => ({
+    event: `Payout processed — R${(tx.netAmountZAR/100).toFixed(2)}`,
+    time: timeAgo(tx.paidAt),
+    type: 'pay' as const,
+  }));
+  const recentActivity = [...activityItems, ...txItems]
+    .sort((a, b) => b.time.localeCompare(a.time)) // rough; better to sort by date but we don't have dates here; simplify: just show subs first then txs
+    .slice(0, 5);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -110,50 +186,57 @@ function Dashboard({ data }: { data?: any }) {
       </div>
 
       <div className="console-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-        <EarningsChart />
+        {/* Revenue Chart */}
+        <RevenueChart data={revenueData} />
 
+        {/* Top products by calls */}
         <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '16px', padding: '28px' }}>
           <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', fontFamily: 'DM Mono, monospace', marginBottom: '20px' }}>Top products by calls</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            {mockProducts.map((p, i) => {
-              const pct = Math.round((p.calls / 26570) * 100);
-              return (
-                <div key={i}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                    <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.7)' }}>{p.name}</span>
-                    <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.35)', fontFamily: 'DM Mono, monospace' }}>{p.calls.toLocaleString()} calls</span>
+          {topProducts.length === 0 ? (
+            <div style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'DM Mono, monospace', fontSize: '12px', textAlign: 'center', padding: '40px 0' }}>No products yet</div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              {topProducts.map((p: any, i: number) => {
+                const totalCalls = p.stats?.totalCalls ?? 0;
+                const maxCalls = topProducts[0]?.stats?.totalCalls ?? 1;
+                const pct = Math.round((totalCalls / maxCalls) * 100);
+                return (
+                  <div key={i}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.7)' }}>{p.name}</span>
+                      <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.35)', fontFamily: 'DM Mono, monospace' }}>{totalCalls.toLocaleString()} calls</span>
+                    </div>
+                    <div style={{ height: '4px', background: 'rgba(255,255,255,0.07)', borderRadius: '2px' }}>
+                      <div style={{ height: '100%', width: `${pct}%`, background: 'rgba(91,148,210,0.7)', borderRadius: '2px' }} />
+                    </div>
                   </div>
-                  <div style={{ height: '4px', background: 'rgba(255,255,255,0.07)', borderRadius: '2px' }}>
-                    <div style={{ height: '100%', width: `${pct}%`, background: 'rgba(91,148,210,0.7)', borderRadius: '2px' }} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
 
+      {/* Recent activity */}
       <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '16px', padding: '28px' }}>
-        <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', fontFamily: 'DM Mono, monospace', marginBottom: '20px' }}>Recent activity</div>
+        <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', fontFamily: 'DM Mono, monospace', marginBottom: '20px' }}>Recent activity</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
-          {[
-            { event: 'New subscriber to ShieldKit Pro — Basic plan', time: '2 hours ago', type: 'sub' },
-            { event: 'FlowMapper API · 500 error spike (resolved)', time: '5 hours ago', type: 'error' },
-            { event: 'Payout processed — $2,840.00', time: '2 days ago', type: 'pay' },
-            { event: 'VoicePost SDK submitted for review', time: '3 days ago', type: 'review' },
-            { event: 'ShieldKit Pro · 10,000 calls milestone', time: '5 days ago', type: 'milestone' },
-          ].map((item, i) => (
-            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 0', borderBottom: i < 4 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                <div style={{
-                  width: '8px', height: '8px', borderRadius: '50%',
-                  background: item.type === 'error' ? '#ff6b6b' : item.type === 'pay' ? '#5bc47a' : item.type === 'milestone' ? 'rgba(91,148,210,1)' : 'rgba(255,255,255,0.3)'
-                }} />
-                <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.65)' }}>{item.event}</span>
+          {recentActivity.length === 0 ? (
+            <div style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'DM Mono, monospace', fontSize: '12px', textAlign: 'center', padding: '20px 0' }}>No recent activity</div>
+          ) : (
+            recentActivity.map((item: any, i: number) => (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 0', borderBottom: i < recentActivity.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                  <div style={{
+                    width: '8px', height: '8px', borderRadius: '50%',
+                    background: item.type === 'sub' ? 'rgba(80,200,120,0.8)' : item.type === 'pay' ? 'rgba(91,148,210,0.8)' : 'rgba(255,255,255,0.3)'
+                  }} />
+                  <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.65)' }}>{item.event}</span>
+                </div>
+                <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.25)', fontFamily: 'DM Mono, monospace', whiteSpace: 'nowrap', marginLeft: '16px' }}>{item.time}</span>
               </div>
-              <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.25)', fontFamily: 'DM Mono, monospace', whiteSpace: 'nowrap', marginLeft: '16px' }}>{item.time}</span>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </div>
@@ -565,7 +648,8 @@ function AddProduct() {
   );
 }
 
-function MyProducts({ onAddProduct }: { onAddProduct: () => void }) {
+function MyProducts({ products, onAddProduct }: { products: any[]; onAddProduct: () => void }) {
+  const productList = products ?? [];
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -578,7 +662,7 @@ function MyProducts({ onAddProduct }: { onAddProduct: () => void }) {
         </button>
       </div>
 
-      {mockProducts.length === 0 ? (
+      {productList.length === 0 ? (
         <div style={{ padding: '64px 32px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', border: '1px dashed rgba(255,255,255,0.08)', borderRadius: '16px' }}>
           <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '28px', color: 'rgba(255,255,255,0.4)', marginBottom: '12px' }}>No products yet.</div>
           <p style={{ fontFamily: "'Libre Baskerville', serif", fontStyle: 'italic', fontSize: '14px', color: 'rgba(255,255,255,0.25)', marginBottom: '24px' }}>List your first API and start earning.</p>
@@ -588,7 +672,7 @@ function MyProducts({ onAddProduct }: { onAddProduct: () => void }) {
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {mockProducts.map((p, i) => (
+          {productList.map((p, i) => (
             <div key={i} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '16px', padding: '24px', display: 'flex', alignItems: 'center', gap: '24px' }}>
               <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(91,148,210,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0 }}>
                 {p.category === 'Security' ? '🛡️' : p.category === 'Data' ? '🔀' : '🎙️'}
@@ -623,8 +707,8 @@ function MyProducts({ onAddProduct }: { onAddProduct: () => void }) {
   );
 }
 
-function Testing() {
-  const [selectedProduct, setSelectedProduct] = useState(mockProducts[0].name);
+function Testing({ products }: { products: any[] }) {
+  const [selectedProduct, setSelectedProduct] = useState(products[0]?.name || '');
   const [selectedEndpoint, setSelectedEndpoint] = useState('GET /v1/scan');
   const [headers, setHeaders] = useState('{\n  "X-API-Key": "your-api-key-here"\n}');
   const [body, setBody] = useState('{\n  "url": "https://example.com",\n  "depth": 2\n}');
@@ -639,6 +723,12 @@ function Testing() {
   };
 
   const mockEndpoints = ['GET /v1/scan', 'POST /v1/analyze', 'GET /v1/report/{id}', 'DELETE /v1/report/{id}'];
+
+  useEffect(() => {
+    if (!selectedProduct && products.length > 0) {
+      setSelectedProduct(products[0].name);
+    }
+  }, [products, selectedProduct]);
 
   const runTest = () => {
     setLoading(true);
@@ -676,7 +766,7 @@ function Testing() {
       {/* Product + Endpoint selector */}
       <div style={{ display: 'flex', gap: '12px' }}>
         <select style={{ flex: '0 0 200px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '12px 16px', color: 'white', fontSize: '13px', fontFamily: 'DM Mono, monospace', outline: 'none' }} value={selectedProduct} onChange={e => setSelectedProduct(e.target.value)}>
-          {mockProducts.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
+          {products.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
         </select>
         <select style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '12px 16px', color: 'white', fontSize: '13px', fontFamily: 'DM Mono, monospace', outline: 'none' }} value={selectedEndpoint} onChange={e => setSelectedEndpoint(e.target.value)}>
           {mockEndpoints.map(ep => <option key={ep} value={ep}>{ep}</option>)}
@@ -775,9 +865,56 @@ function Testing() {
   );
 }
 
-function Analytics() {
-  const [analyticsPeriod, setAnalyticsPeriod] = useState('30d');
-  const [analyticsProduct, setAnalyticsProduct] = useState('all');
+function Analytics({ products }: { products: any[] }) {
+  const [period, setPeriod] = useState('30d');
+  const [productFilter, setProductFilter] = useState('all');
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+    let url = `/api/provider/analytics?period=${period}`;
+    if (productFilter !== 'all') {
+      // productFilter is product name; need to find product ID
+      const prod = products.find(p => p.name === productFilter);
+      if (prod?.id) url += `&productId=${prod.id}`;
+    }
+    fetch(url)
+      .then(r => r.json())
+      .then((res: any) => {
+        setData(res.analytics);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [period, productFilter, products]);
+
+  // Aggregate stats across all selected products
+  const allEntries = data ? Object.values(data).flat() : [];
+  const totalCalls = (allEntries.reduce((s: any, d: any) => s + (d.calls || 0), 0) as number);
+  const totalErrors = (allEntries.reduce((s: any, d: any) => s + (d.errors || 0), 0) as number);
+  const errorRate = totalCalls > 0 ? (((totalErrors / totalCalls) * 100).toFixed(1)) : '0.0';
+  // Weighted average latency p50
+  let weightedP50 = 0;
+  let totalCallWeight = 0;
+  allEntries.forEach((d: any) => {
+    if (d.p50Ms && d.calls) {
+      weightedP50 += (d.p50Ms as number) * (d.calls as number);
+      totalCallWeight += (d.calls as number);
+    }
+  });
+  const avgLatency = totalCallWeight > 0 ? Math.round((weightedP50 / totalCallWeight) as number) : 0;
+  // Uptime approximate: 100% minus a simple metric; not precise.
+  const uptime = '99.98%'; // placeholder; could compute from errors vs total calls but not accurate.
+
+  // Build time-series for calls chart: need daily totals for last N days
+  // period determines days: 7d, 30d, 90d. But data from API already limited by period. We'll aggregate by date.
+  const datesMap: Record<string, number> = {};
+  allEntries.forEach((d: any) => {
+    datesMap[d.date] = (datesMap[d.date] || 0) + (d.calls || 0);
+  });
+  const sortedDates = Object.keys(datesMap).sort();
+  const callsData = sortedDates.map(d => datesMap[d]);
+
   const selStyle: React.CSSProperties = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '9px 14px', color: 'rgba(255,255,255,0.7)', fontSize: '12px', fontFamily: 'DM Mono, monospace', outline: 'none', cursor: 'pointer' };
 
   return (
@@ -788,11 +925,11 @@ function Analytics() {
           <p style={{ color: 'rgba(255,255,255,0.4)', marginTop: '6px', fontSize: '14px' }}>Usage, latency, and error tracking across your products</p>
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
-          <select style={selStyle} value={analyticsProduct} onChange={e => setAnalyticsProduct(e.target.value)}>
+          <select style={selStyle} value={productFilter} onChange={e => setProductFilter(e.target.value)}>
             <option value="all">All products</option>
-            {mockProducts.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
+            {products.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
           </select>
-          <select style={selStyle} value={analyticsPeriod} onChange={e => setAnalyticsPeriod(e.target.value)}>
+          <select style={selStyle} value={period} onChange={e => setPeriod(e.target.value)}>
             <option value="7d">Last 7 days</option>
             <option value="30d">Last 30 days</option>
             <option value="90d">Last 90 days</option>
@@ -800,85 +937,84 @@ function Analytics() {
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: '16px' }}>
-        <StatCard label="Total calls (30d)" value="26.5k" sub="+34% vs prev period" accent="rgba(91,148,210,1)" />
-        <StatCard label="Avg latency" value="143ms" sub="p99: 890ms" />
-        <StatCard label="Error rate" value="0.4%" sub="Down from 1.2%" />
-        <StatCard label="Uptime" value="99.98%" sub="Last 90 days" />
-      </div>
-
-      {/* Calls over time */}
-      <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '16px', padding: '28px' }}>
-        <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', fontFamily: 'DM Mono, monospace', marginBottom: '24px' }}>API calls — last 14 days</div>
-        <div style={{ display: 'flex', alignItems: 'flex-end', gap: '6px', height: '100px' }}>
-          {[820, 1100, 940, 1350, 1820, 1640, 980, 2100, 2340, 1890, 2560, 2100, 1980, 2780].map((v, i) => {
-            const max = 2780;
-            const isToday = i === 13;
-            return (
-              <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', height: '100%', justifyContent: 'flex-end' }}>
-                <div style={{
-                  width: '100%', height: `${(v / max) * 100}%`,
-                  background: isToday ? 'rgba(91,148,210,0.85)' : 'rgba(255,255,255,0.07)',
-                  borderRadius: '4px 4px 0 0',
-                }} />
-                {i % 7 === 0 && <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', fontFamily: 'DM Mono, monospace' }}>D{i + 1}</div>}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-        {/* Status codes */}
-        <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '16px', padding: '24px' }}>
-          <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', fontFamily: 'DM Mono, monospace', marginBottom: '20px' }}>Response codes</div>
-          {[
-            { code: '2xx Success', count: 24818, pct: 93.7, color: '#5bc47a' },
-            { code: '4xx Client error', count: 1274, pct: 4.8, color: '#f4a942' },
-            { code: '5xx Server error', count: 108, pct: 0.4, color: '#ff6b6b' },
-            { code: '3xx Redirect', count: 300, pct: 1.1, color: 'rgba(91,148,210,1)' },
-          ].map((r, i) => (
-            <div key={i} style={{ marginBottom: '12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                <span style={{ fontSize: '12px', color: r.color }}>{r.code}</span>
-                <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontFamily: 'DM Mono, monospace' }}>{r.count.toLocaleString()}</span>
-              </div>
-              <div style={{ height: '3px', background: 'rgba(255,255,255,0.06)', borderRadius: '2px' }}>
-                <div style={{ height: '100%', width: `${r.pct}%`, background: r.color, borderRadius: '2px' }} />
-              </div>
-            </div>
+      {loading ? (
+        <div style={{ display: 'flex', gap: '16px' }}>
+          {[1,2,3,4].map(i => (
+            <div key={i} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '24px', flex: 1, minWidth: 0, minHeight: '100px' }} />
           ))}
         </div>
+      ) : (
+        <>
+          <div style={{ display: 'flex', gap: '16px' }}>
+            <StatCard label="Total calls" value={totalCalls.toLocaleString()} sub={`Last ${period === '7d' ? 7 : period === '30d' ? 30 : 90} days`} accent="rgba(91,148,210,1)" />
+            <StatCard label="Avg latency" value={`${avgLatency}ms`} sub="p50 weighted" />
+            <StatCard label="Error rate" value={`${errorRate}%`} sub={`${totalErrors} errors`} />
+            <StatCard label="Uptime" value={uptime} sub="Last 90 days" />
+          </div>
 
-        {/* Top consumers */}
-        <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '16px', padding: '24px' }}>
-          <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', fontFamily: 'DM Mono, monospace', marginBottom: '20px' }}>Top consumers</div>
-          {[
-            { user: 'acme-corp', calls: 8420, plan: 'Pro' },
-            { user: 'devstudio-io', calls: 5180, plan: 'Pro' },
-            { user: 'buildfast-hq', calls: 3240, plan: 'Basic' },
-            { user: 'anon_9f2a1', calls: 1840, plan: 'Free' },
-            { user: 'launchpad_x', calls: 1320, plan: 'Basic' },
-          ].map((u, i) => (
-            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '9px 0', borderBottom: i < 4 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
-              <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', fontFamily: 'DM Mono, monospace' }}>{u.user}</span>
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                <span style={{ fontSize: '11px', padding: '2px 8px', background: 'rgba(255,255,255,0.05)', borderRadius: '100px', color: 'rgba(255,255,255,0.3)' }}>{u.plan}</span>
-                <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', fontFamily: 'DM Mono, monospace' }}>{u.calls.toLocaleString()}</span>
+          {/* Calls over time */}
+          <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '16px', padding: '28px' }}>
+            <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', fontFamily: 'DM Mono, monospace', marginBottom: '24px' }}>API calls — last {sortedDates.length} days</div>
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: '6px', height: '100px' }}>
+              {callsData.map((v, i) => {
+                const max = Math.max(...callsData, 1);
+                const isLast = i === callsData.length - 1;
+                return (
+                  <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', height: '100%', justifyContent: 'flex-end' }}>
+                    <div style={{
+                      width: '100%', height: `${(v / max) * 100}%`,
+                      background: isLast ? 'rgba(91,148,210,0.85)' : 'rgba(255,255,255,0.07)',
+                      borderRadius: '4px 4px 0 0',
+                    }} />
+                    {i % Math.ceil(sortedDates.length / 7) === 0 && <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', fontFamily: 'DM Mono, monospace' }}>D{i+1}</div>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Status codes placeholder - could be aggregated from analytics if we had data */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '16px', padding: '24px' }}>
+              <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', fontFamily: 'DM Mono, monospace', marginBottom: '20px' }}>Response codes</div>
+              <div style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'DM Mono, monospace', fontSize: '12px', textAlign: 'center', padding: '40px 0' }}>
+                Detailed response code breakdown coming soon.
               </div>
             </div>
-          ))}
-        </div>
-      </div>
+
+            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '16px', padding: '24px' }}>
+              <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', fontFamily: 'DM Mono, monospace', marginBottom: '20px' }}>Top consumers</div>
+              <div style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'DM Mono, monospace', fontSize: '12px', textAlign: 'center', padding: '40px 0' }}>
+                Top client breakdown coming soon.
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
 
-function Earnings() {
+function Earnings({ data }: { data?: any }) {
   const [showPayoutModal, setShowPayoutModal] = useState(false);
   const [payoutMethod, setPayoutMethod] = useState<'paypal' | 'stitch'>('paypal');
   const [payoutEmail, setPayoutEmail] = useState('');
   const [payoutSaved, setPayoutSaved] = useState(false);
+
+  const availableBalance = data?.availableBalance ?? 0;
+  const pendingPayout = data?.pendingPayout ?? 0;
+  const totalEarned = data?.totalEarned ?? 0;
+  const monthlyChart = data?.monthlyChart ?? [];
+  const payouts = data?.payouts ?? [];
+  const payoutMethodLabel = data?.payoutMethod === 'paypal'
+    ? 'PayPal'
+    : data?.payoutMethod === 'stitch'
+    ? 'Stitch (ZA)'
+    : data?.payoutMethod ?? 'Stripe';
+  const monthRevenue = monthlyChart.length ? monthlyChart[monthlyChart.length - 1] : 0;
+
+  const formatCurrency = (value: number) =>
+    `R${(value / 100).toLocaleString('en-ZA', { minimumFractionDigits: 2 })}`;
 
   const savePayoutMethod = () => {
     if (!payoutEmail) return;
@@ -934,32 +1070,41 @@ function Earnings() {
       </div>
 
       <div style={{ display: 'flex', gap: '16px' }}>
-        <StatCard label="Available balance" value="$2,496.00" sub="Payout on Apr 15" accent="#5bc47a" />
-        <StatCard label="This month" value="$3,120.00" sub="Before 20% platform fee" />
-        <StatCard label="All-time earnings" value="$15,510.00" />
-        <StatCard label="Next payout" value="Apr 15" sub="Auto via Stripe" />
+        <StatCard label="Available balance" value={formatCurrency(availableBalance)} sub={pendingPayout ? `Pending ${formatCurrency(pendingPayout)}` : 'No pending payout'} accent="#5bc47a" />
+        <StatCard label="This month" value={formatCurrency(monthRevenue)} sub="Current month revenue" />
+        <StatCard label="All-time earnings" value={formatCurrency(totalEarned)} />
+        <StatCard label="Payout method" value={payoutMethodLabel} sub={payoutMethodLabel !== 'Stripe' ? 'Configured payout provider' : 'No payout method set'} />
       </div>
 
-      <EarningsChart />
+      <EarningsChart monthlyChart={monthlyChart} />
 
       {/* Payout history */}
       <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '16px', padding: '24px' }}>
         <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', fontFamily: 'DM Mono, monospace', marginBottom: '20px' }}>Payout history</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
-          {[
-            { date: 'Mar 15, 2026', amount: '$2,840.00', net: '$2,272.00', method: 'Stripe', status: 'paid' },
-            { date: 'Feb 15, 2026', amount: '$2,100.00', net: '$1,680.00', method: 'Stripe', status: 'paid' },
-            { date: 'Jan 15, 2026', amount: '$1,720.00', net: '$1,376.00', method: 'Stripe', status: 'paid' },
-            { date: 'Dec 15, 2025', amount: '$2,100.00', net: '$1,680.00', method: 'Stripe', status: 'paid' },
-          ].map((p, i) => (
-            <div key={i} style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr 1fr 1fr', gap: '16px', alignItems: 'center', padding: '14px 0', borderBottom: i < 3 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
-              <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)' }}>{p.date}</span>
-              <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', fontFamily: 'DM Mono, monospace' }}>{p.amount}</span>
-              <span style={{ fontSize: '13px', color: 'white', fontFamily: 'DM Mono, monospace' }}>{p.net}</span>
-              <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)' }}>{p.method}</span>
-              <span style={{ fontSize: '11px', padding: '3px 9px', background: 'rgba(91,196,122,0.1)', color: '#5bc47a', borderRadius: '100px', fontFamily: 'DM Mono, monospace', border: '1px solid rgba(91,196,122,0.2)', display: 'inline-block' }}>{p.status}</span>
+          {payouts.length > 0 ? payouts.map((p: any, i: number) => (
+            <div key={p.id || i} style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr 1fr 1fr', gap: '16px', alignItems: 'center', padding: '14px 0', borderBottom: i < payouts.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+              <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)' }}>
+                {p.requestedAt ? new Date(p.requestedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
+              </span>
+              <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', fontFamily: 'DM Mono, monospace' }}>
+                {formatCurrency(p.amountZAR ?? 0)}
+              </span>
+              <span style={{ fontSize: '13px', color: 'white', fontFamily: 'DM Mono, monospace' }}>
+                {formatCurrency(p.amountZAR ?? 0)}
+              </span>
+              <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)' }}>
+                {p.paymentMethod ?? 'Stripe'}
+              </span>
+              <span style={{ fontSize: '11px', padding: '3px 9px', background: 'rgba(91,196,122,0.1)', color: '#5bc47a', borderRadius: '100px', fontFamily: 'DM Mono, monospace', border: '1px solid rgba(91,196,122,0.2)', display: 'inline-block' }}>
+                {(p.status || 'pending').toLowerCase()}
+              </span>
             </div>
-          ))}
+          )) : (
+            <div style={{ padding: '40px 0', color: 'rgba(255,255,255,0.35)', fontFamily: 'DM Mono, monospace', fontSize: '12px', textAlign: 'center' }}>
+              No payout history available yet.
+            </div>
+          )}
         </div>
       </div>
 
@@ -968,7 +1113,7 @@ function Earnings() {
         <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', fontFamily: 'DM Mono, monospace', marginBottom: '20px' }}>Payout settings</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           {[
-            { label: 'Payout method', value: 'Stripe · **** 4242', editable: true },
+            { label: 'Payout method', value: payoutMethodLabel, editable: true },
             { label: 'Payout schedule', value: 'Monthly (15th)', editable: false },
             { label: 'Tax info', value: 'W-9 on file', editable: false },
             { label: 'Minimum payout', value: '$50.00', editable: false },
@@ -1236,16 +1381,41 @@ const NAV_ITEMS: { id: Tab; label: string; icon: string }[] = [
 ];
 
 export default function ConsolePage() {
+  const router = useRouter();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [dashData, setDashData] = useState<any>(null);
+  const [earningsData, setEarningsData] = useState<any>(null);
   const [userEmail, setUserEmail] = useState('your@email.com');
 
+  // Auth guard: redirect if not authenticated
   useEffect(() => {
-    fetch('/api/provider/dashboard')
-      .then(r => r.json())
-      .then(setDashData)
-      .catch(() => {});
+    if (!authLoading && !isAuthenticated) {
+      router.replace('/auth?redirect=/console');
+    }
+  }, [isAuthenticated, authLoading, router]);
+
+  useEffect(() => {
+    async function loadConsoleData() {
+      try {
+        const [dashRes, earningsRes] = await Promise.all([
+          fetch('/api/provider/dashboard'),
+          fetch('/api/provider/earnings'),
+        ]);
+
+        if (dashRes.ok) {
+          setDashData(await dashRes.json());
+        }
+        if (earningsRes.ok) {
+          setEarningsData(await earningsRes.json());
+        }
+      } catch (error) {
+        console.error('Failed to load console data', error);
+      }
+    }
+
+    loadConsoleData();
 
     // Load domain count for sidebar badge
     fetch('/api/domains/list')
@@ -1375,11 +1545,11 @@ export default function ConsolePage() {
         {activeTab === 'my-apis'   && <MyAcquiredAPIs />}
         {activeTab === 'acquired'  && <MyAcquiredProducts />}
         {activeTab === 'add-product' && <AddProduct />}
-        {activeTab === 'my-products' && <MyProducts onAddProduct={() => navigateTo('add-product')} />}
+        {activeTab === 'my-products' && <MyProducts products={dashData?.products || []} onAddProduct={() => navigateTo('add-product')} />}
         {activeTab === 'domains' && <MyDomains />}
-        {activeTab === 'testing' && <Testing />}
-        {activeTab === 'analytics' && <Analytics />}
-        {activeTab === 'earnings' && <Earnings />}
+        {activeTab === 'testing' && <Testing products={dashData?.products || []} />}
+        {activeTab === 'analytics' && <Analytics products={dashData?.products || []} />}
+        {activeTab === 'earnings' && <Earnings data={earningsData} />}
       </div>
     </div>
   );

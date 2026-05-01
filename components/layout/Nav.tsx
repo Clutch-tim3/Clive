@@ -2,51 +2,16 @@
 import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 import { SearchBar } from '../ui/SearchBar';
+import { useAuth } from '@/hooks/useAuth';
 
 export function Nav() {
-  // null  = still detecting (hide auth buttons to avoid flash)
-  // false = logged out  → show Sign in + Get started
-  // true  = logged in   → show Profile + Sign out
-  const [authed, setAuthed] = useState<boolean | null>(null);
-  const [userInitial, setUserInitial] = useState('?');
-  const [signingOut, setSigningOut] = useState(false);
+  const { user, loading } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
 
-  useEffect(() => {
-    // Fast path: read the JS-readable __auth cookie set by /api/auth/session.
-    // Value is 'admin' for admins, '1' for regular users — both mean authenticated.
-    const hasAuthCookie = document.cookie
-      .split(';')
-      .some(c => { const v = c.trim(); return v === '__auth=1' || v === '__auth=admin'; });
-
-    if (hasAuthCookie) {
-      setAuthed(true);
-      // Fetch display name for avatar — non-critical, doesn't affect auth display
-      fetch('/api/auth/user')
-        .then(r => r.ok ? r.json() : null)
-        .then(d => { if (d) setUserInitial((d.displayName?.[0] ?? d.email?.[0] ?? '?').toUpperCase()); })
-        .catch(() => {});
-    } else {
-      // Fallback for sessions created before __auth cookie was added:
-      // ask the lightweight /api/auth/check endpoint (no Firebase Admin needed).
-      fetch('/api/auth/check')
-        .then(r => r.json())
-        .then(d => {
-          const isAuthed = !!d.authed;
-          setAuthed(isAuthed);
-          if (isAuthed) {
-            fetch('/api/auth/user')
-              .then(r => r.ok ? r.json() : null)
-              .then(d2 => { if (d2) setUserInitial((d2.displayName?.[0] ?? d2.email?.[0] ?? '?').toUpperCase()); })
-              .catch(() => {});
-          }
-        })
-        .catch(() => setAuthed(false));
-    }
-  }, []);
+  // Get initial from user displayName or email
+  const userInitial = (user?.displayName?.[0] ?? user?.email?.[0] ?? '?').toUpperCase();
 
   const handleSignOut = async () => {
-    setSigningOut(true);
     // Clear Firebase client SDK auth state
     try {
       const { auth } = await import('@/lib/firebase/client');
@@ -58,6 +23,10 @@ export function Nav() {
     // Navigate to GET /api/auth/signout — server clears __session and redirects to /
     window.location.href = '/api/auth/signout';
   };
+
+  // Determine if we're authenticated (user exists) or still loading
+  const isAuthenticated = !!user;
+  const showAuthButtons = !loading && (isAuthenticated || !isAuthenticated);
 
   return (
     <nav className="main-nav" style={{
@@ -137,7 +106,7 @@ export function Nav() {
         </Link>
 
         {/* ── Logged in: Profile + Sign out ────────────────────────── */}
-        {authed === true && (
+        {isAuthenticated && (
           <>
             <Link
               href="/profile"
@@ -194,7 +163,6 @@ export function Nav() {
 
             <button
               onClick={handleSignOut}
-              disabled={signingOut}
               style={{
                 fontFamily: "'DM Mono', monospace",
                 fontSize: '10.5px',
@@ -204,31 +172,29 @@ export function Nav() {
                 borderRadius: '100px',
                 border: '1.5px solid rgba(255,255,255,0.12)',
                 background: 'transparent',
-                color: signingOut ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.45)',
-                cursor: signingOut ? 'default' : 'pointer',
+                color: 'rgba(255,255,255,0.45)',
+                cursor: 'pointer',
                 whiteSpace: 'nowrap',
                 transition: 'all .2s',
               }}
               onMouseEnter={e => {
-                if (!signingOut) {
-                  const el = e.currentTarget as HTMLButtonElement;
-                  el.style.borderColor = 'rgba(255,255,255,0.28)';
-                  el.style.color = 'white';
-                }
+                const el = e.currentTarget as HTMLButtonElement;
+                el.style.borderColor = 'rgba(255,255,255,0.28)';
+                el.style.color = 'white';
               }}
               onMouseLeave={e => {
                 const el = e.currentTarget as HTMLButtonElement;
                 el.style.borderColor = 'rgba(255,255,255,0.12)';
-                el.style.color = signingOut ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.45)';
+                el.style.color = 'rgba(255,255,255,0.45)';
               }}
             >
-              {signingOut ? 'Signing out…' : 'Sign out'}
+              Sign out
             </button>
           </>
         )}
 
         {/* ── Logged out: Sign in + Get started ────────────────────── */}
-        {authed === false && (
+        {!loading && !isAuthenticated && (
           <>
             <Link
               href="/auth?screen=signin"
@@ -350,7 +316,7 @@ export function Nav() {
 
           {/* Auth buttons in drawer */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '8px' }}>
-            {authed === true && (
+            {isAuthenticated && (
               <>
                 <Link
                   href="/profile"
@@ -373,7 +339,6 @@ export function Nav() {
                 </Link>
                 <button
                   onClick={handleSignOut}
-                  disabled={signingOut}
                   style={{
                     fontFamily: "'DM Mono', monospace",
                     fontSize: '11px',
@@ -383,15 +348,15 @@ export function Nav() {
                     borderRadius: '100px',
                     border: '1.5px solid rgba(255,255,255,0.12)',
                     background: 'transparent',
-                    color: signingOut ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.45)',
-                    cursor: signingOut ? 'default' : 'pointer',
+                    color: 'rgba(255,255,255,0.45)',
+                    cursor: 'pointer',
                   }}
                 >
-                  {signingOut ? 'Signing out…' : 'Sign out'}
+                  Sign out
                 </button>
               </>
             )}
-            {authed === false && (
+            {!loading && !isAuthenticated && (
               <>
                 <Link
                   href="/auth?screen=signin"

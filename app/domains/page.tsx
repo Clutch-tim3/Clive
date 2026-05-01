@@ -88,9 +88,10 @@ function DomainsPageContent() {
       const res  = await fetch(`/api/domains/check?q=${encodeURIComponent(trimmed)}`);
       const data = await res.json() as { results?: AvailabilityResult[]; error?: string };
       if (data.results) {
-        const STATUS_ORDER: Record<string, number> = { available: 0, premium: 1, taken: 2, unsupported: 3, error: 4 };
-        const sorted = [...data.results].sort((a, b) => (STATUS_ORDER[a.status] ?? 9) - (STATUS_ORDER[b.status] ?? 9));
-        setResults(sorted);
+        const filtered = data.results.filter(r => r.status !== 'error' && r.status !== 'unsupported');
+        const STATUS_ORDER: Record<string, number> = { available: 0, premium: 1, taken: 2 };
+        filtered.sort((a, b) => (STATUS_ORDER[a.status] ?? 9) - (STATUS_ORDER[b.status] ?? 9));
+        setResults(filtered);
       }
     } catch {
       // silently keep empty
@@ -120,7 +121,6 @@ function DomainsPageContent() {
   const sldBase        = searched.replace(/\.[a-z.]+$/, '');
   const available      = results.filter(r => r.status === 'available' || r.status === 'premium');
   const taken          = results.filter(r => r.status === 'taken');
-  const other          = results.filter(r => r.status === 'unsupported' || r.status === 'error');
   const comTaken       = results.find(r => r.tld === 'com')?.status === 'taken';
   const variants       = comTaken
     ? [`get${sldBase}`, `${sldBase}hq`, `${sldBase}app`, `my${sldBase}`].filter(v => v.length <= 63)
@@ -377,19 +377,6 @@ function DomainsPageContent() {
                 </div>
               )}
 
-              {/* Other (errors/unsupported) — collapsed by default */}
-              {other.length > 0 && (
-                <details style={{ marginTop: '16px' }}>
-                  <summary style={{ fontFamily: "'DM Mono', monospace", fontSize: '8px', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.2)', cursor: 'pointer', paddingLeft: '4px', listStyle: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span>↓ {other.length} unchecked or unsupported</span>
-                  </summary>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '10px' }}>
-                    {other.map(r => (
-                      <ResultRow key={r.domainName} result={r} onRegister={() => router.push(`/domains/${encodeURIComponent(r.domainName)}`)} onRetry={() => doSearch(searched)} />
-                    ))}
-                  </div>
-                </details>
-              )}
             </div>
           )}
         </div>
