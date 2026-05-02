@@ -216,7 +216,7 @@ export function StrikerShowcase() {
           </div>
 
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '32px' }}>
-            <Link href="/products/striker" style={{
+            <Link href="/striker" style={{
               padding: '13px 32px', borderRadius: '100px',
               fontFamily: "'DM Mono',monospace", fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase',
               background: 'rgba(180,20,20,0.8)', color: 'white', textDecoration: 'none',
@@ -225,13 +225,13 @@ export function StrikerShowcase() {
             }}>
               Download Striker →
             </Link>
-            <Link href="/products/striker" style={{
+            <Link href="/striker#competition" style={{
               padding: '13px 32px', borderRadius: '100px',
               fontFamily: "'DM Mono',monospace", fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase',
               color: 'rgba(255,255,255,0.4)', textDecoration: 'none',
               border: '1px solid rgba(255,255,255,0.12)', background: 'transparent',
             }}>
-              Learn more
+              Join competition
             </Link>
           </div>
 

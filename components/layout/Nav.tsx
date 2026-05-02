@@ -51,8 +51,8 @@ export function Nav() {
         <img src="/logo.png" alt="Clive" style={{ height: '32px', width: 'auto', display: 'block' }} />
       </Link>
 
-      {/* Center — nav links (hidden on mobile) */}
-      <div className="nav-links" style={{ display: 'flex', gap: '28px', justifyContent: 'center', alignItems: 'center' }}>
+       {/* Center — nav links (hidden on mobile) */}
+       <div className="nav-links" style={{ display: 'flex', gap: '28px', justifyContent: 'center', alignItems: 'center' }}>
         {[
           { href: '/products', label: 'Products' },
           { href: '/domains',  label: 'Domains'  },
@@ -60,7 +60,8 @@ export function Nav() {
           { href: '/pricing',  label: 'Pricing'  },
           { href: '/sell',     label: 'Sell'      },
           { href: '/docs',     label: 'Docs'      },
-        ].map(({ href, label }) => (
+          { href: '/striker',  label: 'Striker',   badge: 'NEW' },
+        ].map(({ href, label, badge }) => (
           <Link
             key={label}
             href={href}
@@ -69,15 +70,33 @@ export function Nav() {
               fontSize: '10.5px',
               letterSpacing: '0.14em',
               textTransform: 'uppercase',
-              color: 'rgba(255,255,255,0.45)',
+              color: label === 'Striker' ? 'rgba(220,80,80,0.8)' : 'rgba(255,255,255,0.45)',
               textDecoration: 'none',
               whiteSpace: 'nowrap',
               transition: 'color .2s',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
             }}
-            onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = 'white'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = 'rgba(255,255,255,0.45)'; }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLAnchorElement).style.color = label === 'Striker' ? 'rgba(220,80,80,1)' : 'white';
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLAnchorElement).style.color = label === 'Striker' ? 'rgba(220,80,80,0.8)' : 'rgba(255,255,255,0.45)';
+            }}
           >
             {label}
+            {badge && (
+              <span style={{
+                fontSize: '7.5px',
+                letterSpacing: '0.12em',
+                background: 'rgba(220,80,80,0.15)',
+                border: '1px solid rgba(220,80,80,0.3)',
+                padding: '2px 6px',
+                borderRadius: '100px',
+                color: 'rgba(220,80,80,0.85)',
+              }}>{badge}</span>
+            )}
           </Link>
         ))}
       </div>
@@ -283,18 +302,19 @@ export function Nav() {
         {menuOpen ? '✕' : '☰'}
       </button>
 
-      {/* Mobile drawer */}
-      {menuOpen && (
-        <div className="nav-mobile-menu">
-          {[
-            { href: '/products', label: 'Products' },
-            { href: '/domains',  label: 'Domains'  },
-            { href: '/',         label: 'Platform' },
-            { href: '/pricing',  label: 'Pricing'  },
-            { href: '/sell',     label: 'Sell'      },
-            { href: '/docs',     label: 'Docs'      },
-            { href: '/console',  label: 'Console'   },
-          ].map(({ href, label }) => (
+         {/* Mobile drawer */}
+         {menuOpen && (
+           <div className="nav-mobile-menu">
+             {[
+               { href: '/products', label: 'Products' },
+               { href: '/domains',  label: 'Domains'  },
+               { href: '/',         label: 'Platform' },
+               { href: '/pricing',  label: 'Pricing'  },
+               { href: '/sell',     label: 'Sell'      },
+               { href: '/docs',     label: 'Docs'      },
+               { href: '/striker',  label: 'Striker'   },
+               { href: '/console',  label: 'Console'   },
+             ].map(({ href, label }) => (
             <Link
               key={label}
               href={href}
