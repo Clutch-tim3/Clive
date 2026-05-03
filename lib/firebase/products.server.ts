@@ -1,14 +1,5 @@
 import { adminDb } from './admin';
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-  getDoc,
-  doc,
-  limit,
-  DocumentData,
-} from 'firebase-admin/firestore';
+import { DocumentData } from 'firebase-admin/firestore';
 
 export interface Product {
   id: string;
@@ -64,29 +55,22 @@ export interface Product {
 }
 
 export async function getLiveProducts(): Promise<Product[]> {
-  const q = query(
-    collection(adminDb(), 'products'),
-    where('status', '==', 'live')
-  );
-  const snap = await getDocs(q);
+  const q = adminDb().collection('products').where('status', '==', 'live');
+  const snap = await q.get();
   return snap.docs.map(d => ({ id: d.id, ...d.data() } as Product));
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
-  const q = query(
-    collection(adminDb(), 'products'),
-    where('slug', '==', slug),
-    limit(1)
-  );
-  const snap = await getDocs(q);
+  const q = adminDb().collection('products').where('slug', '==', slug).limit(1);
+  const snap = await q.get();
   if (snap.empty) return null;
   const data = snap.docs[0].data() as DocumentData;
   return { id: snap.docs[0].id, ...data } as Product;
 }
 
 export async function getProductById(id: string): Promise<Product | null> {
-  const docRef = doc(collection(adminDb(), 'products'), id);
-  const snap = await getDoc(docRef);
-  if (!snap.exists()) return null;
+  const docRef = adminDb().collection('products').doc(id);
+  const snap = await docRef.get();
+  if (!snap.exists) return null;
   return { id: snap.id, ...snap.data() } as Product;
 }
