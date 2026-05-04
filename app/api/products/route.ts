@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth, handleRouteError } from '@/lib/firebase/auth';
 import { adminDb } from '@/lib/firebase/admin';
+import { products } from '@/lib/products';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,16 +11,12 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const category = searchParams.get('category');
 
-    let query = adminDb()
-      .collection('products')
-      .where('status', '==', 'live')
-      .orderBy('stats.totalSubscribers', 'desc') as FirebaseFirestore.Query;
+    let filteredProducts = products;
+    if (category) {
+      filteredProducts = products.filter(p => p.category === category);
+    }
 
-    if (category) query = query.where('category', '==', category);
-
-    const snap     = await query.get();
-    const products = snap.docs.map(d => d.data());
-    return NextResponse.json({ products });
+    return NextResponse.json({ products: filteredProducts });
   } catch (err) {
     return handleRouteError(err);
   }

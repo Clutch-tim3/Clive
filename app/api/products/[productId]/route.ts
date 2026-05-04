@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth, requireAdmin, handleRouteError } from '@/lib/firebase/auth';
 import { adminDb } from '@/lib/firebase/admin';
+import { products } from '@/lib/products';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,6 +9,13 @@ type Ctx = { params: { productId: string } };
 
 export async function GET(_req: NextRequest, { params }: Ctx) {
   try {
+    // First check static products
+    const staticProduct = products.find(p => p.slug === params.productId);
+    if (staticProduct) {
+      return NextResponse.json({ product: staticProduct });
+    }
+
+    // Then check Firestore
     const doc = await adminDb().collection('products').doc(params.productId).get();
     if (!doc.exists) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 

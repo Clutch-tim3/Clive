@@ -1,7 +1,8 @@
-import React from 'react';
-import { ProductGrid } from '../products/ProductGrid';
-import { SectionKicker } from '../ui/SectionKicker';
-import { ScrollReveal } from '../ui/ScrollReveal';
+ import React from 'react';
+ import { ProductGrid } from '../products/ProductGrid';
+ import { SectionKicker } from '../ui/SectionKicker';
+ import { ScrollReveal } from '../ui/ScrollReveal';
+ import { products } from '@/lib/products';
 
 export function ProductsSection() {
   return (
@@ -22,7 +23,7 @@ export function ProductsSection() {
           </div>
         </ScrollReveal>
         
-        <ProductGrid />
+         <ProductGrid initialProducts={products} />
       </div>
     </section>
   );
