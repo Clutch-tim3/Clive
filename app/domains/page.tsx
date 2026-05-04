@@ -75,6 +75,9 @@ function DomainsPageContent() {
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [searchError,   setSearchError]   = useState(false);
   const [debouncedInput, setDebouncedInput] = useState('');
+  const [generatingIdeas, setGeneratingIdeas] = useState(false);
+  const [domainIdeas, setDomainIdeas] = useState<Array<{domain: string; score: number; reason: string; availability: any}>>([]);
+  const [takenSuggestions, setTakenSuggestions] = useState<Array<{domain: string; score: number; reason: string; priceZAR: number}>>([]);
 
   useEffect(() => {
     fetch('/api/domains/tlds')
@@ -95,12 +98,13 @@ function DomainsPageContent() {
     }
   }, []);
 
-  const doSearch = useCallback(async (q: string) => {
+   const doSearch = useCallback(async (q: string) => {
     const trimmed = q.trim();
     if (!trimmed) return;
     setSearched(trimmed);
     setResults([]);
     setLoading(true);
+    setTakenSuggestions([]); // Reset taken suggestions
     try {
       const res  = await fetch(`/api/domains/check?q=${encodeURIComponent(trimmed)}`);
       const data = await res.json() as { results?: AvailabilityResult[]; error?: string };
@@ -116,6 +120,34 @@ function DomainsPageContent() {
           localStorage.setItem('recent_domain_searches', JSON.stringify(updated));
           return updated;
         });
+        
+        // If .com is taken, generate similar available domain suggestions
+        const comResult = filtered.find(r => r.tld === 'com' && r.status === 'taken');
+        if (comResult) {
+          const sldBase = trimmed.replace(/\.[a-z.]+$/, '');
+          const suggestions = generateDomainIdeas([sldBase], undefined, 8);
+          
+          // Check availability of suggestions
+          const suggestionPromises = suggestions.map(async (suggestion) => {
+            try {
+              const res = await fetch(`/api/domains/check?q=${encodeURIComponent(suggestion.domain)}`);
+              const data = await res.json();
+              if (data.results && data.results.length > 0) {
+                const result = data.results[0];
+                return {
+                  ...suggestion,
+                  priceZAR: result.priceZAR || 0
+                };
+              }
+              return { ...suggestion, priceZAR: 0 };
+            } catch (error) {
+              return { ...suggestion, priceZAR: 0 };
+            }
+          });
+          
+          const suggestionsWithPrices = await Promise.all(suggestionPromises);
+          setTakenSuggestions(suggestionsWithPrices.filter(s => s.priceZAR > 0 && s.score >= 50));
+        }
       } else {
         setSearchError(true);
       }
@@ -124,7 +156,7 @@ function DomainsPageContent() {
     } finally {
       setLoading(false);
     }
-   }, []);
+  }, []);
 
    // Debounce search input
    useEffect(() => {
@@ -142,9 +174,50 @@ function DomainsPageContent() {
      if (q) { setInput(q); doSearch(q); }
    }, [params, doSearch]);
 
-   const handleSearch = useCallback(() => {
-     doSearch(debouncedInput);
-   }, [debouncedInput, doSearch]);
+    const handleSearch = useCallback(() => {
+      doSearch(debouncedInput);
+    }, [debouncedInput, doSearch]);
+
+    const generateIdeas = useCallback(async (keyword: string) => {
+      setGeneratingIdeas(true);
+      try {
+        // Call our new API endpoint
+        const res = await fetch(`/api/domains/generate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            keywords: [keyword],
+            tld: undefined
+          })
+        });
+        
+        const data = await res.json();
+        if (data.results) {
+          // Map the API response to our expected format
+          const ideasWithAvailability = data.results.map((idea: any) => ({
+            domain: idea.domain,
+            score: idea.score,
+            reason: idea.reason,
+            availability: {
+              domainName: idea.domainName,
+              status: idea.availability.status,
+              priceZAR: idea.availability.priceZAR,
+              renewalZAR: idea.availability.renewalZAR,
+              isPremium: idea.availability.isPremium,
+              errorMessage: idea.availability.errorMessage
+            }
+          }));
+          setDomainIdeas(ideasWithAvailability);
+        }
+      } catch (error) {
+        console.error('Error generating ideas:', error);
+        setDomainIdeas([]);
+      } finally {
+        setGeneratingIdeas(false);
+      }
+    }, []);
 
   const appendTLD = (tld: string) => {
     const base = input.replace(/\.[a-z.]+$/, '').toLowerCase().replace(/[^a-z0-9-]/g, '');
@@ -304,32 +377,85 @@ function DomainsPageContent() {
                     >
                       {domain}
                     </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Recent searches */}
-            {recentSearches.length > 0 && !input && !loading && !searched && (
-              <div style={{ marginTop: '16px' }}>
-                <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '8px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.2)', marginBottom: '8px' }}>
-                  Recent searches
-                </div>
-                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                  {recentSearches.map(search => (
-                    <button
-                      key={search}
-                      onClick={() => { setInput(search); doSearch(search); }}
-                      aria-label={`Search for ${search} again`}
-                      style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '100px', fontFamily: "'DM Mono', monospace", fontSize: '10px', color: 'rgba(91,148,210,0.8)', cursor: 'pointer', transition: 'all .15s' }}
-                      onMouseEnter={e => { (e.currentTarget.style.borderColor = 'rgba(91,148,210,0.22)'); (e.currentTarget.style.background = 'rgba(255,255,255,0.05)'); }}
-                      onMouseLeave={e => { (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'); (e.currentTarget.style.background = 'rgba(255,255,255,0.03)'); }}
-                    >
-                      {search}
-                    </button>
-                  ))}
-                </div>
+                ))}
               </div>
             )}
+
+              {/* Generated ideas section */}
+              {domainIdeas.length > 0 && (
+                <div style={{ marginTop: '24px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                    <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '10px', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.3)' }}>
+                      Domain ideas
+                    </div>
+                    <button
+                      onClick={() => setDomainIdeas([])}
+                      style={{ padding: '6px 12px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '100px', fontFamily: "'DM Mono', monospace", fontSize: '8px', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.5)', cursor: 'pointer', transition: 'all .2s' }}
+                      onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
+                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                    >
+                      ✕ Clear
+                    </button>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px' }}>
+                    {domainIdeas.map(idea => (
+                      <IdeaCard key={idea.domain} idea={idea} onRegister={() => router.push(`/domains/${encodeURIComponent(idea.domain)}`)} onRetry={() => doSearch(searched)} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Generated ideas section */}
+              {domainIdeas.length > 0 && (
+                <div style={{ marginTop: '24px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                    <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '10px', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.3)' }}>
+                      Domain ideas
+                    </div>
+                    <button
+                      onClick={() => setDomainIdeas([])}
+                      style={{ padding: '6px 12px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '100px', fontFamily: "'DM Mono', monospace", fontSize: '8px', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.5)', cursor: 'pointer', transition: 'all .2s' }}
+                      onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
+                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                    >
+                      ✕ Clear
+                    </button>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px' }}>
+                    {domainIdeas.map(idea => (
+                      <IdeaCard key={idea.domain} idea={idea} onRegister={() => router.push(`/domains/${encodeURIComponent(idea.domain)}`)} onRetry={() => doSearch(searched)} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Generate ideas button */}
+             {searched && !loading && !searchError && (
+               <div style={{ marginTop: '24px', textAlign: 'center' }}>
+                 <button
+                   onClick={() => generateIdeas(searched)}
+                   disabled={generatingIdeas}
+                   style={{
+                     padding: '10px 24px',
+                     background: generatingIdeas ? 'rgba(27,48,91,0.5)' : '#1B305B',
+                     border: '1px solid rgba(91,148,210,0.3)',
+                     borderRadius: '100px',
+                     fontFamily: "'DM Mono', monospace",
+                     fontSize: '10px',
+                     letterSpacing: '0.1em',
+                     textTransform: 'uppercase',
+                     color: generatingIdeas ? 'rgba(255,255,255,0.4)' : 'white',
+                     cursor: generatingIdeas ? 'default' : 'pointer',
+                     transition: 'background .2s',
+                     display: 'inline-flex',
+                     alignItems: 'center',
+                     gap: '6px'
+                   }}
+                 >
+                   {generatingIdeas ? 'Generating…' : '💡 Generate ideas'}
+                 </button>
+               </div>
+             )}
 
             {/* TLD pills — now 10, with prices */}
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -799,6 +925,25 @@ function ResultCard({
               {errorMessage || "Registry unreachable. This usually resolves in a moment."}
             </div>
           )}
+        </div>
+      )}
+      
+      {/* Show taken domain suggestions */}
+      {status === 'taken' && takenSuggestions.length > 0 && (
+        <div style={{ marginTop: '16px', padding: '0 22px 16px 52px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+          <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '10px', letterSpacing: '0.1em', color: 'rgba(220,80,80,0.45)', marginBottom: '12px' }}>
+            Similar available domains
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '10px' }}>
+            {takenSuggestions.map(suggestion => (
+              <SuggestionCard 
+                key={suggestion.domain} 
+                suggestion={suggestion} 
+                onRegister={() => router.push(`/domains/${encodeURIComponent(suggestion.domain)}`)} 
+                onRetry={() => doSearch(searched)} 
+              />
+            ))}
+          </div>
         </div>
       )}
     </div>
