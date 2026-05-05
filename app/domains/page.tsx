@@ -234,21 +234,10 @@ function DomainsPageContent() {
   const available      = results.filter(r => r.status === 'available' || r.status === 'premium');
   const taken          = results.filter(r => r.status === 'taken');
   const comTaken       = results.find(r => r.tld === 'com')?.status === 'taken';
-  const variants       = comTaken
-    ? [`get${sldBase}`, `${sldBase}hq`, `${sldBase}app`, `my${sldBase}`].filter(v => v.length <= 63)
-    : [];
+  const variants = [];
 
   return (
     <>
-       <style>{`
-         @keyframes pulse    { 0%,100%{opacity:.35} 50%{opacity:.75} }
-         @keyframes shimmer  { 0%{background-position:-400px 0} 100%{background-position:400px 0} }
-         @keyframes dotPulse { 0%,100%{transform:scale(1);opacity:.9} 50%{transform:scale(1.5);opacity:1} }
-         @keyframes availablePulse { 
-           0%, 100% { box-shadow: 0 0 0 0 rgba(80, 200, 120, 0.4); }
-           50% { box-shadow: 0 0 0 8px rgba(80, 200, 120, 0); }
-         }
-       `}</style>
       <Nav />
       <div style={{ minHeight: '100vh', background: '#07070A', paddingTop: '64px' }}>
 

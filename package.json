@@ -2,6 +2,7 @@
   "name": "clive-platform",
   "version": "1.0.0",
   "private": true,
+  "engines": { "node": "20" },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -11,7 +12,7 @@
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "firebase": "^12.12.1",
-    "firebase-admin": "^10.1.0",
+    "firebase-admin": "^13.7.0",
     "framer-motion": "^10.16.16",
     "next": "^14.2.35",
     "react": "18.2.0",
