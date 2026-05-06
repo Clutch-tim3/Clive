@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import ArchitectureSection from '../../components/striker/ArchitectureSection';
 import CompetitionRules from '../../components/striker/CompetitionRules';
+import SummarySection from '../../components/striker/SummarySection';
 import TestimonialsSection from '../../components/striker/TestimonialsSection';
 
 export const metadata: Metadata = {
@@ -75,6 +76,8 @@ export default function StrikerPage() {
           Monitors process activity, network traffic, file system events, and memory in real time.
           Every threat it encounters makes it permanently smarter.
         </p>
+
+        <SummarySection />
 
         {/* How it works — 4 steps */}
         <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'16px', marginBottom:'64px' }}>
